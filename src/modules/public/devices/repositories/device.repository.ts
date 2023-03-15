@@ -40,7 +40,7 @@ VALUES ($1, $2, $3, $4, $5, $6)`,
   ): Promise<void> {
     await this.dataSource.query(
       ` UPDATE public."device"
-SET , "deviceIp"= $1, "deviceTitle"= $2, "lastActiveDate"= $3, "expirationDate"= $4
+SET "deviceIp"= $1, "deviceTitle"= $2, "lastActiveDate"= $3, "expirationDate"= $4
 WHERE "deviceId"= $5`,
       [ip, title, lastActiveDate, expirationDate, deviceId],
     );

@@ -1,9 +1,9 @@
+import { ConfigService } from '@nestjs/config';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { RefreshTokenStrategyType } from '../types/refreshTokenStrategyType';
 import { Request } from 'express';
-import { ConfigService } from '@nestjs/config';
 import { DevicesRepository } from '../../devices/repositories/device.repository';
 
 @Injectable()
@@ -31,6 +31,8 @@ export class RefreshTokenStrategy extends PassportStrategy(
   async validate(
     payload: RefreshTokenStrategyType,
   ): Promise<{ id: string; login: string; deviceId: string }> {
+    //console.log('RefreshTokenStrategy:', payload);
+
     const device = await this.devicesRepository.findDeviceByDeviceId(
       payload.deviceId,
     );
@@ -38,7 +40,6 @@ export class RefreshTokenStrategy extends PassportStrategy(
     if (payload.iat !== device.lastActiveDate)
       throw new UnauthorizedException('refresh token is already invalid');
 
-    //console.log('RefreshTokenStrategy:', payload);
     return {
       id: payload.userId,
       login: payload.userLogin,
