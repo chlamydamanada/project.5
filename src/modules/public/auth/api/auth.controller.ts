@@ -36,6 +36,7 @@ import { CheckEmailIsConfirmedCommand } from '../useCases/checkEmailIsConfirmed.
 import { CreateRecoveryCodeCommand } from '../useCases/createRecoveryCode.useCase';
 import { NewPassRecoveryDtoPipe } from './pipes/newPassRecoveryDtoPipe';
 import { ChangePasswordCommand } from '../useCases/changePassword.useCase';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -46,7 +47,7 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  //@UseGuards(ThrottlerGuard)
+  @UseGuards(ThrottlerGuard)
   @UseGuards(PasswordAuthGuard)
   @HttpCode(200)
   async login(
@@ -75,7 +76,7 @@ export class AuthController {
   }
 
   @Post('registration')
-  //@UseGuards(ThrottlerGuard)
+  @UseGuards(ThrottlerGuard)
   @HttpCode(204)
   async registration(
     @Body() userInputModel: userInputModelPipe,
@@ -91,7 +92,7 @@ export class AuthController {
   }
 
   @Post('registration-confirmation')
-  //@UseGuards(ThrottlerGuard)
+  @UseGuards(ThrottlerGuard)
   @HttpCode(204)
   async registrationConfirmation(@Body() codeDto: CodePipe): Promise<void> {
     await this.commandBus.execute(new ConfirmEmailCommand(codeDto.code));
@@ -99,7 +100,7 @@ export class AuthController {
   }
 
   @Post('registration-email-resending')
-  //@UseGuards(ThrottlerGuard)
+  @UseGuards(ThrottlerGuard)
   @HttpCode(204)
   async registrationEmailResending(@Body() emailDto: EmailPipe): Promise<void> {
     await this.commandBus.execute(new CheckEmailIsConfirmedCommand(emailDto));
@@ -147,7 +148,7 @@ export class AuthController {
   }
 
   @Post('password-recovery')
-  //@UseGuards(ThrottlerGuard)
+  @UseGuards(ThrottlerGuard)
   async passwordRecovery(@Body() emailInputDto: EmailPipe): Promise<void> {
     await this.commandBus.execute(
       new CreateRecoveryCodeCommand(emailInputDto.email),
@@ -156,7 +157,7 @@ export class AuthController {
   }
 
   @Post('new-password')
-  //@UseGuards(ThrottlerGuard)
+  @UseGuards(ThrottlerGuard)
   @HttpCode(204)
   async newPassword(
     @Body() newPassRecoveryDto: NewPassRecoveryDtoPipe,
