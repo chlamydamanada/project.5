@@ -1,8 +1,10 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class CodePipe {
+  @IsUUID()
   @IsNotEmpty()
-  @Transform(({ value }) => value?.trim())
+  @IsString()
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   code: string;
 }

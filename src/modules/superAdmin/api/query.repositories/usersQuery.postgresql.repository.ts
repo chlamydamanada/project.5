@@ -23,13 +23,15 @@ SELECT u."id", u."login", u."email", u."createdAt",
 FROM public."user" u
 LEFT JOIN public."ban_info" b
 ON b."userId" = u."id" 
-${filter}
+WHERE ${filter}
 ORDER BY "${queryDto.sortBy}" ${queryDto.sortDirection}
 LIMIT $1  OFFSET (($2 - 1)*$1)`,
       [queryDto.pageSize, queryDto.pageNumber],
     );
     const totalCount = await this.dataSource.query(
-      `SELECT COUNT(*) FROM public."user"`,
+      `SELECT COUNT(*) FROM public."user" u
+LEFT JOIN public."ban_info" b ON b."userId" = u."id" 
+WHERE ${filter}`,
     );
     const result = allUsers.map((u) => ({
       id: u.id,
@@ -89,16 +91,15 @@ WHERE u."id" = $1`,
     const banFilter = this.createBanStatusFilter(banStatus);
     if (login && email) {
       return (
-        banFilter +
-        ` and LOWER(u."login") like LOWER('%${login}%')
-or LOWER(u."email") like LOWER('%${email}%')`
+        `LOWER(u."login") like LOWER('%${login}%')
+or LOWER(u."email") like LOWER('%${email}%') and ` + banFilter
       );
     }
     if (login) {
-      return banFilter + ` and LOWER(u."login") like LOWER('%${login}%')`;
+      return `LOWER(u."login") like LOWER('%${login}%') and ` + banFilter;
     }
     if (email) {
-      return banFilter + ` and LOWER(u."email") like LOWER('%${email}%')`;
+      return `LOWER(u."email") like LOWER('%${email}%') and ` + banFilter;
     }
     return banFilter;
   }
@@ -107,12 +108,12 @@ or LOWER(u."email") like LOWER('%${email}%')`
     // make filter by ban status
     switch (banStatus) {
       case BanStatusType.banned:
-        return `where b."isBanned" = true`;
+        return `b."isBanned" = true`;
       case BanStatusType.notBanned:
-        return `where b."isBanned" = false`;
+        return `b."isBanned" = false`;
 
       default:
-        return `where b."isBanned" = false or b."isBanned" = true`;
+        return `b."isBanned" = false or b."isBanned" = true`;
     }
   };
 }
