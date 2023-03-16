@@ -22,7 +22,7 @@ export class JwtAdapter {
         deviceId,
       },
       {
-        expiresIn: '20 seconds',
+        expiresIn: '200 seconds',
         secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
       },
     );
@@ -35,7 +35,7 @@ export class JwtAdapter {
     const token = await this.jwtService.signAsync(
       { userId, userLogin },
       {
-        expiresIn: '10 seconds',
+        expiresIn: '100 seconds',
         secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
       },
     );

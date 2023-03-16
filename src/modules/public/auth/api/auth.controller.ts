@@ -47,8 +47,7 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  @UseGuards(ThrottlerGuard)
-  @UseGuards(PasswordAuthGuard)
+  @UseGuards(ThrottlerGuard, PasswordAuthGuard)
   @HttpCode(200)
   async login(
     @CurrentUserInfo() userInfo: UserInfoType,
