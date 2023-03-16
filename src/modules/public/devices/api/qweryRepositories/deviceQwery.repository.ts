@@ -14,6 +14,11 @@ FROM public."device" WHERE "ownerId" = $1`,
       [userId],
     );
     if (devices.length < 1) return null;
-    return devices;
+    return devices.map((d) => ({
+      ip: d.ip,
+      title: d.title,
+      lastActiveDate: new Date(d.lastActiveDate * 1000).toISOString(),
+      deviceId: d.deviceId,
+    }));
   }
 }
