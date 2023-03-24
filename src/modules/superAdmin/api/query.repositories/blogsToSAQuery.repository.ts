@@ -4,15 +4,24 @@ import { Blog } from '../../../bloggers/domain/blog.entity';
 import { ILike, Repository } from 'typeorm';
 import { blogQueryType } from '../../../public/blogs/types/blogsQweryType';
 import { BlogsSAType } from '../../types/blogs/blogsSAType';
+import { User } from '../../domain/users.entities/user.entity';
+import { BlogBanInfo } from '../../../bloggers/domain/blogBanInfo.entity';
 
 @Injectable()
 export class BlogsToSAQueryRepository {
   constructor(
     @InjectRepository(Blog) private readonly blogsRepository: Repository<Blog>,
+    @InjectRepository(BlogBanInfo)
+    private readonly blogBanInfoRepository: Repository<BlogBanInfo>,
+    @InjectRepository(User) private readonly usersRepository: Repository<User>,
   ) {}
   async findAllBlogsToSA(queryDto: blogQueryType): Promise<BlogsSAType> {
     const filter = this.makeBlogsFilter(queryDto.searchNameTerm);
     const blogs = await this.blogsRepository.find({
+      relations: {
+        blogger: true,
+        blogBanInfo: true,
+      },
       select: {
         id: true,
         name: true,
@@ -25,8 +34,8 @@ export class BlogsToSAQueryRepository {
           login: true,
         },
         blogBanInfo: {
-          isBanned: true,
           banDate: true,
+          isBanned: true,
         },
       },
       where: filter,

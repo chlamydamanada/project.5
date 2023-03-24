@@ -41,8 +41,18 @@ export class BlogPublicQueryRepository {
     };
   }
   makeBlogsFilter(blogName?: string | null) {
-    if (blogName) return { name: ILike(`%${blogName}%`) };
-    return {};
+    if (blogName)
+      return {
+        name: ILike(`%${blogName}%`),
+        blogBanInfo: {
+          isBanned: false,
+        },
+      };
+    return {
+      blogBanInfo: {
+        isBanned: false,
+      },
+    };
   }
 
   async findBlogById(blogId: string): Promise<blogViewType | null> {
@@ -57,6 +67,9 @@ export class BlogPublicQueryRepository {
       },
       where: {
         id: blogId,
+        blogBanInfo: {
+          isBanned: false,
+        },
       },
     });
     if (!blog) return null;
