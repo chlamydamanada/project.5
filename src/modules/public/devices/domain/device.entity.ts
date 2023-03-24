@@ -9,7 +9,7 @@ export class Device {
   @Column()
   deviceIp: string;
 
-  @Column()
+  @Column({ nullable: true })
   deviceTitle: string;
 
   @Column()

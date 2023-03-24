@@ -12,7 +12,7 @@ import { BcryptAdapter } from './adapters/bcrypt/bcryptAdapter';
 import { SaController } from './modules/superAdmin/api/sa.controller';
 import { CreateUserUseCase } from './modules/superAdmin/application/users.useCases/createUser.useCase';
 import { UsersRepositoryToSA } from './modules/superAdmin/repositories/usersToSA.repository';
-import { UsersQueryRepositoryToSA } from './modules/superAdmin/api/query.repositories/usersQuery.postgresql.repository';
+import { UsersQueryRepositoryToSA } from './modules/superAdmin/api/query.repositories/usersToSAQuery.repository';
 import { User } from './modules/superAdmin/domain/users.entities/user.entity';
 import { BanInfo } from './modules/superAdmin/domain/users.entities/banInfo.entity';
 import { EmailConfirmationInfo } from './modules/superAdmin/domain/users.entities/emailConfirmationInfo.entity';
@@ -23,7 +23,7 @@ import { Device } from './modules/public/devices/domain/device.entity';
 import { AuthController } from './modules/public/auth/api/auth.controller';
 import { CreateRTMetaUseCase } from './modules/public/auth/useCases/createRTMeta.useCase';
 import { DevicesRepository } from './modules/public/devices/repositories/device.repository';
-import { DevicesQueryRepository } from './modules/public/devices/api/qweryRepositories/deviceQwery.repository';
+import { DevicesQueryRepository } from './modules/public/devices/api/queryRepositories/deviceQuery.repository';
 import { JwtAdapter } from './adapters/jwt/jwtAdapter';
 import { CheckCredentialsUseCase } from './modules/public/auth/useCases/checkCredentials.useCase';
 import { UsersRepository } from './modules/public/auth/repositories/users.repository';
@@ -43,6 +43,32 @@ import { UpdateRTMetaUseCase } from './modules/public/auth/useCases/updateRTMeta
 import { DeleteAllDevicesExceptThisUseCase } from './modules/public/devices/useCases/deleteAllDevicesExceptThis.useCase';
 import { DeleteDeviceUseCase } from './modules/public/devices/useCases/deleteDevice.useCase';
 import { ConfigService } from '@nestjs/config';
+import { BloggerController } from './modules/bloggers/api/blogger.controller';
+import { Blog } from './modules/bloggers/domain/blog.entity';
+import { CreateBlogUseCase } from './modules/bloggers/application/blogs.useCases/createBlog.useCase';
+import { BlogsToBloggerRepository } from './modules/bloggers/repositories/blogsToBlogger.repository';
+import { BlogsToBloggerQueryRepository } from './modules/bloggers/api/query.repositories/blogsToBloggerQuery.repository';
+import { PostsToBloggerQueryRepository } from './modules/bloggers/api/query.repositories/postsToBloggerQuery.repository';
+import { UpdateBlogUseCase } from './modules/bloggers/application/blogs.useCases/updateBlog.useCase';
+import { DeleteBlogUseCase } from './modules/bloggers/application/blogs.useCases/deleteBlog.useCase';
+import { CreatePostUseCase } from './modules/bloggers/application/posts.useCases/createPost.useCase';
+import { PostsToBloggerRepository } from './modules/bloggers/repositories/postsToBlogger.repository';
+import { Post } from './modules/bloggers/domain/post.entity';
+import { UpdatePostUseCase } from './modules/bloggers/application/posts.useCases/updatePost.useCase';
+import { DeletePostUseCase } from './modules/bloggers/application/posts.useCases/deletePost.useCase';
+import { BanList } from './modules/bloggers/domain/banStatus.entity';
+import { BanOrUnbanUserByBloggerUseCase } from './modules/bloggers/application/users.useCases/banOrUnbanUserByBlogger.useCase';
+import { UsersToBloggerRepository } from './modules/bloggers/repositories/usersToBlogger.repository';
+import { UsersToBloggerQueryRepository } from './modules/bloggers/api/query.repositories/usersToBloggerQuery.repository';
+import { BlogPublicController } from './modules/public/blogs/api/blogPublic.controller';
+import { BlogPublicQueryRepository } from './modules/public/blogs/api/query.repositories/blogPublicQuery.repository';
+import { PostPublicQueryRepository } from './modules/public/posts/api/query.repositories/postPublicQuery.repository';
+import { PostPublicController } from './modules/public/posts/api/postPublic.controller';
+import { BlogBanInfo } from './modules/bloggers/domain/blogBanInfo.entity';
+import { BanOrUnbanBlogUseCase } from './modules/superAdmin/application/blogs.useCases/banOrUnbanBlog.useCase';
+import { BlogsToSaRepository } from './modules/superAdmin/repositories/blogsToSa.repository';
+import { BlogBindToUserUseCase } from './modules/superAdmin/application/blogs.useCases/blogBindToUser.useCase';
+import { BlogsToSAQueryRepository } from './modules/superAdmin/api/query.repositories/blogsToSAQuery.repository';
 //import { IsBlogExistValidator } from './helpers/validators/isBlogExistById.validator';
 
 const repositories = [
@@ -53,6 +79,16 @@ const repositories = [
   DevicesRepository,
   DevicesQueryRepository,
   DevicesRepositoryToSA,
+  BlogsToSaRepository,
+  BlogsToBloggerRepository,
+  BlogsToBloggerQueryRepository,
+  PostsToBloggerQueryRepository,
+  PostsToBloggerRepository,
+  UsersToBloggerRepository,
+  UsersToBloggerQueryRepository,
+  BlogPublicQueryRepository,
+  PostPublicQueryRepository,
+  BlogsToSAQueryRepository,
 ];
 const useCases = [
   BanOrUnbanUserUseCase,
@@ -68,6 +104,15 @@ const useCases = [
   DeleteUserUseCase,
   UpdateRTMetaUseCase,
   UserRegistrationUseCase,
+  CreateBlogUseCase,
+  UpdateBlogUseCase,
+  DeleteBlogUseCase,
+  CreatePostUseCase,
+  UpdatePostUseCase,
+  DeletePostUseCase,
+  BanOrUnbanUserByBloggerUseCase,
+  BanOrUnbanBlogUseCase,
+  BlogBindToUserUseCase,
 ];
 const strategies = [
   PasswordStrategy,
@@ -84,14 +129,14 @@ const adapters = [BcryptAdapter, JwtAdapter];
       imports: [configModule],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        url: configService.get('DB_URL'),
-        //host: configService.get('DB_HOST'),
-        //port: parseInt(<string>configService.get('DB_PORT')),
-        //username: configService.get('DB_USER_NAME'),
-        //password: configService.get('DB_PASS'),
-        //database: configService.get('DB_NAME'),
+        //url: configService.get('DB_URL'),
+        host: configService.get('DB_HOST'),
+        port: parseInt(<string>configService.get('DB_PORT')),
+        username: configService.get('DB_USER_NAME'),
+        password: configService.get('DB_PASS'),
+        database: configService.get('DB_NAME'),
         // entities: [],
-        ssl: true,
+        //ssl: true,
         autoLoadEntities: true,
         synchronize: true,
         logging: false,
@@ -104,6 +149,10 @@ const adapters = [BcryptAdapter, JwtAdapter];
       EmailConfirmationInfo,
       PasswordRecoveryInfo,
       Device,
+      Blog,
+      Post,
+      BanList,
+      BlogBanInfo,
     ]),
     PassportModule,
     MailModule, // 📧
@@ -120,6 +169,9 @@ const adapters = [BcryptAdapter, JwtAdapter];
     DeleteAllDataController,
     DevicesController,
     SaController,
+    BloggerController,
+    BlogPublicController,
+    PostPublicController,
   ],
   providers: [
     AppService,

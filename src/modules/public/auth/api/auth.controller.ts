@@ -17,7 +17,6 @@ import { CurrentUserInfo } from '../../../../helpers/decorators/currentUserIdAnd
 import { UserInfoType } from '../types/userInfoType';
 import { CreateRTMetaCommand } from '../useCases/createRTMeta.useCase';
 import { PasswordAuthGuard } from '../guards/pass.auth.guard';
-import { userInputModelPipe } from '../../../superAdmin/api/pipes/userInputDtoPipe';
 import { UserRegistrationCommand } from '../useCases/userRegistration.useCase';
 import { AccessTokenGuard } from '../guards/accessTokenAuth.guard';
 import { MeViewType } from '../types/meViewType';
@@ -37,6 +36,7 @@ import { CreateRecoveryCodeCommand } from '../useCases/createRecoveryCode.useCas
 import { NewPassRecoveryDtoPipe } from './pipes/newPassRecoveryDtoPipe';
 import { ChangePasswordCommand } from '../useCases/changePassword.useCase';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { userInputModelPipe } from '../../../superAdmin/api/pipes/users.pipes/userInputDtoPipe';
 
 @Controller('auth')
 export class AuthController {
@@ -47,7 +47,7 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  @UseGuards(ThrottlerGuard, PasswordAuthGuard)
+  @UseGuards(/*ThrottlerGuard,*/ PasswordAuthGuard)
   @HttpCode(200)
   async login(
     @CurrentUserInfo() userInfo: UserInfoType,

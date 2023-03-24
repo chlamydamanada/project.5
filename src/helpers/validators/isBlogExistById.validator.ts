@@ -4,7 +4,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { BlogsQueryRepository } from '../../modules/features/public/blogs/api/qweryRepositories/blogs-query-repository.service';
+import { BlogsQueryRepository } from '../../modules/features/public/blogs/api/queryRepositories/blogs-query-repository.service';
 
 @ValidatorConstraint({ name: 'IsBlogExist', async: true })
 @Injectable()

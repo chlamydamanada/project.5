@@ -6,6 +6,7 @@ import { BcryptAdapter } from '../../../../adapters/bcrypt/bcryptAdapter';
 export class ChangePasswordCommand {
   constructor(public newPassword: string, public recoveryCode: string) {}
 }
+
 @CommandHandler(ChangePasswordCommand)
 export class ChangePasswordUseCase
   implements ICommandHandler<ChangePasswordCommand>
@@ -19,7 +20,7 @@ export class ChangePasswordUseCase
     const user = await this.usersRepository.findUserByPasswordRecoveryCode(
       command.recoveryCode,
     );
-    if (!user) throw new NotFoundException('Incorrect recovery code');
+    if (!user) throw new Error('Incorrect recovery code');
     //check is recovery code expired
     if (user.expirationDate < new Date().toISOString())
       throw new BadRequestException([

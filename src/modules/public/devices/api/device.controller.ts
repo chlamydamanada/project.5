@@ -7,8 +7,8 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
-import { DevicesQueryRepository } from './qweryRepositories/deviceQwery.repository';
-import { DeviceViewType } from '../devicesTypes/deviceViewType';
+import { DevicesQueryRepository } from './queryRepositories/deviceQuery.repository';
+import { DeviceViewType } from '../types/deviceViewType';
 import { RefreshTokenGuard } from '../../auth/guards/refreshTokenAuth.guard';
 import { UserInfoRtType } from '../../auth/types/userIdDeviceIdType';
 import { CommandBus } from '@nestjs/cqrs';

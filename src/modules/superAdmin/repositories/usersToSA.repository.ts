@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { User } from '../domain/users.entities/user.entity';
 
 @Injectable()
 export class UsersRepositoryToSA {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(User) private readonly usersRepository: Repository<User>,
+  ) {}
   async isUserExistByLoginOrEmail(
     login: string,
     email: string,
@@ -105,5 +109,9 @@ WHERE "userId" = $1`,
       [userId],
     );
     return;
+  }
+
+  async findUserById(userId: string): Promise<User | null> {
+    return this.usersRepository.findOneBy({ id: userId });
   }
 }
