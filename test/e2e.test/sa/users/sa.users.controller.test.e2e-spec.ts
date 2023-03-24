@@ -31,7 +31,7 @@ describe('Testing sa users controller', () => {
 
       expect(newUser.body).toEqual({
         id: expect.any(String),
-        login_1: saUsersConstants.validUser_1.login,
+        login: saUsersConstants.validUser_1.login,
         email: saUsersConstants.validUser_1.email,
         createdAt: expect.any(String),
         banInfo: saUsersConstants.banInfo_default,
@@ -89,7 +89,6 @@ describe('Testing sa users controller', () => {
     });
 
     it('should delete user by id: STATUS 204', async () => {
-      console.log('newUser:', newUser);
       await request(server)
         .delete(`/sa/users/${newUser.body.id}`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
@@ -116,27 +115,27 @@ describe('Testing sa users controller', () => {
     });
     it('shouldn`t ban user by sa without authorization: STATUS 401', async () => {
       await request(server)
-        .put(`/sa/users/${newUser.id}/ban`)
+        .put(`/sa/users/${newUser.body.id}/ban`)
         .send(saUsersConstants.banUser)
         .expect(401);
     });
     it('shouldn`t ban user by sa(incorrect ban reason): STATUS 400', async () => {
       await request(server)
-        .put(`/sa/users/${newUser.id}/ban`)
+        .put(`/sa/users/${newUser.body.id}/ban`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
         .send(saUsersConstants.invalidBanUser_banReason)
         .expect(400);
     });
     it('shouldn`t ban user by sa(incorrect is banned): STATUS 400', async () => {
       await request(server)
-        .put(`/sa/users/${newUser.id}/ban`)
+        .put(`/sa/users/${newUser.body.id}/ban`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
         .send(saUsersConstants.invalidBanUser_isBanned)
         .expect(400);
     });
     it('should ban user by sa: STATUS 204', async () => {
-      await request(server)
-        .put(`/sa/users/${newUser.id}/ban`)
+      const ban = await request(server)
+        .put(`/sa/users/${newUser.body.id}/ban`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
         .send(saUsersConstants.banUser)
         .expect(204);
@@ -144,21 +143,21 @@ describe('Testing sa users controller', () => {
     });
     it('shouldn`t unban user by sa(incorrect ban reason): STATUS 400', async () => {
       await request(server)
-        .put(`/sa/users/${newUser.id}/ban`)
+        .put(`/sa/users/${newUser.body.id}/ban`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
         .send(saUsersConstants.invalidUnbanUser_banReason)
         .expect(400);
     });
     it('shouldn`t unban user by sa(incorrect is banned): STATUS 400', async () => {
       await request(server)
-        .put(`/sa/users/${newUser.id}/ban`)
+        .put(`/sa/users/${newUser.body.id}/ban`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
         .send(saUsersConstants.invalidUnbanUser_isBanned)
         .expect(400);
     });
     it('should unban user by sa: STATUS 204', async () => {
       await request(server)
-        .put(`/sa/users/${newUser.id}/ban`)
+        .put(`/sa/users/${newUser.body.id}/ban`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
         .send(saUsersConstants.unbanUser)
         .expect(204);
@@ -228,35 +227,35 @@ describe('Testing sa users controller', () => {
         items: [
           {
             id: expect.any(String),
-            login_1: saUsersConstants.validUser_5.login,
+            login: saUsersConstants.validUser_5.login,
             email: saUsersConstants.validUser_5.email,
             createdAt: expect.any(String),
             banInfo: saUsersConstants.banInfo_default,
           },
           {
             id: expect.any(String),
-            login_1: saUsersConstants.validUser_4.login,
+            login: saUsersConstants.validUser_4.login,
             email: saUsersConstants.validUser_4.email,
             createdAt: expect.any(String),
             banInfo: saUsersConstants.banInfo_default,
           },
           {
             id: expect.any(String),
-            login_1: saUsersConstants.validUser_3.login,
+            login: saUsersConstants.validUser_3.login,
             email: saUsersConstants.validUser_3.email,
             createdAt: expect.any(String),
             banInfo: saUsersConstants.banInfo_default,
           },
           {
             id: expect.any(String),
-            login_1: saUsersConstants.validUser_2.login,
+            login: saUsersConstants.validUser_2.login,
             email: saUsersConstants.validUser_2.email,
             createdAt: expect.any(String),
             banInfo: saUsersConstants.banInfo_default,
           },
           {
             id: expect.any(String),
-            login_1: saUsersConstants.validUser_1.login,
+            login: saUsersConstants.validUser_1.login,
             email: saUsersConstants.validUser_1.email,
             createdAt: expect.any(String),
             banInfo: saUsersConstants.banInfo_default,
@@ -278,14 +277,14 @@ describe('Testing sa users controller', () => {
         items: [
           {
             id: expect.any(String),
-            login_1: saUsersConstants.validUser_3.login,
+            login: saUsersConstants.validUser_3.login,
             email: saUsersConstants.validUser_3.email,
             createdAt: expect.any(String),
             banInfo: saUsersConstants.banInfo_default,
           },
           {
             id: expect.any(String),
-            login_1: saUsersConstants.validUser_2.login,
+            login: saUsersConstants.validUser_2.login,
             email: saUsersConstants.validUser_2.email,
             createdAt: expect.any(String),
             banInfo: saUsersConstants.banInfo_default,

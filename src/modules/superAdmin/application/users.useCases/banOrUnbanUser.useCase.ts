@@ -1,7 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
 import { UsersRepositoryToSA } from '../../repositories/usersToSA.repository';
-import { DevicesRepository } from '../../../public/devices/repositories/device.repository';
 import { DevicesRepositoryToSA } from '../../repositories/devicesToSA.repository';
 
 export class BanOrUnbanUserCommand {

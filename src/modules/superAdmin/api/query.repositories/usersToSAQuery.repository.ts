@@ -35,7 +35,7 @@ WHERE ${filter}`,
     );
     const result = allUsers.map((u) => ({
       id: u.id,
-      login_1: u.login,
+      login: u.login,
       email: u.email,
       createdAt: u.createdAt,
       banInfo: {
@@ -70,7 +70,7 @@ WHERE u."id" = $1`,
     // make view user form
     const result = user.map((u) => ({
       id: u.id,
-      login_1: u.login,
+      login: u.login,
       email: u.email,
       createdAt: u.createdAt,
       banInfo: {
