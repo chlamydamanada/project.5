@@ -1,11 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { UserToCheckCredentialsType } from '../types/userToCheckCredentialsType';
+import { User } from '../../../superAdmin/domain/users.entities/user.entity';
+import { BanList } from '../../../bloggers/domain/banStatus.entity';
 
 @Injectable()
 export class UsersRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    @InjectRepository(BanList)
+    private readonly banListRepository: Repository<BanList>,
+  ) {}
 
   async findUserByLoginOrEmail(
     loginOrEmail: string,
@@ -163,5 +170,34 @@ ON p."userId" = u."id" WHERE p."recoveryCode" = $1`,
       [passwordHash, userId],
     );
     return;
+  }
+
+  async findUserById(userId: string): Promise<User | null> {
+    return this.usersRepository.findOne({
+      select: {
+        id: true,
+        login: true,
+      },
+      where: {
+        id: userId,
+      },
+    });
+  }
+
+  async checkUserIsBannedToBlog(
+    userId: string,
+    blogId: string,
+  ): Promise<boolean> {
+    const isBanned = await this.banListRepository.findOne({
+      select: {
+        isBanned: true,
+      },
+      where: {
+        userId: userId,
+        blogId: blogId,
+      },
+    });
+    if (!isBanned) return false;
+    return true;
   }
 }

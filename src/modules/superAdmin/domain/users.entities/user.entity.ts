@@ -10,6 +10,7 @@ import { PasswordRecoveryInfo } from './passwordRecoveryInfo.entity';
 import { BanInfo } from './banInfo.entity';
 import { Blog } from '../../../bloggers/domain/blog.entity';
 import { BanList } from '../../../bloggers/domain/banStatus.entity';
+import { Comment } from '../../../public/comments/domain/comment.entity';
 
 @Entity()
 export class User {
@@ -52,4 +53,9 @@ export class User {
     onDelete: 'CASCADE',
   })
   banList: BanList[]; // should delete this relation?
+
+  @OneToMany(() => Comment, (c) => c.user, {
+    onDelete: 'CASCADE',
+  })
+  comments: Comment[];
 }

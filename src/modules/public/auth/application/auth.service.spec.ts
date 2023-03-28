@@ -1,6 +1,6 @@
 /*import { Test, TestingModule } from '@nestjs/testing';
 import { JwtModule } from '@nestjs/jwt';
-import { UsersMongoRepository } from '../../../superAdmin/users/repositories/users.mongo.repository';
+import { UsersMongoRepository } from '../../../superAdmin/users/repositories/users.mongo.repositories';
 import { UserModel } from '../../../superAdmin/users/domain/user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { configModule } from '../../../../../configuration/configModule';

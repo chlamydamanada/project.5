@@ -69,6 +69,15 @@ import { BanOrUnbanBlogUseCase } from './modules/superAdmin/application/blogs.us
 import { BlogsToSaRepository } from './modules/superAdmin/repositories/blogsToSa.repository';
 import { BlogBindToUserUseCase } from './modules/superAdmin/application/blogs.useCases/blogBindToUser.useCase';
 import { BlogsToSAQueryRepository } from './modules/superAdmin/api/query.repositories/blogsToSAQuery.repository';
+import { CommentsPublicQueryRepository } from './modules/public/comments/api/query.repositories/commentsPublicQuery.repository';
+import { PostsRepository } from './modules/public/posts/repositories/posts.repository';
+import { CommentsRepository } from './modules/public/comments/repositories/comments.repository';
+import { Comment } from './modules/public/comments/domain/comment.entity';
+import { CreateCommentUseCase } from './modules/public/comments/useCases/createComment.useCase';
+import { CommentsPublicController } from './modules/public/comments/api/comment.controller';
+import { UpdateCommentUseCase } from './modules/public/comments/useCases/updateComment.useCase';
+import { DeleteCommentUseCase } from './modules/public/comments/useCases/deleteComment.useCase';
+import { CommentsToBloggerQueryRepository } from './modules/bloggers/api/query.repositories/commentsToBloggerQuery.repository';
 //import { IsBlogExistValidator } from './helpers/validators/isBlogExistById.validator';
 
 const repositories = [
@@ -89,6 +98,10 @@ const repositories = [
   BlogPublicQueryRepository,
   PostPublicQueryRepository,
   BlogsToSAQueryRepository,
+  CommentsPublicQueryRepository,
+  PostsRepository,
+  CommentsRepository,
+  CommentsToBloggerQueryRepository,
 ];
 const useCases = [
   BanOrUnbanUserUseCase,
@@ -113,6 +126,9 @@ const useCases = [
   BanOrUnbanUserByBloggerUseCase,
   BanOrUnbanBlogUseCase,
   BlogBindToUserUseCase,
+  CreateCommentUseCase,
+  UpdateCommentUseCase,
+  DeleteCommentUseCase,
 ];
 const strategies = [
   PasswordStrategy,
@@ -129,14 +145,14 @@ const adapters = [BcryptAdapter, JwtAdapter];
       imports: [configModule],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        url: configService.get('DB_URL'),
+        //url: configService.get('DB_URL'),
         host: configService.get('DB_HOST'),
         port: parseInt(<string>configService.get('DB_PORT')),
         username: configService.get('DB_USER_NAME'),
         password: configService.get('DB_PASS'),
         database: configService.get('DB_NAME'),
         // entities: [],
-        ssl: true,
+        //ssl: true,
         autoLoadEntities: true,
         synchronize: true,
         logging: false,
@@ -153,6 +169,7 @@ const adapters = [BcryptAdapter, JwtAdapter];
       Post,
       BanList,
       BlogBanInfo,
+      Comment,
     ]),
     PassportModule,
     MailModule, // 📧
@@ -172,6 +189,7 @@ const adapters = [BcryptAdapter, JwtAdapter];
     BloggerController,
     BlogPublicController,
     PostPublicController,
+    CommentsPublicController,
   ],
   providers: [
     AppService,

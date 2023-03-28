@@ -1,8 +1,10 @@
 import {
+  Body,
   Controller,
   Get,
   NotFoundException,
   Param,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -12,11 +14,22 @@ import { CurrentUserId } from '../../../../helpers/decorators/currentUserId.deco
 import { postViewType } from '../types/postViewType';
 import { PostQueryPipe } from './pipes/postQueryPipe';
 import { postQueryType } from '../types/postsQueryType';
+import { AccessTokenGuard } from '../../auth/guards/accessTokenAuth.guard';
+import { commentInputDtoPipe } from '../../comments/api/pipes/commentInputDtoPipe';
+import { CommentsPublicQueryRepository } from '../../comments/api/query.repositories/commentsPublicQuery.repository';
+import { CommentViewType } from '../../comments/types/commentViewType';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateCommentCommand } from '../../comments/useCases/createComment.useCase';
+import { CommentQueryPipe } from '../../comments/api/pipes/commentQueryPipe';
+import { CommentsViewType } from '../../comments/types/commentsViewType';
+import { commentQueryType } from '../../comments/types/commentQueryType';
 
 @Controller('posts')
 export class PostPublicController {
   constructor(
     private readonly postQueryRepository: PostPublicQueryRepository,
+    private readonly commentQueryRepository: CommentsPublicQueryRepository,
+    private commandBus: CommandBus,
   ) {}
 
   @Get()
@@ -44,5 +57,40 @@ export class PostPublicController {
     );
     if (!post) throw new NotFoundException('Post with this id does not exist');
     return post;
+  }
+
+  @Get(':postId/comments')
+  @UseGuards(ExtractUserIdFromAT)
+  async getAllCommentsByPostId(
+    @Param('postId') postId: string,
+    @Query() query: CommentQueryPipe,
+    @CurrentUserId() userId: string | null,
+  ) /*: Promise<CommentsViewType>*/ {
+    const post = await this.postQueryRepository.findPostByPostId(postId);
+    if (!post) throw new NotFoundException('Post with this id does not exist');
+    const allComments =
+      await this.commentQueryRepository.getAllCommentsByPostId(
+        postId,
+        query as commentQueryType,
+        userId,
+      );
+    return allComments;
+  }
+
+  @Post(':postId/comments')
+  @UseGuards(AccessTokenGuard)
+  async createCommentByPostId(
+    @Param('postId') postId: string,
+    @Body() commentInputDto: commentInputDtoPipe,
+    @CurrentUserId() userId: string,
+  ) /* Promise<CommentViewType> */ {
+    const commentId = await this.commandBus.execute<
+      CreateCommentCommand,
+      string
+    >(new CreateCommentCommand(postId, commentInputDto.content, userId));
+    const comment = await this.commentQueryRepository.getCommentByCommentId(
+      commentId,
+    );
+    return comment!;
   }
 }

@@ -1,5 +1,12 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Blog } from './blog.entity';
+import { Comment } from '../../public/comments/domain/comment.entity';
 
 @Entity()
 export class Post {
@@ -26,4 +33,9 @@ export class Post {
 
   @ManyToOne(() => Blog, (b) => b.posts)
   blog: Blog;
+
+  @OneToMany(() => Comment, (c) => c.post, {
+    onDelete: 'CASCADE',
+  })
+  comments: Comment[];
 }

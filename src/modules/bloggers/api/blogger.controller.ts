@@ -38,6 +38,10 @@ import { BannedUserQueryDtoType } from '../types/users/bannedUserQueryDtoType';
 import { BlogQueryPipe } from './pipes/blogs.pipes/blogQuery.pipe';
 import { BlogQueryToBloggerType } from '../types/blogs/blogQueryToBloggerType';
 import { BlogsToBloggerViewType } from '../types/blogs/blogsToBloggerViewType';
+import { CommentQueryPipe } from '../../public/comments/api/pipes/commentQueryPipe';
+import { CommentsViewForBloggerType } from '../types/comments/commentsViewForBloggerType';
+import { commentQueryType } from '../../public/comments/types/commentQueryType';
+import { CommentsToBloggerQueryRepository } from './query.repositories/commentsToBloggerQuery.repository';
 
 @UseGuards(AccessTokenGuard)
 @Controller('blogger')
@@ -46,6 +50,7 @@ export class BloggerController {
     private readonly blogsQueryRepository: BlogsToBloggerQueryRepository,
     private readonly postsQueryRepository: PostsToBloggerQueryRepository,
     private readonly bloggerQueryRepository: UsersToBloggerQueryRepository,
+    private readonly commentsQueryRepository: CommentsToBloggerQueryRepository,
     private commandBus: CommandBus,
   ) {}
 
@@ -61,20 +66,20 @@ export class BloggerController {
     if (!blogs) throw new NotFoundException('You haven`t any blog');
     return blogs;
   }
-  /*
+
   @Get('blogs/comments')
   async getAllCommentsForAllPost(
     @CurrentUserId() bloggerId: string,
     @Query() query: CommentQueryPipe,
   ): Promise<CommentsViewForBloggerType> {
     const comments =
-      await this.bloggerQueryRepository.findAllCommentsForAllPosts(
+      await this.commentsQueryRepository.findAllCommentsForAllPosts(
         bloggerId,
         query as commentQueryType,
       );
     if (!comments) throw new NotFoundException('You haven`t any comments');
     return comments;
-  }*/
+  }
 
   @Post('blogs')
   async createBlog(
