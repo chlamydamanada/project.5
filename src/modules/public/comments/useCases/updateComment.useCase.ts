@@ -21,6 +21,7 @@ export class UpdateCommentUseCase
     );
     if (!comment)
       throw new NotFoundException('Comment with this id does not exist');
+
     //check is user owner os this comment
     if (comment.userId !== command.userId)
       throw new ForbiddenException(

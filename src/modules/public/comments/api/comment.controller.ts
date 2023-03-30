@@ -17,6 +17,10 @@ import { AccessTokenGuard } from '../../auth/guards/accessTokenAuth.guard';
 import { commentInputDtoPipe } from './pipes/commentInputDtoPipe';
 import { UpdateCommentCommand } from '../useCases/updateComment.useCase';
 import { DeleteCommentCommand } from '../useCases/deleteComment.useCase';
+import { CurrentUserInfo } from '../../../../helpers/decorators/currentUserIdAndLogin';
+import { UserInfoType } from '../../auth/types/userInfoType';
+import { StatusPipe } from '../../likeStatus/pipes/statusPipe';
+import { GenerateCommentLikeStatusCommand } from '../../likeStatus/useCases/generateCommentLikeStatus.useCase';
 
 @Controller('comments')
 export class CommentsPublicController {
@@ -54,7 +58,7 @@ export class CommentsPublicController {
     return;
   }
 
-  /*@Put(':id/like-status')
+  @Put(':id/like-status')
   @UseGuards(AccessTokenGuard)
   @HttpCode(204)
   async updateCommentStatusById(
@@ -63,10 +67,14 @@ export class CommentsPublicController {
     @Body() statusDto: StatusPipe,
   ): Promise<void> {
     await this.commandBus.execute(
-      new GenerateCommentLikeStatusCommand(commentId, userInfo, statusDto),
+      new GenerateCommentLikeStatusCommand(
+        commentId,
+        userInfo.id,
+        statusDto.likeStatus,
+      ),
     );
     return;
-  }*/
+  }
 
   @Delete(':id')
   @UseGuards(AccessTokenGuard)

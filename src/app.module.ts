@@ -80,6 +80,8 @@ import { DeleteCommentUseCase } from './modules/public/comments/useCases/deleteC
 import { CommentsToBloggerQueryRepository } from './modules/bloggers/api/query.repositories/commentsToBloggerQuery.repository';
 import { PostLikeStatus } from './modules/public/likeStatus/domain/postLikeStatus.entity';
 import { GeneratePostLikeStatusUseCase } from './modules/public/likeStatus/useCases/generatePostLikeStatus.useCase';
+import { CommentLikeStatus } from './modules/public/likeStatus/domain/commentLikeStatus.entity';
+import { GenerateCommentLikeStatusUseCase } from './modules/public/likeStatus/useCases/generateCommentLikeStatus.useCase';
 //import { IsBlogExistValidator } from './helpers/validators/isBlogExistById.validator';
 
 const repositories = [
@@ -132,6 +134,7 @@ const useCases = [
   UpdateCommentUseCase,
   DeleteCommentUseCase,
   GeneratePostLikeStatusUseCase,
+  GenerateCommentLikeStatusUseCase,
 ];
 const strategies = [
   PasswordStrategy,
@@ -174,6 +177,7 @@ const adapters = [BcryptAdapter, JwtAdapter];
       BlogBanInfo,
       Comment,
       PostLikeStatus,
+      CommentLikeStatus,
     ]),
     PassportModule,
     MailModule, // 📧

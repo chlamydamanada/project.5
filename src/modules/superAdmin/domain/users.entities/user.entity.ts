@@ -12,6 +12,7 @@ import { Blog } from '../../../bloggers/domain/blog.entity';
 import { BanList } from '../../../bloggers/domain/banStatus.entity';
 import { Comment } from '../../../public/comments/domain/comment.entity';
 import { PostLikeStatus } from '../../../public/likeStatus/domain/postLikeStatus.entity';
+import { CommentLikeStatus } from '../../../public/likeStatus/domain/commentLikeStatus.entity';
 
 @Entity()
 export class User {
@@ -30,36 +31,27 @@ export class User {
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @OneToOne(() => EmailConfirmationInfo, (e) => e.user, {
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(() => EmailConfirmationInfo, (e) => e.user)
   emailConfirmationInfo: EmailConfirmationInfo;
 
-  @OneToOne(() => PasswordRecoveryInfo, (p) => p.user, {
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(() => PasswordRecoveryInfo, (p) => p.user)
   passwordRecoveryInfo: PasswordRecoveryInfo;
 
-  @OneToOne(() => BanInfo, (b) => b.user, {
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(() => BanInfo, (b) => b.user)
   banInfo: BanInfo;
 
-  @OneToMany(() => Blog, (b) => b.blogger, {
-    onDelete: 'CASCADE',
-  })
+  @OneToMany(() => Blog, (b) => b.blogger)
   blogs: Blog[];
 
-  @OneToMany(() => BanList, (b) => b.user, {
-    onDelete: 'CASCADE',
-  })
+  @OneToMany(() => BanList, (b) => b.user)
   banList: BanList[]; // should delete this relation?
 
-  @OneToMany(() => Comment, (c) => c.user, {
-    onDelete: 'CASCADE',
-  })
+  @OneToMany(() => Comment, (c) => c.user)
   comments: Comment[];
 
   @OneToMany(() => PostLikeStatus, (s) => s.user)
   statusOfPost: PostLikeStatus[];
+
+  @OneToMany(() => CommentLikeStatus, (s) => s.user)
+  statusOfComment: CommentLikeStatus[];
 }

@@ -10,7 +10,9 @@ export class BanList {
   @Column()
   blogId: string;
 
-  @ManyToOne(() => Blog, (b) => b.banList)
+  @ManyToOne(() => Blog, (b) => b.banList, {
+    onDelete: 'CASCADE',
+  })
   blog: Blog;
 
   @Column()
@@ -22,7 +24,9 @@ export class BanList {
   @Column()
   userLogin: string;
 
-  @ManyToOne(() => User, (u) => u.banList)
+  @ManyToOne(() => User, (u) => u.banList, {
+    onDelete: 'CASCADE',
+  })
   user: User;
 
   @Column()

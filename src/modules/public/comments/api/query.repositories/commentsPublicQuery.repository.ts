@@ -5,12 +5,15 @@ import { Comment } from '../../domain/comment.entity';
 import { commentQueryType } from '../../types/commentQueryType';
 import { CommentsViewType } from '../../types/commentsViewType';
 import { CommentViewType } from '../../types/commentViewType';
+import { CommentLikeStatus } from '../../../likeStatus/domain/commentLikeStatus.entity';
 
 @Injectable()
 export class CommentsPublicQueryRepository {
   constructor(
     @InjectRepository(Comment)
     private readonly commentsRepository: Repository<Comment>,
+    @InjectRepository(CommentLikeStatus)
+    private readonly commentLikeStatusRepository: Repository<CommentLikeStatus>,
   ) {}
   async getAllCommentsByPostId(
     postId: string,
@@ -51,7 +54,7 @@ export class CommentsPublicQueryRepository {
     });
     // make view type and count the number of likes for each comment
     const result = await Promise.all(
-      comments.map(async (c) => await this.makeViewComment(c, userId)),
+      comments.map(async (c) => await this.convertToViewComment(c, userId)),
     );
     return {
       pagesCount: Math.ceil(totalCount / queryDto.pageSize),
@@ -85,11 +88,11 @@ export class CommentsPublicQueryRepository {
     });
     if (!comment) return null;
     //make view type and count the number of likes for this comment
-    const result = await this.makeViewComment(comment, userId);
+    const result = await this.convertToViewComment(comment, userId);
     return result;
   }
 
-  async makeViewComment(
+  async convertToViewComment(
     comment: Comment,
     userId?: string | undefined | null,
   ): Promise<CommentViewType> {
@@ -103,35 +106,55 @@ export class CommentsPublicQueryRepository {
       },
       createdAt: comment.createdAt,
       likesInfo: {
-        likesCount: 0,
-        /*await this.statusModel.count({
-          entityId: comment._id,
-          entity: 'comment',
-          status: 'Like',
-          isOwnerBanned: false,
-        }),*/
-        dislikesCount: 0,
-        /*await this.statusModel.count({
-          entityId: comment._id,
-          entity: 'comment',
-          status: 'Dislike',
-          isOwnerBanned: false,
-        }),*/
+        likesCount: await this.commentLikeStatusRepository.count({
+          where: {
+            commentId: comment.id,
+            status: 'Like',
+            user: {
+              banInfo: {
+                isBanned: false,
+              },
+            },
+          },
+        }),
+        dislikesCount: await this.commentLikeStatusRepository.count({
+          where: {
+            commentId: comment.id,
+            status: 'Dislike',
+            user: {
+              banInfo: {
+                isBanned: false,
+              },
+            },
+          },
+        }),
+
         myStatus: 'None',
       },
     };
-    /*if (!userId)*/ return newComment;
+    if (!userId) return newComment;
 
     // if there userId is, find this user's status
-    //const userReaction = await this.statusModel.findOne({
-    // entityId: comment._id,
-    // entity: 'comment',
-    // userId: userId,
-    //});
+    const userReaction = await this.commentLikeStatusRepository.findOne({
+      select: {
+        id: true,
+        status: true,
+      },
+      where: {
+        commentId: comment.id,
+        userId: userId,
+        user: {
+          banInfo: {
+            isBanned: false,
+          },
+        },
+      },
+    });
+
     // and put this status to view model of comment
-    // if (userReaction) {
-    //  newComment.likesInfo.myStatus = userReaction.status;
-    //}
-    //return newComment;
+    if (userReaction) {
+      newComment.likesInfo.myStatus = userReaction.status;
+    }
+    return newComment;
   }
 }

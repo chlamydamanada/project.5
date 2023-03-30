@@ -34,21 +34,17 @@ export class Blog {
   @Column()
   bloggerId: string;
 
-  @ManyToOne(() => User, (u) => u.blogs)
+  @ManyToOne(() => User, (u) => u.blogs, {
+    onDelete: 'CASCADE',
+  })
   blogger: User;
 
-  @OneToMany(() => Post, (p) => p.blog, {
-    onDelete: 'CASCADE',
-  })
+  @OneToMany(() => Post, (p) => p.blog)
   posts: Post[];
 
-  @OneToMany(() => BanList, (b) => b.blog, {
-    onDelete: 'CASCADE',
-  })
+  @OneToMany(() => BanList, (b) => b.blog)
   banList: BanList[];
 
-  @OneToOne(() => BlogBanInfo, (b) => b.blog, {
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(() => BlogBanInfo, (b) => b.blog)
   blogBanInfo: BlogBanInfo;
 }

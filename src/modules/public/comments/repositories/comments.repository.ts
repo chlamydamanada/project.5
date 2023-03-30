@@ -2,12 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Comment } from '../domain/comment.entity';
+import { CommentLikeStatus } from '../../likeStatus/domain/commentLikeStatus.entity';
 
 @Injectable()
 export class CommentsRepository {
   constructor(
     @InjectRepository(Comment)
     private readonly commentsRepository: Repository<Comment>,
+    @InjectRepository(CommentLikeStatus)
+    private readonly commentLikeStatusRepository: Repository<CommentLikeStatus>,
   ) {}
 
   async saveComment(comment: Comment): Promise<string> {
@@ -25,25 +28,20 @@ export class CommentsRepository {
     return;
   }
 
-  /*getStatusEntity() {
-    return new this.statusModel();
+  async saveStatus(status: CommentLikeStatus): Promise<void> {
+    await this.commentLikeStatusRepository.save(status);
   }
 
-  async saveStatus(status: StatusEntity): Promise<void> {
-    await status.save();
-  }*/
-
-  /*async findStatusOfComment(
-    entity: string,
+  async findStatusOfComment(
     commentId: string,
     userId: string,
-  ): Promise<undefined | StatusEntity> {
-    const status = await this.statusModel.findOne({
-      entityId: commentId,
-      entity: entity,
-      userId: userId,
+  ): Promise<null | CommentLikeStatus> {
+    const status = await this.commentLikeStatusRepository.findOne({
+      where: {
+        commentId: commentId,
+        userId: userId,
+      },
     });
-    if (!status) return undefined;
     return status;
-  }*/
+  }
 }

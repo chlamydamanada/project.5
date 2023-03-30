@@ -1,9 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { getApp } from '../../testsConnection';
 import request from 'supertest';
-import { publicStatusOfPostConstants } from './public.statusOfPost.constants';
 import { publicStatusOfCommentConstants } from './public.statusOfComment.constants';
-import { commentsConstants } from '../comments/public.comments.constants';
 
 describe('Testing like status of comments by users public controller', () => {
   let app: INestApplication;
@@ -113,7 +111,7 @@ describe('Testing like status of comments by users public controller', () => {
       const comment = await request(server)
         .get(`/comments/${comment_1.body.id}`)
         .set('Authorization', `Bearer ${token_1.body.accessToken}`)
-        .expect(201);
+        .expect(200);
 
       expect(comment.body).toEqual({
         id: comment_1.body.id,
@@ -129,6 +127,155 @@ describe('Testing like status of comments by users public controller', () => {
           myStatus: 'None',
         },
       });
+    });
+    it('should create one like to comment_1 by blogger: STATUS 204', async () => {
+      await request(server)
+        .put(`/comments/${comment_1.body.id}/like-status`)
+        .set('Authorization', `Bearer ${token_1.body.accessToken}`)
+        .send(publicStatusOfCommentConstants.like)
+        .expect(204);
+    });
+    it('should get comment_1 with status like by blogger: STATUS 200', async () => {
+      const comment = await request(server)
+        .get(`/comments/${comment_1.body.id}`)
+        .set('Authorization', `Bearer ${token_1.body.accessToken}`)
+        .expect(200);
+
+      expect(comment.body).toEqual({
+        id: comment_1.body.id,
+        content: comment_1.body.content,
+        commentatorInfo: {
+          userId: comment_1.body.commentatorInfo.userId,
+          userLogin: comment_1.body.commentatorInfo.userLogin,
+        },
+        createdAt: comment_1.body.createdAt,
+        likesInfo: {
+          likesCount: 1,
+          dislikesCount: 0,
+          myStatus: 'Like',
+        },
+      });
+    });
+    it('should create three dislikes to comment_1 by users: STATUS 204', async () => {
+      await request(server)
+        .put(`/comments/${comment_1.body.id}/like-status`)
+        .set('Authorization', `Bearer ${token_2.body.accessToken}`)
+        .send(publicStatusOfCommentConstants.dislike)
+        .expect(204);
+
+      await request(server)
+        .put(`/comments/${comment_1.body.id}/like-status`)
+        .set('Authorization', `Bearer ${token_3.body.accessToken}`)
+        .send(publicStatusOfCommentConstants.dislike)
+        .expect(204);
+
+      await request(server)
+        .put(`/comments/${comment_1.body.id}/like-status`)
+        .set('Authorization', `Bearer ${token_4.body.accessToken}`)
+        .send(publicStatusOfCommentConstants.dislike)
+        .expect(204);
+    });
+    it('should create one dislike and 2 likes to comment_2 by users: STATUS 204', async () => {
+      await request(server)
+        .put(`/comments/${comment_2.body.id}/like-status`)
+        .set('Authorization', `Bearer ${token_1.body.accessToken}`)
+        .send(publicStatusOfCommentConstants.like)
+        .expect(204);
+
+      await request(server)
+        .put(`/comments/${comment_2.body.id}/like-status`)
+        .set('Authorization', `Bearer ${token_3.body.accessToken}`)
+        .send(publicStatusOfCommentConstants.like)
+        .expect(204);
+
+      await request(server)
+        .put(`/comments/${comment_2.body.id}/like-status`)
+        .set('Authorization', `Bearer ${token_4.body.accessToken}`)
+        .send(publicStatusOfCommentConstants.dislike)
+        .expect(204);
+    });
+    it('should create two dislikes and two likes to comment_3 by users: STATUS 204', async () => {
+      await request(server)
+        .put(`/comments/${comment_3.body.id}/like-status`)
+        .set('Authorization', `Bearer ${token_1.body.accessToken}`)
+        .send(publicStatusOfCommentConstants.like)
+        .expect(204);
+
+      await request(server)
+        .put(`/comments/${comment_3.body.id}/like-status`)
+        .set('Authorization', `Bearer ${token_2.body.accessToken}`)
+        .send(publicStatusOfCommentConstants.like)
+        .expect(204);
+
+      await request(server)
+        .put(`/comments/${comment_3.body.id}/like-status`)
+        .set('Authorization', `Bearer ${token_3.body.accessToken}`)
+        .send(publicStatusOfCommentConstants.dislike)
+        .expect(204);
+
+      await request(server)
+        .put(`/comments/${comment_3.body.id}/like-status`)
+        .set('Authorization', `Bearer ${token_4.body.accessToken}`)
+        .send(publicStatusOfCommentConstants.dislike)
+        .expect(204);
+    });
+    it('should return array with 3 comments and states: STATUS 200', async () => {
+      const comments = await request(server)
+        .get(`/posts/${post_1.body.id}/comments`)
+        .set('Authorization', `Bearer ${token_2.body.accessToken}`)
+        .expect(200);
+
+      expect(comments.body).toEqual({
+        pagesCount: 1,
+        page: 1,
+        pageSize: 10,
+        totalCount: 3,
+        items: [
+          {
+            id: comment_3.body.id,
+            content: expect.any(String),
+            commentatorInfo: {
+              userId: comment_3.body.commentatorInfo.userId,
+              userLogin: comment_3.body.commentatorInfo.userLogin,
+            },
+            createdAt: expect.any(String),
+            likesInfo: {
+              likesCount: 2,
+              dislikesCount: 2,
+              myStatus: 'Like',
+            },
+          },
+          {
+            id: comment_2.body.id,
+            content: expect.any(String),
+            commentatorInfo: {
+              userId: comment_2.body.commentatorInfo.userId,
+              userLogin: comment_2.body.commentatorInfo.userLogin,
+            },
+            createdAt: expect.any(String),
+            likesInfo: {
+              likesCount: 2,
+              dislikesCount: 1,
+              myStatus: 'None',
+            },
+          },
+          {
+            id: comment_1.body.id,
+            content: expect.any(String),
+            commentatorInfo: {
+              userId: comment_1.body.commentatorInfo.userId,
+              userLogin: comment_1.body.commentatorInfo.userLogin,
+            },
+            createdAt: expect.any(String),
+            likesInfo: {
+              likesCount: 1,
+              dislikesCount: 3,
+              myStatus: 'Dislike',
+            },
+          },
+        ],
+      });
+      expect(comments.body.items).toHaveLength(3);
     });
   });
 

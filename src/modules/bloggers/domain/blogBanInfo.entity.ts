@@ -3,7 +3,9 @@ import { Blog } from './blog.entity';
 
 @Entity()
 export class BlogBanInfo {
-  @OneToOne(() => Blog, (b) => b.blogBanInfo)
+  @OneToOne(() => Blog, (b) => b.blogBanInfo, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   blog: Blog;
 

@@ -1,6 +1,14 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from '../../../superAdmin/domain/users.entities/user.entity';
 import { Post } from '../../../bloggers/domain/post.entity';
+import { PostLikeStatus } from '../../likeStatus/domain/postLikeStatus.entity';
+import { CommentLikeStatus } from '../../likeStatus/domain/commentLikeStatus.entity';
 
 @Entity()
 export class Comment {
@@ -13,7 +21,9 @@ export class Comment {
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @ManyToOne(() => User, (u) => u.comments)
+  @ManyToOne(() => User, (u) => u.comments, {
+    onDelete: 'CASCADE',
+  })
   user: User;
 
   @Column()
@@ -22,9 +32,14 @@ export class Comment {
   @Column()
   userLogin: string;
 
-  @ManyToOne(() => Post, (p) => p.comments)
+  @ManyToOne(() => Post, (p) => p.comments, {
+    onDelete: 'CASCADE',
+  })
   post: Post;
 
   @Column()
   postId: string;
+
+  @OneToMany(() => CommentLikeStatus, (s) => s.comment)
+  status: CommentLikeStatus[];
 }
