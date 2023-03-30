@@ -11,6 +11,7 @@ import { BanInfo } from './banInfo.entity';
 import { Blog } from '../../../bloggers/domain/blog.entity';
 import { BanList } from '../../../bloggers/domain/banStatus.entity';
 import { Comment } from '../../../public/comments/domain/comment.entity';
+import { PostLikeStatus } from '../../../public/likeStatus/domain/postLikeStatus.entity';
 
 @Entity()
 export class User {
@@ -58,4 +59,7 @@ export class User {
     onDelete: 'CASCADE',
   })
   comments: Comment[];
+
+  @OneToMany(() => PostLikeStatus, (s) => s.user)
+  statusOfPost: PostLikeStatus[];
 }

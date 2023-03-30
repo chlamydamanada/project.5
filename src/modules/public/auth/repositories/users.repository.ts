@@ -172,7 +172,9 @@ ON p."userId" = u."id" WHERE p."recoveryCode" = $1`,
     return;
   }
 
-  async findUserById(userId: string): Promise<User | null> {
+  async findUserById(
+    userId: string,
+  ): Promise<{ id: string; login: string } | null> {
     return this.usersRepository.findOne({
       select: {
         id: true,

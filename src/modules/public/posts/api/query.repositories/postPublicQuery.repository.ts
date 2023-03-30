@@ -4,19 +4,16 @@ import { Repository } from 'typeorm';
 import { Post } from '../../../../bloggers/domain/post.entity';
 import { postsViewType } from '../../types/postsViewType';
 import { postQueryType } from '../../types/postsQueryType';
-import { Blog } from '../../../../bloggers/domain/blog.entity';
-import { BlogBanInfo } from '../../../../bloggers/domain/blogBanInfo.entity';
 import { postViewType } from '../../types/postViewType';
+import { PostLikeStatus } from '../../../likeStatus/domain/postLikeStatus.entity';
 
 @Injectable()
 export class PostPublicQueryRepository {
   constructor(
     @InjectRepository(Post)
     private readonly postsRepository: Repository<Post>,
-    @InjectRepository(Blog)
-    private readonly blogsRepository: Repository<Blog>,
-    @InjectRepository(BlogBanInfo)
-    private readonly blogsBanInfoRepository: Repository<BlogBanInfo>,
+    @InjectRepository(PostLikeStatus)
+    private readonly postLikeStatusRepository: Repository<PostLikeStatus>,
   ) {}
 
   async findAllPosts(queryDto: postQueryType, userId?: string | null) {
@@ -63,7 +60,9 @@ export class PostPublicQueryRepository {
       },
     });
     //make view form of posts
-    const result = posts.map((p) => this.convertToViewPost(p));
+    const result = await Promise.all(
+      posts.map(async (p) => await this.convertToViewPost(p, userId)),
+    );
     return {
       pagesCount: Math.ceil(totalCount / queryDto.pageSize),
       page: queryDto.pageNumber,
@@ -122,7 +121,9 @@ export class PostPublicQueryRepository {
       },
     });
     //make view form of posts
-    const result = posts.map((p) => this.convertToViewPost(p));
+    const result = await Promise.all(
+      posts.map(async (p) => await this.convertToViewPost(p, userId)),
+    );
     return {
       pagesCount: Math.ceil(totalCount / queryDto.pageSize),
       page: queryDto.pageNumber,
@@ -161,12 +162,15 @@ export class PostPublicQueryRepository {
       },
     });
     if (!post) return null;
-    const result = this.convertToViewPost(post);
-    return result;
+    return await this.convertToViewPost(post, userId);
   }
 
-  convertToViewPost(post: Post): postViewType {
-    return {
+  async convertToViewPost(
+    post: Post,
+    userId: string | null | undefined,
+  ): Promise<postViewType> {
+    //make view post and find like count and dislike count
+    const newPost: postViewType = {
       id: post.id,
       title: post.title,
       shortDescription: post.shortDescription,
@@ -175,11 +179,86 @@ export class PostPublicQueryRepository {
       blogName: post.blogName,
       createdAt: post.createdAt,
       extendedLikesInfo: {
-        likesCount: 0,
-        dislikesCount: 0,
+        likesCount: await this.postLikeStatusRepository.count({
+          where: {
+            postId: post.id,
+            status: 'Like',
+            user: {
+              banInfo: {
+                isBanned: false,
+              },
+            },
+          },
+        }),
+        dislikesCount: await this.postLikeStatusRepository.count({
+          where: {
+            postId: post.id,
+            status: 'Dislike',
+            user: {
+              banInfo: {
+                isBanned: false,
+              },
+            },
+          },
+        }),
         myStatus: 'None',
         newestLikes: [],
       },
     };
+    // find the  newest likes and make view form
+    const newLikes = await this.postLikeStatusRepository.find({
+      relations: {
+        user: true,
+      },
+      select: {
+        id: true,
+        addedAt: true,
+        user: {
+          id: true,
+          login: true,
+        },
+      },
+      where: {
+        postId: post.id,
+        status: 'Like',
+        user: {
+          banInfo: {
+            isBanned: false,
+          },
+        },
+      },
+      order: { addedAt: 'desc' },
+      take: 3,
+    });
+    newPost.extendedLikesInfo.newestLikes = newLikes.map((s) => ({
+      addedAt: s.addedAt,
+      userId: s.user.id,
+      login: s.user.login,
+    }));
+
+    // find user reaction if user id isn`t null
+    if (!userId) return newPost;
+
+    const userReaction = await this.postLikeStatusRepository.findOne({
+      select: {
+        id: true,
+        status: true,
+      },
+      where: {
+        postId: post.id,
+        userId: userId,
+        user: {
+          banInfo: {
+            isBanned: false,
+          },
+        },
+      },
+    });
+
+    userReaction
+      ? (newPost.extendedLikesInfo.myStatus = userReaction.status)
+      : 'None';
+
+    return newPost;
   }
 }

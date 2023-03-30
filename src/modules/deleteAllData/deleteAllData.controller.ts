@@ -13,12 +13,13 @@ export class DeleteAllDataController {
       this.dataSource.query(`DELETE FROM public."ban_info"`),
       this.dataSource.query(`DELETE FROM public."email_confirmation_info"`),
       this.dataSource.query(`DELETE FROM public."password_recovery_info"`),
-      this.dataSource.query(`DELETE FROM public."comment"`),
+      this.dataSource.query(`DELETE FROM public."post_like_status"`),
       this.dataSource.query(`DELETE FROM public."ban_list"`),
       this.dataSource.query(`DELETE FROM public."blog_ban_info"`),
     ]);
-    await this.dataSource.query(`DELETE FROM public."post"`),
-      await this.dataSource.query(`DELETE FROM public."blog"`);
+    await this.dataSource.query(`DELETE FROM public."comment"`);
+    await this.dataSource.query(`DELETE FROM public."post"`);
+    await this.dataSource.query(`DELETE FROM public."blog"`);
     await this.dataSource.query(`DELETE FROM public."user"`);
     return;
   }

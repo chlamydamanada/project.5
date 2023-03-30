@@ -2,9 +2,11 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -23,6 +25,11 @@ import { CreateCommentCommand } from '../../comments/useCases/createComment.useC
 import { CommentQueryPipe } from '../../comments/api/pipes/commentQueryPipe';
 import { CommentsViewType } from '../../comments/types/commentsViewType';
 import { commentQueryType } from '../../comments/types/commentQueryType';
+import { postsViewType } from '../types/postsViewType';
+import { CurrentUserInfo } from '../../../../helpers/decorators/currentUserIdAndLogin';
+import { UserInfoType } from '../../auth/types/userInfoType';
+import { StatusPipe } from '../../likeStatus/pipes/statusPipe';
+import { GeneratePostLikeStatusCommand } from '../../likeStatus/useCases/generatePostLikeStatus.useCase';
 
 @Controller('posts')
 export class PostPublicController {
@@ -37,7 +44,7 @@ export class PostPublicController {
   async getAllPosts(
     @Query() query: PostQueryPipe,
     @CurrentUserId() userId: string | null,
-  ) {
+  ): Promise<postsViewType> {
     const posts = await this.postQueryRepository.findAllPosts(
       query as postQueryType,
       userId,
@@ -65,7 +72,7 @@ export class PostPublicController {
     @Param('postId') postId: string,
     @Query() query: CommentQueryPipe,
     @CurrentUserId() userId: string | null,
-  ) /*: Promise<CommentsViewType>*/ {
+  ): Promise<CommentsViewType> {
     const post = await this.postQueryRepository.findPostByPostId(postId);
     if (!post) throw new NotFoundException('Post with this id does not exist');
     const allComments =
@@ -83,7 +90,7 @@ export class PostPublicController {
     @Param('postId') postId: string,
     @Body() commentInputDto: commentInputDtoPipe,
     @CurrentUserId() userId: string,
-  ) /* Promise<CommentViewType> */ {
+  ): Promise<CommentViewType> {
     const commentId = await this.commandBus.execute<
       CreateCommentCommand,
       string
@@ -92,5 +99,23 @@ export class PostPublicController {
       commentId,
     );
     return comment!;
+  }
+
+  @Put(':id/like-status')
+  @UseGuards(AccessTokenGuard)
+  @HttpCode(204)
+  async updatePostStatusById(
+    @Param('id') postId: string,
+    @CurrentUserInfo() userInfo: UserInfoType,
+    @Body() statusDto: StatusPipe,
+  ): Promise<void> {
+    await this.commandBus.execute(
+      new GeneratePostLikeStatusCommand(
+        postId,
+        userInfo.id,
+        statusDto.likeStatus,
+      ),
+    );
+    return;
   }
 }

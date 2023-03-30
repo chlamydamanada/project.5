@@ -26,6 +26,10 @@ export class CreateCommentUseCase
     const post = await this.postsRepository.checkPostExists(command.postId);
     if (!post) throw new NotFoundException('Post with this id does not exist');
 
+    // find user by id and check does user exist
+    const user = await this.usersRepository.findUserById(command.userId);
+    if (!user) throw new NotFoundException('User with this id does not exist');
+
     //check is user banned by blogger
     const isUserBanned = await this.usersRepository.checkUserIsBannedToBlog(
       command.userId,
@@ -33,10 +37,6 @@ export class CreateCommentUseCase
     );
     if (isUserBanned)
       throw new ForbiddenException('You can`t comment this post');
-
-    // find user by id
-    const user = await this.usersRepository.findUserById(command.userId);
-    if (!user) throw new NotFoundException('User with this id does not exist');
 
     //create new comment
     const newComment = new Comment();

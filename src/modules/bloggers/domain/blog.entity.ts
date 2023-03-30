@@ -9,7 +9,6 @@ import {
 import { User } from '../../superAdmin/domain/users.entities/user.entity';
 import { Post } from './post.entity';
 import { BanList } from './banStatus.entity';
-import { BanInfo } from '../../superAdmin/domain/users.entities/banInfo.entity';
 import { BlogBanInfo } from './blogBanInfo.entity';
 
 @Entity()
