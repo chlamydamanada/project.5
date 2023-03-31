@@ -88,8 +88,7 @@ export class CommentsPublicQueryRepository {
     });
     if (!comment) return null;
     //make view type and count the number of likes for this comment
-    const result = await this.convertToViewComment(comment, userId);
-    return result;
+    return await this.convertToViewComment(comment, userId);
   }
 
   async convertToViewComment(

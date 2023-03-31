@@ -5,7 +5,7 @@ import { useContainer } from 'class-validator';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from '../exception.filter';
 
-export async function bootstrap() {
+async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   app.use(cookieParser());
@@ -29,3 +29,5 @@ export async function bootstrap() {
 }
 
 bootstrap();
+
+module.exports = bootstrap;
