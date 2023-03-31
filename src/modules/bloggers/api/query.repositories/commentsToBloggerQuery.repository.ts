@@ -4,12 +4,16 @@ import { Repository } from 'typeorm';
 import { Comment } from '../../../public/comments/domain/comment.entity';
 import { commentQueryType } from '../../../public/comments/types/commentQueryType';
 import { CommentsViewForBloggerType } from '../../types/comments/commentsViewForBloggerType';
+import { CommentLikeStatus } from '../../../public/likeStatus/domain/commentLikeStatus.entity';
+import { CommentViewForBloggerType } from '../../types/comments/commentViewForBloggerType';
 
 @Injectable()
 export class CommentsToBloggerQueryRepository {
   constructor(
     @InjectRepository(Comment)
     private readonly commentsRepository: Repository<Comment>,
+    @InjectRepository(CommentLikeStatus)
+    private readonly commentLikeStatusRepository: Repository<CommentLikeStatus>,
   ) {}
   async findAllCommentsForAllPosts(
     bloggerId: string,
@@ -19,6 +23,7 @@ export class CommentsToBloggerQueryRepository {
     const comments = await this.commentsRepository.find({
       relations: {
         post: true,
+        status: true,
       },
       select: {
         id: true,
@@ -65,21 +70,11 @@ export class CommentsToBloggerQueryRepository {
       },
     });
     //make view form of comments
-    const result = comments.map((c) => ({
-      id: c.id,
-      content: c.content,
-      commentatorInfo: {
-        userId: c.userId,
-        userLogin: c.userLogin,
-      },
-      createdAt: c.createdAt,
-      postInfo: {
-        id: c.post.id,
-        title: c.post.title,
-        blogId: c.post.blogId,
-        blogName: c.post.blogName,
-      },
-    }));
+    const result = await Promise.all(
+      comments.map(
+        async (c) => await this.convertToBloggerComment(c, bloggerId),
+      ),
+    );
 
     return {
       pagesCount: Math.ceil(totalCount / queryDto.pageSize),
@@ -88,5 +83,72 @@ export class CommentsToBloggerQueryRepository {
       totalCount: totalCount,
       items: result,
     };
+  }
+  async convertToBloggerComment(
+    comment: Comment,
+    userId: string,
+  ): Promise<CommentViewForBloggerType> {
+    const newComment = {
+      id: comment.id,
+      content: comment.content,
+      commentatorInfo: {
+        userId: comment.userId,
+        userLogin: comment.userLogin,
+      },
+      likesInfo: {
+        likesCount: await this.commentLikeStatusRepository.count({
+          where: {
+            commentId: comment.id,
+            status: 'Like',
+            user: {
+              banInfo: {
+                isBanned: false,
+              },
+            },
+          },
+        }),
+        dislikesCount: await this.commentLikeStatusRepository.count({
+          where: {
+            commentId: comment.id,
+            status: 'Dislike',
+            user: {
+              banInfo: {
+                isBanned: false,
+              },
+            },
+          },
+        }),
+        myStatus: 'None',
+      },
+      createdAt: comment.createdAt,
+      postInfo: {
+        id: comment.post.id,
+        title: comment.post.title,
+        blogId: comment.post.blogId,
+        blogName: comment.post.blogName,
+      },
+    };
+    // find blogger status of comment
+    const userReaction = await this.commentLikeStatusRepository.findOne({
+      select: {
+        id: true,
+        status: true,
+      },
+      where: {
+        commentId: comment.id,
+        userId: userId,
+        user: {
+          banInfo: {
+            isBanned: false,
+          },
+        },
+      },
+    });
+
+    // and put this status to view model of comment
+    if (userReaction) {
+      newComment.likesInfo.myStatus = userReaction.status;
+    }
+    return newComment;
   }
 }

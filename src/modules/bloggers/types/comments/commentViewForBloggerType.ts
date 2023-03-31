@@ -12,4 +12,9 @@ export type CommentViewForBloggerType = {
     blogId: string;
     blogName: string;
   };
+  likesInfo: {
+    likesCount: number;
+    dislikesCount: number;
+    myStatus: string;
+  };
 };
