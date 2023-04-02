@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import { useContainer } from 'class-validator';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from '../exception.filter';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,6 +26,16 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new HttpExceptionFilter());
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
+
+  const config = new DocumentBuilder()
+    .setTitle('Bloggers API')
+    .setDescription('The bloggers API description')
+    .setVersion('1.0')
+    .addTag('Bloggers')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('swagger', app, document);
+
   await app.listen(3000);
 }
 

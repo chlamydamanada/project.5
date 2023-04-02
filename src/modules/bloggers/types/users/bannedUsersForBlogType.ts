@@ -11,7 +11,7 @@ export type BannedUserForBlogType = {
   login: string;
   banInfo: {
     isBanned: boolean;
-    banDate: string;
+    banDate: Date;
     banReason: string;
   };
 };

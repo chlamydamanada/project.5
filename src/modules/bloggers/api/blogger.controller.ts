@@ -86,7 +86,10 @@ export class BloggerController {
     @Body() blogInputModel: blogInputModelPipe,
     @CurrentUserInfo() userInfo: UserInfoType,
   ): Promise<BlogToBloggerViewType> {
-    const newBlogId: string = await this.commandBus.execute(
+    const newBlogId: string = await this.commandBus.execute<
+      CreateBlogCommand,
+      string
+    >(
       new CreateBlogCommand(
         userInfo.id,
         blogInputModel.name,
@@ -103,8 +106,8 @@ export class BloggerController {
     @Param('blogId') blogId: string,
     @Body() postInputModel: postInputModelIdPipe,
     @CurrentUserId() bloggerId: string,
-  ) /*: Promise<postViewType | string> */ {
-    const newPostId = await this.commandBus.execute(
+  ): Promise<postViewType> {
+    const newPostId = await this.commandBus.execute<CreatePostCommand, string>(
       new CreatePostCommand(
         blogId,
         bloggerId,
@@ -124,7 +127,7 @@ export class BloggerController {
     @Body() blogInputModel: blogInputModelPipe,
     @CurrentUserId() bloggerId: string,
   ): Promise<void> {
-    await this.commandBus.execute(
+    await this.commandBus.execute<UpdateBlogCommand>(
       new UpdateBlogCommand(
         blogId,
         bloggerId,
@@ -144,7 +147,7 @@ export class BloggerController {
     @Body() postInputDto: postInputModelIdPipe,
     @CurrentUserId() bloggerId: string,
   ): Promise<void> {
-    await this.commandBus.execute(
+    await this.commandBus.execute<UpdatePostCommand>(
       new UpdatePostCommand(
         postId,
         blogId,
@@ -163,7 +166,9 @@ export class BloggerController {
     @Param('id') blogId: string,
     @CurrentUserId() bloggerId: string,
   ): Promise<void> {
-    await this.commandBus.execute(new DeleteBlogCommand(blogId, bloggerId));
+    await this.commandBus.execute<DeleteBlogCommand>(
+      new DeleteBlogCommand(blogId, bloggerId),
+    );
     return;
   }
 
@@ -173,8 +178,8 @@ export class BloggerController {
     @Param('blogId') blogId: string,
     @Param('postId') postId: string,
     @CurrentUserId() bloggerId: string,
-  ): Promise<string | void> {
-    await this.commandBus.execute(
+  ): Promise<void> {
+    await this.commandBus.execute<DeletePostCommand>(
       new DeletePostCommand(postId, blogId, bloggerId),
     );
     return;
@@ -186,8 +191,8 @@ export class BloggerController {
     @Param('userId') userId: string,
     @CurrentUserId() bloggerId: string,
     @Body() banUserInputDto: BanStatusByBloggerPipe,
-  ) {
-    await this.commandBus.execute(
+  ): Promise<void> {
+    await this.commandBus.execute<BanOrUnbanUserByBloggerCommand>(
       new BanOrUnbanUserByBloggerCommand(
         userId,
         bloggerId,
@@ -204,7 +209,7 @@ export class BloggerController {
     @Param('blogId') blogId: string,
     @Query() query: BannedUserQueryDtoPipe,
     @CurrentUserId() bloggerId: string,
-  ) /*: Promise<BannedUsersForBlogType>*/ {
+  ): Promise<BannedUsersForBlogType> {
     //check is blogger owner of this blog
     const blog = await this.blogsQueryRepository.getOwnerIdOfBlog(blogId);
     if (!blog)
