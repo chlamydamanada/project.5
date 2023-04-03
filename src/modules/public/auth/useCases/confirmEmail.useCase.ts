@@ -29,7 +29,9 @@ export class ConfirmEmailUseCase
           field: 'code',
         },
       ]);
-    if (confirmationInfo.expirationDate < new Date().toISOString())
+    if (
+      confirmationInfo.expirationDate.toISOString() < new Date().toISOString()
+    )
       throw new BadRequestException([
         {
           message: 'The confirmation code is expired',
@@ -38,6 +40,7 @@ export class ConfirmEmailUseCase
       ]);
 
     // confirm user`s email
+    confirmationInfo.isConfirmed = true;
     await this.usersRepository.confirmEmail(confirmationInfo.userId);
     return;
   }

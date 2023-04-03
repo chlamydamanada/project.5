@@ -77,21 +77,18 @@ WHERE "login" = $1 OR "email" = $1`,
   async findUserByConfirmationCode(code: string): Promise<null | {
     userId: string;
     confirmationCode: string;
-    expirationDate: string;
+    expirationDate: Date;
     isConfirmed: boolean;
   }> {
-    const user = await this.dataSource.query(
-      `SELECT * FROM public."email_confirmation_info" WHERE "confirmationCode" = $1`,
-      [code],
-    );
-    if (user.length < 1) return null;
-    return user[0];
+    return await this.userEmailConfirmationInfoRepository.findOneBy({
+      confirmationCode: code,
+    });
   }
 
   async confirmEmail(userId: string): Promise<void> {
-    await this.dataSource.query(
-      `UPDATE public."email_confirmation_info" SET "isConfirmed" = true WHERE "userId" = $1`,
-      [userId],
+    await this.userEmailConfirmationInfoRepository.update(
+      { userId: userId },
+      { isConfirmed: true },
     );
     return;
   }
