@@ -21,7 +21,7 @@ import { UserRegistrationCommand } from '../useCases/userRegistration.useCase';
 import { AccessTokenGuard } from '../guards/accessTokenAuth.guard';
 import { MeViewType } from '../types/meViewType';
 import { CurrentUserId } from '../../../../helpers/decorators/currentUserId.decorator';
-import { UsersQueryRepository } from '../repositories/usersQuery.repository';
+import { UsersQueryRepository } from './query.repositories/usersQuery.repository';
 import { UserInfoRtType } from '../types/userIdDeviceIdType';
 import { CurrentUserInfoAndDeviceId } from '../../../../helpers/decorators/currentUserIdDeviceId';
 import { RefreshTokenGuard } from '../guards/refreshTokenAuth.guard';

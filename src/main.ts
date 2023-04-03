@@ -28,10 +28,10 @@ async function bootstrap() {
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   const config = new DocumentBuilder()
-    .setTitle('Bloggers API')
-    .setDescription('The bloggers API description')
+    .setTitle('API')
+    .setDescription('API description')
     .setVersion('1.0')
-    .addTag('Bloggers')
+    .addTag('Blogger')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, document);

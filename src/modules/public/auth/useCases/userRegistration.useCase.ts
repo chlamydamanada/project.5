@@ -5,6 +5,9 @@ import { MailService } from '../../../../adapters/email/email.service';
 import { BcryptAdapter } from '../../../../adapters/bcrypt/bcryptAdapter';
 import { BadRequestError } from '../../../../helpers/errorHelper/badRequestError';
 import { add } from 'date-fns';
+import { User } from '../../../superAdmin/domain/users.entities/user.entity';
+import { BanInfo } from '../../../superAdmin/domain/users.entities/banInfo.entity';
+import { EmailConfirmationInfo } from '../../../superAdmin/domain/users.entities/emailConfirmationInfo.entity';
 
 export class UserRegistrationCommand {
   constructor(
@@ -36,19 +39,31 @@ export class UserRegistrationUseCase
       command.password,
     );
 
-    // generate expiration date to confirmation code
+    //create and register user
+    const newUser = new User();
+    newUser.login = command.login;
+    newUser.email = command.email;
+    newUser.passwordHash = passwordHash;
+
+    const userId = await this.usersRepository.saveUser(newUser);
+
+    //create ban info
+    const banInfo = new BanInfo();
+    banInfo.userId = userId;
+    await this.usersRepository.saveUserBanInfo(banInfo);
+
+    //create email confirmation info
     const expirationDate = add(new Date(), {
       hours: 1,
       minutes: 30,
     });
+    const confirmationInfo = new EmailConfirmationInfo();
+    confirmationInfo.userId = userId;
+    confirmationInfo.expirationDate = expirationDate;
+    confirmationInfo.isConfirmed = false;
 
-    //register user
-    const confirmationCode = await this.usersRepository.registerUser(
-      command.login,
-      command.email,
-      passwordHash,
-      expirationDate,
-    );
+    const confirmationCode =
+      await this.usersRepository.saveEmailConfirmationInfo(confirmationInfo);
 
     //send confirmation code to user email
     await this.mailService.sendRegistrationEmail(

@@ -22,7 +22,7 @@ import { CommentsPublicQueryRepository } from '../../comments/api/query.reposito
 import { CommentViewType } from '../../comments/types/commentViewType';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateCommentCommand } from '../../comments/useCases/createComment.useCase';
-import { CommentQueryPipe } from '../../comments/api/pipes/commentQueryPipe';
+import { CommentQueryDto } from '../../comments/api/pipes/commentQueryDto';
 import { CommentsViewType } from '../../comments/types/commentsViewType';
 import { commentQueryType } from '../../comments/types/commentQueryType';
 import { postsViewType } from '../types/postsViewType';
@@ -70,7 +70,7 @@ export class PostPublicController {
   @UseGuards(ExtractUserIdFromAT)
   async getAllCommentsByPostId(
     @Param('postId') postId: string,
-    @Query() query: CommentQueryPipe,
+    @Query() query: CommentQueryDto,
     @CurrentUserId() userId: string | null,
   ): Promise<CommentsViewType> {
     const post = await this.postQueryRepository.findPostByPostId(postId);

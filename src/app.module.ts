@@ -28,7 +28,7 @@ import { JwtAdapter } from './adapters/jwt/jwtAdapter';
 import { CheckCredentialsUseCase } from './modules/public/auth/useCases/checkCredentials.useCase';
 import { UsersRepository } from './modules/public/auth/repositories/users.repository';
 import { PasswordStrategy } from './modules/public/auth/strategies/pass.strategy';
-import { UsersQueryRepository } from './modules/public/auth/repositories/usersQuery.repository';
+import { UsersQueryRepository } from './modules/public/auth/api/query.repositories/usersQuery.repository';
 import { UserRegistrationUseCase } from './modules/public/auth/useCases/userRegistration.useCase';
 import { DevicesRepositoryToSA } from './modules/superAdmin/repositories/devicesToSA.repository';
 import { AccessTokenStrategy } from './modules/public/auth/strategies/accessToken.strategy';
@@ -151,14 +151,14 @@ const adapters = [BcryptAdapter, JwtAdapter];
       imports: [configModule],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        url: configService.get('DB_URL'),
-        //host: configService.get('DB_HOST'),
-        //port: parseInt(<string>configService.get('DB_PORT')),
-        //username: configService.get('DB_USER_NAME'),
-        //password: configService.get('DB_PASS'),
-        //database: configService.get('DB_NAME'),
+        //url: configService.get('DB_URL'),
+        host: configService.get('DB_HOST'),
+        port: parseInt(<string>configService.get('DB_PORT')),
+        username: configService.get('DB_USER_NAME'),
+        password: configService.get('DB_PASS'),
+        database: configService.get('DB_NAME'),
         // entities: [],
-        ssl: true,
+        //ssl: true,
         autoLoadEntities: true,
         synchronize: true,
         logging: false,

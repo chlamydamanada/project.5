@@ -10,24 +10,31 @@ import { User } from '../../superAdmin/domain/users.entities/user.entity';
 import { Post } from './post.entity';
 import { BanList } from './banStatus.entity';
 import { BlogBanInfo } from './blogBanInfo.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
 export class Blog {
+  @ApiProperty()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @ApiProperty()
   @Column()
   name: string;
 
+  @ApiProperty()
   @Column()
   description: string;
 
+  @ApiProperty()
   @Column()
   websiteUrl: string;
 
+  @ApiProperty()
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
+  @ApiProperty()
   @Column({ default: false })
   isMembership: boolean;
 

@@ -3,6 +3,7 @@ import { UsersRepository } from '../repositories/users.repository';
 import { MailService } from '../../../../adapters/email/email.service';
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
+import { PasswordRecoveryInfo } from '../../../superAdmin/domain/users.entities/passwordRecoveryInfo.entity';
 
 export class CreateRecoveryCodeCommand {
   constructor(public email: string) {}
@@ -29,16 +30,19 @@ export class CreateRecoveryCodeUseCase
       hours: 1,
       minutes: 30,
     });
+
+    //save password recovery code in db
+    const recoveryInfo = new PasswordRecoveryInfo();
+    recoveryInfo.recoveryCode = passwordRecoveryCode;
+    recoveryInfo.userId = user.id;
+    recoveryInfo.expirationDate = expirationDate;
+
+    await this.usersRepository.saveRecoveryInfo(recoveryInfo);
+
+    //send email with recovery code
     await this.mailService.sendPasswordRecoveryEmail(
       passwordRecoveryCode,
       user.email,
-    );
-
-    //update password recovery code in db
-    await this.usersRepository.updatePasswordRecoveryCode(
-      user.id,
-      passwordRecoveryCode,
-      expirationDate,
     );
     return;
   }

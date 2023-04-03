@@ -21,9 +21,9 @@ export class EmailConfirmationInfo {
   @Generated('uuid')
   confirmationCode: string;
 
-  @Column({ type: 'timestamptz', default: new Date() })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   expirationDate: Date;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: true })
   isConfirmed: boolean;
 }

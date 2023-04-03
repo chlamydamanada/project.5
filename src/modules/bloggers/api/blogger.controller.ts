@@ -16,7 +16,7 @@ import { AccessTokenGuard } from '../../public/auth/guards/accessTokenAuth.guard
 import { CommandBus } from '@nestjs/cqrs';
 import { PostsToBloggerQueryRepository } from './query.repositories/postsToBloggerQuery.repository';
 import { BlogsToBloggerQueryRepository } from './query.repositories/blogsToBloggerQuery.repository';
-import { blogInputModelPipe } from './pipes/blogs.pipes/blogInputDto.pipe';
+import { blogCreateInputDto } from './pipes/blogs.pipes/blogCreateInput.dto';
 import { CurrentUserInfo } from '../../../helpers/decorators/currentUserIdAndLogin';
 import { UserInfoType } from '../../public/auth/types/userInfoType';
 import { CreateBlogCommand } from '../application/blogs.useCases/createBlog.useCase';
@@ -25,24 +25,28 @@ import { UpdateBlogCommand } from '../application/blogs.useCases/updateBlog.useC
 import { CurrentUserId } from '../../../helpers/decorators/currentUserId.decorator';
 import { DeleteBlogCommand } from '../application/blogs.useCases/deleteBlog.useCase';
 import { postViewType } from '../types/posts/postViewType';
-import { postInputModelIdPipe } from './pipes/posts.pipes/postInputDtoPipe';
+import { postCreateInputDto } from './pipes/posts.pipes/postCreateInput.dto';
 import { CreatePostCommand } from '../application/posts.useCases/createPost.useCase';
 import { DeletePostCommand } from '../application/posts.useCases/deletePost.useCase';
 import { UpdatePostCommand } from '../application/posts.useCases/updatePost.useCase';
-import { BanStatusByBloggerPipe } from './pipes/users.pipes/banStatusByBloggerPipe';
+import { BanUserByBloggerInputDto } from './pipes/users.pipes/banUserByBloggerInput.dto';
 import { BanOrUnbanUserByBloggerCommand } from '../application/users.useCases/banOrUnbanUserByBlogger.useCase';
 import { UsersToBloggerQueryRepository } from './query.repositories/usersToBloggerQuery.repository';
 import { BannedUsersForBlogType } from '../types/users/bannedUsersForBlogType';
-import { BannedUserQueryDtoPipe } from './pipes/users.pipes/bannedUserQueryDtoPipe';
+import { BannedUserToBloggerQueryDto } from './pipes/users.pipes/bannedUserToBloggerQuery.dto';
 import { BannedUserQueryDtoType } from '../types/users/bannedUserQueryDtoType';
-import { BlogQueryPipe } from './pipes/blogs.pipes/blogQuery.pipe';
+import { BlogsToBloggerQueryDto } from './pipes/blogs.pipes/blogsToBloggerQuery.dto';
 import { BlogQueryToBloggerType } from '../types/blogs/blogQueryToBloggerType';
 import { BlogsToBloggerViewType } from '../types/blogs/blogsToBloggerViewType';
-import { CommentQueryPipe } from '../../public/comments/api/pipes/commentQueryPipe';
 import { CommentsViewForBloggerType } from '../types/comments/commentsViewForBloggerType';
 import { commentQueryType } from '../../public/comments/types/commentQueryType';
 import { CommentsToBloggerQueryRepository } from './query.repositories/commentsToBloggerQuery.repository';
+import { CommentToBloggerQueryDto } from './pipes/comments.pipes/commentsToBloggerQuery.dto';
+import { blogUpdateInputDto } from './pipes/blogs.pipes/blogUpdateInput.dto';
+import { postUpdateInputDto } from './pipes/posts.pipes/postUpdateInput.dto';
+import { ApiHeader, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Blogger')
 @UseGuards(AccessTokenGuard)
 @Controller('blogger')
 export class BloggerController {
@@ -57,7 +61,7 @@ export class BloggerController {
   @Get('blogs')
   async getAllOwnerBlogs(
     @CurrentUserId() bloggerId: string,
-    @Query() query: BlogQueryPipe,
+    @Query() query: BlogsToBloggerQueryDto,
   ): Promise<BlogsToBloggerViewType> {
     const blogs = await this.blogsQueryRepository.getAllBlogs(
       bloggerId,
@@ -70,7 +74,7 @@ export class BloggerController {
   @Get('blogs/comments')
   async getAllCommentsForAllPost(
     @CurrentUserId() bloggerId: string,
-    @Query() query: CommentQueryPipe,
+    @Query() query: CommentToBloggerQueryDto,
   ): Promise<CommentsViewForBloggerType> {
     const comments =
       await this.commentsQueryRepository.findAllCommentsForAllPosts(
@@ -83,7 +87,7 @@ export class BloggerController {
 
   @Post('blogs')
   async createBlog(
-    @Body() blogInputModel: blogInputModelPipe,
+    @Body() blogInputModel: blogCreateInputDto,
     @CurrentUserInfo() userInfo: UserInfoType,
   ): Promise<BlogToBloggerViewType> {
     const newBlogId: string = await this.commandBus.execute<
@@ -101,10 +105,11 @@ export class BloggerController {
     return newBlog!;
   }
 
+  @ApiTags('Post')
   @Post('blogs/:blogId/posts')
   async createPostByBlogId(
     @Param('blogId') blogId: string,
-    @Body() postInputModel: postInputModelIdPipe,
+    @Body() postInputModel: postCreateInputDto,
     @CurrentUserId() bloggerId: string,
   ): Promise<postViewType> {
     const newPostId = await this.commandBus.execute<CreatePostCommand, string>(
@@ -120,11 +125,12 @@ export class BloggerController {
     return newPost!;
   }
 
+  @ApiTags('Blog')
   @Put('blogs/:id')
   @HttpCode(204)
   async updateBlog(
     @Param('id') blogId: string,
-    @Body() blogInputModel: blogInputModelPipe,
+    @Body() blogInputModel: blogUpdateInputDto,
     @CurrentUserId() bloggerId: string,
   ): Promise<void> {
     await this.commandBus.execute<UpdateBlogCommand>(
@@ -139,12 +145,13 @@ export class BloggerController {
     return;
   }
 
+  @ApiTags('Post')
   @Put('blogs/:blogId/posts/:postId')
   @HttpCode(204)
   async updatePost(
     @Param('blogId') blogId: string,
     @Param('postId') postId: string,
-    @Body() postInputDto: postInputModelIdPipe,
+    @Body() postInputDto: postUpdateInputDto,
     @CurrentUserId() bloggerId: string,
   ): Promise<void> {
     await this.commandBus.execute<UpdatePostCommand>(
@@ -160,6 +167,7 @@ export class BloggerController {
     return;
   }
 
+  @ApiTags('Blog')
   @Delete('blogs/:id')
   @HttpCode(204)
   async deleteBlogByBlogId(
@@ -172,6 +180,7 @@ export class BloggerController {
     return;
   }
 
+  @ApiTags('Post')
   @Delete('blogs/:blogId/posts/:postId')
   @HttpCode(204)
   async deletePostByPostId(
@@ -184,13 +193,13 @@ export class BloggerController {
     );
     return;
   }
-
+  @ApiTags('User')
   @Put('users/:userId/ban')
   @HttpCode(204)
   async banOrUnbanUser(
     @Param('userId') userId: string,
     @CurrentUserId() bloggerId: string,
-    @Body() banUserInputDto: BanStatusByBloggerPipe,
+    @Body() banUserInputDto: BanUserByBloggerInputDto,
   ): Promise<void> {
     await this.commandBus.execute<BanOrUnbanUserByBloggerCommand>(
       new BanOrUnbanUserByBloggerCommand(
@@ -204,10 +213,11 @@ export class BloggerController {
     return;
   }
 
+  @ApiTags('User')
   @Get('users/blog/:blogId')
   async getBannedUsersForBlog(
     @Param('blogId') blogId: string,
-    @Query() query: BannedUserQueryDtoPipe,
+    @Query() query: BannedUserToBloggerQueryDto,
     @CurrentUserId() bloggerId: string,
   ): Promise<BannedUsersForBlogType> {
     //check is blogger owner of this blog

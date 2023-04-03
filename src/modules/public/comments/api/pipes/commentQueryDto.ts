@@ -1,23 +1,18 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { sortingDirection } from '../../../../../helpers/validators/sortingDirection';
 
-export class BlogQueryPipe {
-  @IsString()
+export class CommentQueryDto {
   @IsOptional()
-  searchNameTerm: string;
-
   @IsNumber()
   @Type(() => Number)
-  @IsOptional()
   pageNumber = 1;
 
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  @IsOptional()
   pageSize = 10;
 
-  @IsString()
   @IsOptional()
   sortBy = 'createdAt';
 
