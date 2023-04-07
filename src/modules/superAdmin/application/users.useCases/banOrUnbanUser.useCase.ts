@@ -20,18 +20,28 @@ export class BanOrUnbanUserUseCase
     private readonly devicesRepository: DevicesRepositoryToSA,
   ) {}
   async execute(command: BanOrUnbanUserCommand): Promise<void> {
-    const user = await this.usersRepository.isUserExistById(command.userId);
-    if (!user) throw new NotFoundException('User with this id does not exist');
+    const banInfo = await this.usersRepository.findUserBanInfo(command.userId);
+    if (!banInfo)
+      throw new NotFoundException('User with this id does not exist');
     //check ban or unban user
     if (command.isBanned) {
-      // ban user
-      await this.usersRepository.banUserBySA(command.userId, command.banReason);
+      // ban user and save ban info
+      banInfo.isBanned = true;
+      banInfo.banDate = new Date().toISOString();
+      banInfo.banReason = command.banReason;
+
+      await this.usersRepository.saveUserBanInfo(banInfo);
+
       //all devices of user must be deleted, if user is banned
       await this.devicesRepository.deleteAllUserDevices(command.userId);
       return;
     }
     // unban user
-    await this.usersRepository.unbanUserBySA(command.userId);
+    banInfo.isBanned = false;
+    banInfo.banDate = null;
+    banInfo.banReason = null;
+
+    await this.usersRepository.saveUserBanInfo(banInfo);
     return;
   }
 }

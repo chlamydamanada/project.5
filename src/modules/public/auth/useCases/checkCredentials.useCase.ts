@@ -28,7 +28,7 @@ export class CheckCredentialsUseCase
     );
     if (!isMatched) return null;
     // check is user banned or not
-    if (user.isBanned) return null;
+    if (user.banInfo.isBanned) return null;
     return {
       id: user.id,
       login: user.login,

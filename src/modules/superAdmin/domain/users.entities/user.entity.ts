@@ -13,6 +13,7 @@ import { BanList } from '../../../bloggers/domain/banStatus.entity';
 import { Comment } from '../../../public/comments/domain/comment.entity';
 import { PostLikeStatus } from '../../../public/likeStatus/domain/postLikeStatus.entity';
 import { CommentLikeStatus } from '../../../public/likeStatus/domain/commentLikeStatus.entity';
+import { Device } from '../../../public/devices/domain/device.entity';
 
 @Entity()
 export class User {
@@ -54,4 +55,7 @@ export class User {
 
   @OneToMany(() => CommentLikeStatus, (s) => s.user)
   statusOfComment: CommentLikeStatus[];
+
+  @OneToMany(() => Device, (d) => d.owner)
+  devices: Device[];
 }

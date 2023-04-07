@@ -5,11 +5,11 @@ export class NewPassRecoveryDtoPipe {
   @Length(6, 20)
   @IsNotEmpty()
   @IsString()
-  @Transform(({ value }) => value?.trim())
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   newPassword: string;
 
   @IsNotEmpty()
   @IsString()
-  @Transform(({ value }) => value?.trim())
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   recoveryCode: string;
 }

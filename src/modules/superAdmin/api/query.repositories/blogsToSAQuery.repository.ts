@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Blog } from '../../../bloggers/domain/blog.entity';
 import { ILike, Repository } from 'typeorm';
 import { blogQueryType } from '../../../public/blogs/types/blogsQweryType';
-import { BlogsSAType } from '../../types/blogs/blogsSAType';
+import { BlogsSAModel } from '../../types/blogs/blogsSAModel';
 import { User } from '../../domain/users.entities/user.entity';
 import { BlogBanInfo } from '../../../bloggers/domain/blogBanInfo.entity';
 
@@ -15,7 +15,7 @@ export class BlogsToSAQueryRepository {
     private readonly blogBanInfoRepository: Repository<BlogBanInfo>,
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
   ) {}
-  async findAllBlogsToSA(queryDto: blogQueryType): Promise<BlogsSAType> {
+  async findAllBlogsToSA(queryDto: blogQueryType): Promise<BlogsSAModel> {
     const filter = this.makeBlogsFilter(queryDto.searchNameTerm);
     const blogs = await this.blogsRepository.find({
       relations: {

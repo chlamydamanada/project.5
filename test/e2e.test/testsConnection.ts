@@ -1,34 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module';
-import {
-  BadRequestException,
-  INestApplication,
-  ValidationPipe,
-} from '@nestjs/common';
-import { HttpExceptionFilter } from '../../exception.filter';
-import { useContainer } from 'class-validator';
+import { INestApplication } from '@nestjs/common';
+import { MailService } from '../../src/adapters/email/email.service';
+import { MailServiceMock } from '../integration.test/public/mocks/mailServiceMock';
+import { appInitSettings } from '../../src/configuration/appInitSettings';
 
 export const getApp = async () => {
   const moduleFixture: TestingModule = await Test.createTestingModule({
     imports: [AppModule],
-  }).compile();
+  })
+    .overrideProvider(MailService)
+    .useValue(MailServiceMock) // mock mail service
+    .compile();
   const app: INestApplication = moduleFixture.createNestApplication();
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      //transformOptions: { enableImplicitConversion: true },
-      stopAtFirstError: true,
-      exceptionFactory: (errors) => {
-        const result = errors.map((e) => ({
-          message: Object.values(e.constraints!)[0],
-          field: e.property,
-        }));
-        throw new BadRequestException(result);
-      },
-    }),
-  );
-  app.useGlobalFilters(new HttpExceptionFilter());
-  useContainer(app.select(AppModule), { fallbackOnErrors: true });
+  //turn on cookieParser, GlobalPipes, GlobalFilters
+  appInitSettings(app);
   await app.init();
   return app;
 };

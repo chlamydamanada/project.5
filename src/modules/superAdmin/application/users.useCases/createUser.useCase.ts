@@ -3,6 +3,10 @@ import { BadRequestException } from '@nestjs/common';
 import { BadRequestError } from '../../../../helpers/errorHelper/badRequestError';
 import { BcryptAdapter } from '../../../../adapters/bcrypt/bcryptAdapter';
 import { UsersRepositoryToSA } from '../../repositories/usersToSA.repository';
+import { User } from '../../domain/users.entities/user.entity';
+import { BanInfo } from '../../domain/users.entities/banInfo.entity';
+import { add } from 'date-fns';
+import { EmailConfirmationInfo } from '../../domain/users.entities/emailConfirmationInfo.entity';
 
 export class CreateUserCommand {
   constructor(
@@ -32,11 +36,23 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
       command.password,
     );
     //create user entity
-    const newUserId = this.usersRepository.createUser(
-      command.login,
-      command.email,
-      passwordHash,
-    );
+    const newUser = new User();
+    newUser.login = command.login;
+    newUser.email = command.email;
+    newUser.passwordHash = passwordHash;
+
+    const newUserId = await this.usersRepository.saveUser(newUser);
+
+    //create ban info
+    const banInfo = new BanInfo();
+    banInfo.userId = newUserId;
+    await this.usersRepository.saveUserBanInfo(banInfo);
+
+    //create email confirmation info
+    const confirmationInfo = new EmailConfirmationInfo();
+    confirmationInfo.userId = newUserId;
+    confirmationInfo.isConfirmed = true;
+    await this.usersRepository.saveEmailConfirmationInfo(confirmationInfo);
 
     return newUserId;
   }

@@ -36,8 +36,11 @@ import { CreateRecoveryCodeCommand } from '../useCases/createRecoveryCode.useCas
 import { NewPassRecoveryDtoPipe } from './pipes/newPassRecoveryDtoPipe';
 import { ChangePasswordCommand } from '../useCases/changePassword.useCase';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { userInputModelPipe } from '../../../superAdmin/api/pipes/users.pipes/userInputDtoPipe';
+import { userCreateInputDto } from '../../../superAdmin/api/pipes/users.pipes/userCreateInput.dto';
+import { ApiTags } from '@nestjs/swagger';
+import { TokensType } from '../types/tokensType';
 
+@ApiTags('Public Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -55,10 +58,11 @@ export class AuthController {
     @Headers('user-agent') deviceTitle: string,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const tokens = await this.commandBus.execute(
-      new CreateRTMetaCommand(userInfo.id, userInfo.login, ip, deviceTitle),
-    );
-    console.log('refreshToken:', tokens.refreshToken);
+    const tokens = await this.commandBus.execute<
+      CreateRTMetaCommand,
+      TokensType
+    >(new CreateRTMetaCommand(userInfo.id, userInfo.login, ip, deviceTitle));
+    //console.log('refreshToken:', tokens.refreshToken);
     response.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: true,
@@ -75,12 +79,12 @@ export class AuthController {
   }
 
   @Post('registration')
-  @UseGuards(ThrottlerGuard)
+  //@UseGuards(ThrottlerGuard)
   @HttpCode(204)
   async registration(
-    @Body() userInputModel: userInputModelPipe,
+    @Body() userInputModel: userCreateInputDto,
   ): Promise<void> {
-    await this.commandBus.execute(
+    await this.commandBus.execute<UserRegistrationCommand>(
       new UserRegistrationCommand(
         userInputModel.login,
         userInputModel.email,
@@ -91,18 +95,22 @@ export class AuthController {
   }
 
   @Post('registration-confirmation')
-  @UseGuards(ThrottlerGuard)
+  //@UseGuards(ThrottlerGuard)
   @HttpCode(204)
   async registrationConfirmation(@Body() codeDto: CodePipe): Promise<void> {
-    await this.commandBus.execute(new ConfirmEmailCommand(codeDto.code));
+    await this.commandBus.execute<ConfirmEmailCommand>(
+      new ConfirmEmailCommand(codeDto.code),
+    );
     return;
   }
 
   @Post('registration-email-resending')
-  @UseGuards(ThrottlerGuard)
+  //@UseGuards(ThrottlerGuard)
   @HttpCode(204)
   async registrationEmailResending(@Body() emailDto: EmailPipe): Promise<void> {
-    await this.commandBus.execute(new CheckEmailIsConfirmedCommand(emailDto));
+    await this.commandBus.execute<CheckEmailIsConfirmedCommand>(
+      new CheckEmailIsConfirmedCommand(emailDto.email),
+    );
     return;
   }
 
@@ -115,7 +123,10 @@ export class AuthController {
     @Headers('user-agent') deviceTitle: string,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AccessTokenViewType> {
-    const tokens = await this.commandBus.execute(
+    const tokens = await this.commandBus.execute<
+      UpdateRTMetaCommand,
+      TokensType
+    >(
       new UpdateRTMetaCommand(
         userInfo.id,
         userInfo.login,
@@ -124,7 +135,8 @@ export class AuthController {
         deviceTitle,
       ),
     );
-    console.log(tokens.refreshToken);
+    //console.log(tokens.refreshToken);
+
     response.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: true,
@@ -139,7 +151,7 @@ export class AuthController {
     @CurrentUserInfoAndDeviceId() userInfo: UserInfoRtType,
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    await this.commandBus.execute(
+    await this.commandBus.execute<DeleteDeviceCommand>(
       new DeleteDeviceCommand(userInfo.deviceId, userInfo.id),
     );
     response.clearCookie('refreshToken');
@@ -147,21 +159,22 @@ export class AuthController {
   }
 
   @Post('password-recovery')
-  @UseGuards(ThrottlerGuard)
+  @HttpCode(204)
+  //@UseGuards(ThrottlerGuard)
   async passwordRecovery(@Body() emailInputDto: EmailPipe): Promise<void> {
-    await this.commandBus.execute(
+    await this.commandBus.execute<CreateRecoveryCodeCommand>(
       new CreateRecoveryCodeCommand(emailInputDto.email),
     );
     return;
   }
 
   @Post('new-password')
-  @UseGuards(ThrottlerGuard)
+  //@UseGuards(ThrottlerGuard)
   @HttpCode(204)
   async newPassword(
     @Body() newPassRecoveryDto: NewPassRecoveryDtoPipe,
   ): Promise<void> {
-    await this.commandBus.execute(
+    await this.commandBus.execute<ChangePasswordCommand>(
       new ChangePasswordCommand(
         newPassRecoveryDto.newPassword,
         newPassRecoveryDto.recoveryCode,

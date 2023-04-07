@@ -3,9 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Comment } from '../../../public/comments/domain/comment.entity';
 import { commentQueryType } from '../../../public/comments/types/commentQueryType';
-import { CommentsViewForBloggerType } from '../../types/comments/commentsViewForBloggerType';
+import { CommentsViewForBloggerModel } from '../../types/comments/commentsViewForBloggerModel';
 import { CommentLikeStatus } from '../../../public/likeStatus/domain/commentLikeStatus.entity';
-import { CommentViewForBloggerType } from '../../types/comments/commentViewForBloggerType';
+import { CommentViewForBloggerModel } from '../../types/comments/commentViewForBloggerModel';
 
 @Injectable()
 export class CommentsToBloggerQueryRepository {
@@ -18,7 +18,7 @@ export class CommentsToBloggerQueryRepository {
   async findAllCommentsForAllPosts(
     bloggerId: string,
     queryDto: commentQueryType,
-  ): Promise<CommentsViewForBloggerType | null> {
+  ): Promise<CommentsViewForBloggerModel> {
     //get array of all comments of all posts for blogger
     const comments = await this.commentsRepository.find({
       relations: {
@@ -87,7 +87,7 @@ export class CommentsToBloggerQueryRepository {
   async convertToBloggerComment(
     comment: Comment,
     userId: string,
-  ): Promise<CommentViewForBloggerType> {
+  ): Promise<CommentViewForBloggerModel> {
     const newComment = {
       id: comment.id,
       content: comment.content,

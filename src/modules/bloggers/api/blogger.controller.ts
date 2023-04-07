@@ -20,11 +20,11 @@ import { blogCreateInputDto } from './pipes/blogs.pipes/blogCreateInput.dto';
 import { CurrentUserInfo } from '../../../helpers/decorators/currentUserIdAndLogin';
 import { UserInfoType } from '../../public/auth/types/userInfoType';
 import { CreateBlogCommand } from '../application/blogs.useCases/createBlog.useCase';
-import { BlogToBloggerViewType } from '../types/blogs/blogToBloggerViewType';
+import { BlogToBloggerViewModel } from '../types/blogs/blogToBloggerViewModel';
 import { UpdateBlogCommand } from '../application/blogs.useCases/updateBlog.useCase';
 import { CurrentUserId } from '../../../helpers/decorators/currentUserId.decorator';
 import { DeleteBlogCommand } from '../application/blogs.useCases/deleteBlog.useCase';
-import { postViewType } from '../types/posts/postViewType';
+import { postViewModel } from '../types/posts/postViewModel';
 import { postCreateInputDto } from './pipes/posts.pipes/postCreateInput.dto';
 import { CreatePostCommand } from '../application/posts.useCases/createPost.useCase';
 import { DeletePostCommand } from '../application/posts.useCases/deletePost.useCase';
@@ -32,21 +32,32 @@ import { UpdatePostCommand } from '../application/posts.useCases/updatePost.useC
 import { BanUserByBloggerInputDto } from './pipes/users.pipes/banUserByBloggerInput.dto';
 import { BanOrUnbanUserByBloggerCommand } from '../application/users.useCases/banOrUnbanUserByBlogger.useCase';
 import { UsersToBloggerQueryRepository } from './query.repositories/usersToBloggerQuery.repository';
-import { BannedUsersForBlogType } from '../types/users/bannedUsersForBlogType';
+import { BannedUsersForBlogModel } from '../types/users/bannedUsersForBlogModel';
 import { BannedUserToBloggerQueryDto } from './pipes/users.pipes/bannedUserToBloggerQuery.dto';
 import { BannedUserQueryDtoType } from '../types/users/bannedUserQueryDtoType';
 import { BlogsToBloggerQueryDto } from './pipes/blogs.pipes/blogsToBloggerQuery.dto';
 import { BlogQueryToBloggerType } from '../types/blogs/blogQueryToBloggerType';
-import { BlogsToBloggerViewType } from '../types/blogs/blogsToBloggerViewType';
-import { CommentsViewForBloggerType } from '../types/comments/commentsViewForBloggerType';
+import { BlogsToBloggerViewModel } from '../types/blogs/blogsToBloggerViewModel';
+import { CommentsViewForBloggerModel } from '../types/comments/commentsViewForBloggerModel';
 import { commentQueryType } from '../../public/comments/types/commentQueryType';
 import { CommentsToBloggerQueryRepository } from './query.repositories/commentsToBloggerQuery.repository';
 import { CommentToBloggerQueryDto } from './pipes/comments.pipes/commentsToBloggerQuery.dto';
 import { blogUpdateInputDto } from './pipes/blogs.pipes/blogUpdateInput.dto';
 import { postUpdateInputDto } from './pipes/posts.pipes/postUpdateInput.dto';
-import { ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CreateBlogSwaggerDecorator } from '../../../swagger/decorators/blogger/blogs/createBlog.swagger.decorator';
+import { GetBloggersBlogsSwaggerDecorator } from '../../../swagger/decorators/blogger/blogs/getBloggersBlogs.swagger.decorator';
+import { UpdateBlogSwaggerDecorator } from '../../../swagger/decorators/blogger/blogs/updateBlog.swager.decorator';
+import { DeleteBlogSwaggerDecorator } from '../../../swagger/decorators/blogger/blogs/deleteBlog.swagger.decorator';
+import { GetBloggersCommentsSwaggerDecorator } from '../../../swagger/decorators/blogger/comments/getBloggersComments.swagger.decorator';
+import { CreatePostSwaggerDecorator } from '../../../swagger/decorators/blogger/posts/createPost.swagger.decorator';
+import { UpdatePostSwaggerDecorator } from '../../../swagger/decorators/blogger/posts/updatePost.swagger.decorator';
+import { DeletePostSwaggerDecorator } from '../../../swagger/decorators/blogger/posts/deletePost.swagger.decorator';
+import { BanUserByBloggerSwaggerDecorator } from '../../../swagger/decorators/blogger/users/banUserByBlogger.swagger.decorator';
+import { GetBloggersBannedUsersSwaggerDecorator } from '../../../swagger/decorators/blogger/users/getBloggersBannedUsers.swagger.decorator';
 
 @ApiTags('Blogger')
+@ApiBearerAuth()
 @UseGuards(AccessTokenGuard)
 @Controller('blogger')
 export class BloggerController {
@@ -59,37 +70,38 @@ export class BloggerController {
   ) {}
 
   @Get('blogs')
+  @GetBloggersBlogsSwaggerDecorator()
   async getAllOwnerBlogs(
     @CurrentUserId() bloggerId: string,
     @Query() query: BlogsToBloggerQueryDto,
-  ): Promise<BlogsToBloggerViewType> {
+  ): Promise<BlogsToBloggerViewModel> {
     const blogs = await this.blogsQueryRepository.getAllBlogs(
       bloggerId,
       query as BlogQueryToBloggerType,
     );
-    if (!blogs) throw new NotFoundException('You haven`t any blog');
     return blogs;
   }
 
   @Get('blogs/comments')
+  @GetBloggersCommentsSwaggerDecorator()
   async getAllCommentsForAllPost(
     @CurrentUserId() bloggerId: string,
     @Query() query: CommentToBloggerQueryDto,
-  ): Promise<CommentsViewForBloggerType> {
+  ): Promise<CommentsViewForBloggerModel> {
     const comments =
       await this.commentsQueryRepository.findAllCommentsForAllPosts(
         bloggerId,
         query as commentQueryType,
       );
-    if (!comments) throw new NotFoundException('You haven`t any comments');
     return comments;
   }
 
   @Post('blogs')
+  @CreateBlogSwaggerDecorator()
   async createBlog(
     @Body() blogInputModel: blogCreateInputDto,
     @CurrentUserInfo() userInfo: UserInfoType,
-  ): Promise<BlogToBloggerViewType> {
+  ): Promise<BlogToBloggerViewModel> {
     const newBlogId: string = await this.commandBus.execute<
       CreateBlogCommand,
       string
@@ -105,13 +117,13 @@ export class BloggerController {
     return newBlog!;
   }
 
-  @ApiTags('Post')
   @Post('blogs/:blogId/posts')
+  @CreatePostSwaggerDecorator()
   async createPostByBlogId(
     @Param('blogId') blogId: string,
     @Body() postInputModel: postCreateInputDto,
     @CurrentUserId() bloggerId: string,
-  ): Promise<postViewType> {
+  ): Promise<postViewModel> {
     const newPostId = await this.commandBus.execute<CreatePostCommand, string>(
       new CreatePostCommand(
         blogId,
@@ -125,8 +137,8 @@ export class BloggerController {
     return newPost!;
   }
 
-  @ApiTags('Blog')
   @Put('blogs/:id')
+  @UpdateBlogSwaggerDecorator()
   @HttpCode(204)
   async updateBlog(
     @Param('id') blogId: string,
@@ -145,8 +157,8 @@ export class BloggerController {
     return;
   }
 
-  @ApiTags('Post')
   @Put('blogs/:blogId/posts/:postId')
+  @UpdatePostSwaggerDecorator()
   @HttpCode(204)
   async updatePost(
     @Param('blogId') blogId: string,
@@ -167,8 +179,8 @@ export class BloggerController {
     return;
   }
 
-  @ApiTags('Blog')
   @Delete('blogs/:id')
+  @DeleteBlogSwaggerDecorator()
   @HttpCode(204)
   async deleteBlogByBlogId(
     @Param('id') blogId: string,
@@ -180,8 +192,8 @@ export class BloggerController {
     return;
   }
 
-  @ApiTags('Post')
   @Delete('blogs/:blogId/posts/:postId')
+  @DeletePostSwaggerDecorator()
   @HttpCode(204)
   async deletePostByPostId(
     @Param('blogId') blogId: string,
@@ -193,8 +205,9 @@ export class BloggerController {
     );
     return;
   }
-  @ApiTags('User')
+
   @Put('users/:userId/ban')
+  @BanUserByBloggerSwaggerDecorator()
   @HttpCode(204)
   async banOrUnbanUser(
     @Param('userId') userId: string,
@@ -213,13 +226,13 @@ export class BloggerController {
     return;
   }
 
-  @ApiTags('User')
   @Get('users/blog/:blogId')
+  @GetBloggersBannedUsersSwaggerDecorator()
   async getBannedUsersForBlog(
     @Param('blogId') blogId: string,
     @Query() query: BannedUserToBloggerQueryDto,
     @CurrentUserId() bloggerId: string,
-  ): Promise<BannedUsersForBlogType> {
+  ): Promise<BannedUsersForBlogModel> {
     //check is blogger owner of this blog
     const blog = await this.blogsQueryRepository.getOwnerIdOfBlog(blogId);
     if (!blog)

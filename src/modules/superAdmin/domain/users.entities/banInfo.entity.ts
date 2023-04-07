@@ -13,9 +13,9 @@ export class BanInfo {
   @Column({ type: 'boolean', default: false })
   isBanned: boolean;
 
-  @Column({ nullable: true, default: null })
-  banDate: string;
+  @Column({ type: String, nullable: true, default: null })
+  banDate: string | null;
 
-  @Column({ nullable: true, default: null })
-  banReason: string;
+  @Column({ type: String, nullable: true, default: null })
+  banReason: string | null;
 }

@@ -4,9 +4,10 @@ import { BadRequestException } from '@nestjs/common';
 import { UsersRepository } from '../repositories/users.repository';
 import { MailService } from '../../../../adapters/email/email.service';
 import { v4 as uuidv4 } from 'uuid';
+import { add } from 'date-fns';
 
 export class CheckEmailIsConfirmedCommand {
-  constructor(public emailDto: EmailType) {}
+  constructor(public email: string) {}
 }
 @CommandHandler(CheckEmailIsConfirmedCommand)
 export class CheckEmailIsConfirmedUseCase
@@ -18,7 +19,7 @@ export class CheckEmailIsConfirmedUseCase
   ) {}
   async execute(command: CheckEmailIsConfirmedCommand): Promise<void> {
     const user = await this.usersRepository.findUserAndConfirmationInfoByEmail(
-      command.emailDto.email,
+      command.email,
     );
     if (!user) {
       throw new BadRequestException([
@@ -28,7 +29,7 @@ export class CheckEmailIsConfirmedUseCase
         },
       ]);
     }
-    if (user.isConfirmed) {
+    if (user.emailConfirmationInfo.isConfirmed) {
       throw new BadRequestException([
         {
           message: 'email already is confirmed',
@@ -36,13 +37,21 @@ export class CheckEmailIsConfirmedUseCase
         },
       ]);
     }
-    // generate new confirmation code
+    // generate new confirmation code, expiration Date and save it
     const newCode = uuidv4();
-    // send email with new confirmation code to user
-    await this.mailService.sendRegistrationEmail(newCode, user.email);
+    const expirationDate = add(new Date(), {
+      hours: 1,
+      minutes: 30,
+    });
+    await this.usersRepository.updateEmailConfirmationCode(
+      user.id,
+      newCode,
+      expirationDate,
+    );
 
-    //update confirmation code
-    await this.usersRepository.updateEmailConfirmationCode(user.id, newCode);
+    // send email with new confirmation code to user
+    await this.mailService.sendRegistrationEmail(newCode, command.email);
+
     return;
   }
 }

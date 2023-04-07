@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Device } from '../../public/devices/domain/device.entity';
 
 @Injectable()
 export class DevicesRepositoryToSA {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(Device)
+    private readonly devicesRepository: Repository<Device>,
+  ) {}
 
   async deleteAllUserDevices(userId: string) {
-    await this.dataSource.query(
-      `DELETE FROM public."device" WHERE "ownerId" = $1`,
-      [userId],
-    );
+    await this.devicesRepository.delete({ ownerId: userId });
     return;
   }
 }

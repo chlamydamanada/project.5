@@ -24,6 +24,6 @@ export class EmailConfirmationInfo {
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   expirationDate: Date;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: 'boolean', default: false })
   isConfirmed: boolean;
 }

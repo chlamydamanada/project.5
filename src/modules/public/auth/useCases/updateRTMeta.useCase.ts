@@ -1,8 +1,5 @@
-import { UserInfoType } from '../types/userInfoType';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DevicesRepository } from '../../devices/repositories/device.repository';
-import { UpdateDeviceDtoType } from '../../devices/types/updateDeviceDtoType';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { TokensType } from '../types/tokensType';
 import { JwtAdapter } from '../../../../adapters/jwt/jwtAdapter';
 

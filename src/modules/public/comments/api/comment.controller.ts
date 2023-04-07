@@ -21,7 +21,10 @@ import { CurrentUserInfo } from '../../../../helpers/decorators/currentUserIdAnd
 import { UserInfoType } from '../../auth/types/userInfoType';
 import { StatusPipe } from '../../likeStatus/pipes/statusPipe';
 import { GenerateCommentLikeStatusCommand } from '../../likeStatus/useCases/generateCommentLikeStatus.useCase';
+import { ApiTags } from '@nestjs/swagger';
+import { CommentViewType } from '../types/commentViewType';
 
+@ApiTags('Public Comments')
 @Controller('comments')
 export class CommentsPublicController {
   constructor(
@@ -34,7 +37,7 @@ export class CommentsPublicController {
   async getCommentByCommentId(
     @Param('id') commentId: string,
     @CurrentUserId() userId: string | null,
-  ) /*: Promise<CommentViewType | string> */ {
+  ): Promise<CommentViewType> {
     const comment = await this.commentsQueryRepository.getCommentByCommentId(
       commentId,
       userId,
@@ -52,7 +55,7 @@ export class CommentsPublicController {
     @Body() commentInputDto: commentInputDtoPipe,
     @CurrentUserId() userId: string,
   ): Promise<void> {
-    await this.commandBus.execute(
+    await this.commandBus.execute<UpdateCommentCommand>(
       new UpdateCommentCommand(commentId, commentInputDto.content, userId),
     );
     return;
@@ -66,7 +69,7 @@ export class CommentsPublicController {
     @CurrentUserInfo() userInfo: UserInfoType,
     @Body() statusDto: StatusPipe,
   ): Promise<void> {
-    await this.commandBus.execute(
+    await this.commandBus.execute<GenerateCommentLikeStatusCommand>(
       new GenerateCommentLikeStatusCommand(
         commentId,
         userInfo.id,
@@ -83,7 +86,9 @@ export class CommentsPublicController {
     @Param('id') commentId: string,
     @CurrentUserId() userId: string,
   ): Promise<void> {
-    await this.commandBus.execute(new DeleteCommentCommand(commentId, userId));
+    await this.commandBus.execute<DeleteCommentCommand>(
+      new DeleteCommentCommand(commentId, userId),
+    );
     return;
   }
 }

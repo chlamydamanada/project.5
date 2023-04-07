@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Blog } from '../../domain/blog.entity';
 import { ILike, Repository } from 'typeorm';
 import { BlogQueryToBloggerType } from '../../types/blogs/blogQueryToBloggerType';
-import { BlogsToBloggerViewType } from '../../types/blogs/blogsToBloggerViewType';
-import { BlogToBloggerViewType } from '../../types/blogs/blogToBloggerViewType';
+import { BlogsToBloggerViewModel } from '../../types/blogs/blogsToBloggerViewModel';
+import { BlogToBloggerViewModel } from '../../types/blogs/blogToBloggerViewModel';
 
 @Injectable()
 export class BlogsToBloggerQueryRepository {
@@ -13,7 +13,9 @@ export class BlogsToBloggerQueryRepository {
     private readonly blogsRepository: Repository<Blog>,
   ) {}
 
-  async getBlogByBlogId(blogId: string): Promise<BlogToBloggerViewType | null> {
+  async getBlogByBlogId(
+    blogId: string,
+  ): Promise<BlogToBloggerViewModel | null> {
     const blog = await this.blogsRepository.findOne({
       select: {
         id: true,
@@ -50,7 +52,7 @@ export class BlogsToBloggerQueryRepository {
   async getAllBlogs(
     bloggerId: string,
     queryDto: BlogQueryToBloggerType,
-  ): Promise<BlogsToBloggerViewType> {
+  ): Promise<BlogsToBloggerViewModel> {
     const filter = this.makeBlogsFilter(bloggerId, queryDto.searchNameTerm);
     const blogs = await this.blogsRepository.find({
       select: {

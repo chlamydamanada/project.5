@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DevicesRepository } from '../../devices/repositories/device.repository';
 import { TokensType } from '../types/tokensType';
 import { JwtAdapter } from '../../../../adapters/jwt/jwtAdapter';
+import { Device } from '../../devices/domain/device.entity';
 
 export class CreateRTMetaCommand {
   constructor(
@@ -35,15 +36,17 @@ export class CreateRTMetaUseCase
     );
     // decode token to take iat and exp
     const tokenInfo: any = this.jwtAdapter.decodeToken(refreshToken);
-    // create device session
-    await this.devicesRepository.createDevice(
-      tokenInfo.deviceId,
-      command.ip,
-      command.deviceTitle,
-      tokenInfo.userId,
-      tokenInfo.iat!,
-      tokenInfo.exp!,
-    );
+
+    // create device session and save it
+    const newDevice = new Device();
+    newDevice.deviceId = deviceId;
+    newDevice.deviceTitle = command.deviceTitle;
+    newDevice.deviceIp = command.ip;
+    newDevice.lastActiveDate = tokenInfo.iat!;
+    newDevice.expirationDate = tokenInfo.exp!;
+    (newDevice.ownerId = command.userId),
+      await this.devicesRepository.saveDevice(newDevice);
+
     return { refreshToken, accessToken };
   }
 }

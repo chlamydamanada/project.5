@@ -13,8 +13,8 @@ import {
 import { PostPublicQueryRepository } from './query.repositories/postPublicQuery.repository';
 import { ExtractUserIdFromAT } from '../../auth/guards/extractUserIdFromAT.guard';
 import { CurrentUserId } from '../../../../helpers/decorators/currentUserId.decorator';
-import { postViewType } from '../types/postViewType';
-import { PostQueryPipe } from './pipes/postQueryPipe';
+import { postViewModel } from '../types/postViewModel';
+import { PostsQueryDto } from './pipes/postsQuery.dto';
 import { postQueryType } from '../types/postsQueryType';
 import { AccessTokenGuard } from '../../auth/guards/accessTokenAuth.guard';
 import { commentInputDtoPipe } from '../../comments/api/pipes/commentInputDtoPipe';
@@ -25,12 +25,15 @@ import { CreateCommentCommand } from '../../comments/useCases/createComment.useC
 import { CommentQueryDto } from '../../comments/api/pipes/commentQueryDto';
 import { CommentsViewType } from '../../comments/types/commentsViewType';
 import { commentQueryType } from '../../comments/types/commentQueryType';
-import { postsViewType } from '../types/postsViewType';
+import { postsViewModel } from '../types/postsViewModel';
 import { CurrentUserInfo } from '../../../../helpers/decorators/currentUserIdAndLogin';
 import { UserInfoType } from '../../auth/types/userInfoType';
 import { StatusPipe } from '../../likeStatus/pipes/statusPipe';
 import { GeneratePostLikeStatusCommand } from '../../likeStatus/useCases/generatePostLikeStatus.useCase';
+import { ApiTags } from '@nestjs/swagger';
+import { GetAllPostsSwaggerDecorator } from '../../../../swagger/decorators/public/posts/getAllPosts.swagger.decorator';
 
+@ApiTags('Public Posts')
 @Controller('posts')
 export class PostPublicController {
   constructor(
@@ -40,11 +43,12 @@ export class PostPublicController {
   ) {}
 
   @Get()
+  @GetAllPostsSwaggerDecorator()
   @UseGuards(ExtractUserIdFromAT)
   async getAllPosts(
-    @Query() query: PostQueryPipe,
+    @Query() query: PostsQueryDto,
     @CurrentUserId() userId: string | null,
-  ): Promise<postsViewType> {
+  ): Promise<postsViewModel> {
     const posts = await this.postQueryRepository.findAllPosts(
       query as postQueryType,
       userId,
@@ -57,7 +61,7 @@ export class PostPublicController {
   async getPostByPostId(
     @Param('id') postId: string,
     @CurrentUserId() userId: string | null,
-  ): Promise<postViewType> {
+  ): Promise<postViewModel> {
     const post = await this.postQueryRepository.findPostByPostId(
       postId,
       userId,
@@ -109,7 +113,7 @@ export class PostPublicController {
     @CurrentUserInfo() userInfo: UserInfoType,
     @Body() statusDto: StatusPipe,
   ): Promise<void> {
-    await this.commandBus.execute(
+    await this.commandBus.execute<GeneratePostLikeStatusCommand>(
       new GeneratePostLikeStatusCommand(
         postId,
         userInfo.id,

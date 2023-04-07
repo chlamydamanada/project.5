@@ -41,7 +41,7 @@ export class ConfirmEmailUseCase
 
     // confirm user`s email
     confirmationInfo.isConfirmed = true;
-    await this.usersRepository.confirmEmail(confirmationInfo.userId);
+    await this.usersRepository.saveEmailConfirmationInfo(confirmationInfo);
     return;
   }
 }

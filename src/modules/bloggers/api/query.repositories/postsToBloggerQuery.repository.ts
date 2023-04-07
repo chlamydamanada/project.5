@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from '../../domain/post.entity';
 import { Repository } from 'typeorm';
-import { postViewType } from '../../../public/posts/types/postViewType';
+import { postViewModel } from '../../../public/posts/types/postViewModel';
 
 @Injectable()
 export class PostsToBloggerQueryRepository {
@@ -10,7 +10,7 @@ export class PostsToBloggerQueryRepository {
     @InjectRepository(Post)
     private readonly postsRepository: Repository<Post>,
   ) {}
-  async getPostByPostId(postId: string): Promise<postViewType | null> {
+  async getPostByPostId(postId: string): Promise<postViewModel | null> {
     const post = await this.postsRepository.findOneBy({ id: postId });
     if (!post) return null;
     return {

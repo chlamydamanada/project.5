@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { UserToCheckCredentialsType } from '../types/userToCheckCredentialsType';
 import { User } from '../../../superAdmin/domain/users.entities/user.entity';
 import { BanList } from '../../../bloggers/domain/banStatus.entity';
@@ -11,7 +11,6 @@ import { PasswordRecoveryInfo } from '../../../superAdmin/domain/users.entities/
 @Injectable()
 export class UsersRepository {
   constructor(
-    @InjectDataSource() private dataSource: DataSource,
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(BanList)
     private readonly banListRepository: Repository<BanList>,
@@ -26,17 +25,23 @@ export class UsersRepository {
   async findUserByLoginOrEmail(
     loginOrEmail: string,
   ): Promise<null | UserToCheckCredentialsType> {
-    const user = await this.dataSource.query(
-      `
-SELECT u.*, b."isBanned", b."banDate", b."banReason"
-FROM public."user" u 
-LEFT JOIN public."ban_info" b
-ON b."userId" = u."id" 
-WHERE "login" = $1 OR "email" = $1`,
-      [loginOrEmail],
-    );
-    if (user.length < 1) return null;
-    return user[0];
+    const user = await this.usersRepository.findOne({
+      relations: {
+        banInfo: true,
+      },
+      select: {
+        id: true,
+        login: true,
+        email: true,
+        passwordHash: true,
+        banInfo: {
+          isBanned: true,
+        },
+      },
+      where: [{ login: loginOrEmail }, { email: loginOrEmail }], // Запрос с оператором OR
+    });
+    if (!user) return null;
+    return user;
   }
 
   async isUserExistByLoginOrEmail(
@@ -74,88 +79,68 @@ WHERE "login" = $1 OR "email" = $1`,
     return;
   }
 
-  async findUserByConfirmationCode(code: string): Promise<null | {
-    userId: string;
-    confirmationCode: string;
-    expirationDate: Date;
-    isConfirmed: boolean;
-  }> {
-    return await this.userEmailConfirmationInfoRepository.findOneBy({
-      confirmationCode: code,
+  async findUserByConfirmationCode(
+    code: string,
+  ): Promise<null | EmailConfirmationInfo> {
+    return await this.userEmailConfirmationInfoRepository.findOne({
+      where: {
+        confirmationCode: code,
+      },
     });
-  }
-
-  async confirmEmail(userId: string): Promise<void> {
-    await this.userEmailConfirmationInfoRepository.update(
-      { userId: userId },
-      { isConfirmed: true },
-    );
-    return;
   }
 
   async findUserAndConfirmationInfoByEmail(email: string): Promise<null | {
     id: string;
-    login: string;
-    email: string;
-    isConfirmed: boolean;
+    emailConfirmationInfo: {
+      isConfirmed: boolean;
+    };
   }> {
-    const user = await this.dataSource.query(
-      `SELECT u."id", u."login", u."email", e."isConfirmed"
-FROM public."user" u LEFT JOIN "email_confirmation_info" e ON e."userId" = u."id"
-WHERE u."email" = $1`,
-      [email],
-    );
-    if (user.length < 1) return null;
-    return user[0];
+    const user = await this.usersRepository.findOne({
+      relations: {
+        emailConfirmationInfo: true,
+      },
+      select: {
+        id: true,
+        emailConfirmationInfo: {
+          isConfirmed: true,
+        },
+      },
+      where: {
+        email: email,
+      },
+    });
+    if (!user) return null;
+    return user;
   }
 
   async updateEmailConfirmationCode(
     userId: string,
     newCode: string,
-  ): Promise<void> {
-    await this.dataSource.query(
-      `UPDATE public."email_confirmation_info" SET "confirmationCode" = $1 WHERE "userId" = $2`,
-      [newCode, userId],
-    );
-    return;
-  }
-
-  async updatePasswordRecoveryCode(
-    userId: string,
-    code: string,
     expirationDate: Date,
   ): Promise<void> {
-    await this.dataSource.query(
-      `UPDATE public."password_recovery_info" 
-SET "userId" = $1, "recoveryCode" = $2, "expirationDate" = $3 WHERE "userId" = $1`,
-      [userId, code, expirationDate],
+    await this.userEmailConfirmationInfoRepository.update(
+      { userId: userId },
+      { confirmationCode: newCode, expirationDate: expirationDate },
     );
     return;
   }
 
-  async findUserByPasswordRecoveryCode(code: string): Promise<null | {
-    id: string;
-    login: string;
-    email: string;
-    expirationDate: string;
-  }> {
-    const user = await this.dataSource.query(
-      `SELECT u."id", u."login", u."email", p."expirationDate"
-FROM public."user" u LEFT JOIN public."password_recovery_info" p
-ON p."userId" = u."id" WHERE p."recoveryCode" = $1`,
-      [code],
-    );
-    if (user.length < 1) return null;
-    return user[0];
+  async findUserPasswordRecoveryInfo(
+    code: string,
+  ): Promise<null | PasswordRecoveryInfo> {
+    const recoveryInfo = await this.userRecoveryInfoRepository.findOneBy({
+      recoveryCode: code,
+    });
+    return recoveryInfo;
   }
 
   async updatePasswordHash(
     userId: string,
     passwordHash: string,
   ): Promise<void> {
-    await this.dataSource.query(
-      `UPDATE public."user" SET "passwordHash" = $1 WHERE id = $2`,
-      [passwordHash, userId],
+    await this.usersRepository.update(
+      { id: userId },
+      { passwordHash: passwordHash },
     );
     return;
   }

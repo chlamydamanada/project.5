@@ -15,7 +15,7 @@ export class JwtAdapter {
     userLogin: string,
     deviceId: string,
   ): Promise<string> {
-    return this.jwtService.signAsync(
+    const token = await this.jwtService.signAsync(
       {
         userId,
         userLogin,
@@ -26,6 +26,7 @@ export class JwtAdapter {
         secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
       },
     );
+    return token;
   }
 
   async createAccessToken(

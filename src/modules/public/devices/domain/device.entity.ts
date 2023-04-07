@@ -18,7 +18,7 @@ export class Device {
   @Column()
   expirationDate: number;
 
-  @ManyToOne(() => User, (u) => u.banInfo, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (u) => u.devices, { onDelete: 'CASCADE' })
   @JoinColumn()
   owner: User;
 

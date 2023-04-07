@@ -14,10 +14,12 @@ import { blogViewType } from '../types/blogViewType';
 import { PostPublicQueryRepository } from '../../posts/api/query.repositories/postPublicQuery.repository';
 import { ExtractUserIdFromAT } from '../../auth/guards/extractUserIdFromAT.guard';
 import { CurrentUserId } from '../../../../helpers/decorators/currentUserId.decorator';
-import { postsViewType } from '../../posts/types/postsViewType';
+import { postsViewModel } from '../../posts/types/postsViewModel';
 import { postQueryType } from '../../posts/types/postsQueryType';
-import { PostQueryPipe } from '../../posts/api/pipes/postQueryPipe';
+import { PostsQueryDto } from '../../posts/api/pipes/postsQuery.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Public Blogs')
 @Controller('blogs')
 export class BlogPublicController {
   constructor(
@@ -47,9 +49,9 @@ export class BlogPublicController {
   @UseGuards(ExtractUserIdFromAT)
   async getAllPostsByBlogId(
     @Param('blogId') blogId: string,
-    @Query() query: PostQueryPipe,
+    @Query() query: PostsQueryDto,
     @CurrentUserId() userId: string | null,
-  ): Promise<postsViewType> {
+  ): Promise<postsViewModel> {
     const blog = await this.blogQueryRepository.findBlogById(blogId);
     if (!blog) throw new NotFoundException('Blog with this id does not exist');
 

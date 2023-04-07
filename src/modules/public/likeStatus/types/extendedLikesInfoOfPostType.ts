@@ -1,9 +1,17 @@
-import { newestLikesForPostType } from './newestLikesForPostType';
+import { newestLikesForPostModel } from './newestLikesForPostModel';
 import { reactionStatusType } from './statusType';
+import { ApiProperty } from '@nestjs/swagger';
 
-export type extendedLikesInfoType = {
+export class extendedLikesInfoModel {
+  @ApiProperty()
   likesCount: number;
+
+  @ApiProperty()
   dislikesCount: number;
+
+  @ApiProperty({ default: 'None' })
   myStatus: string;
-  newestLikes: newestLikesForPostType[];
-};
+
+  @ApiProperty({ isArray: true, type: newestLikesForPostModel })
+  newestLikes: newestLikesForPostModel[];
+}

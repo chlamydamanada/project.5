@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   HttpCode,
-  NotFoundException,
   Param,
   Post,
   Put,
@@ -13,24 +12,34 @@ import {
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { UsersQueryRepositoryToSA } from './query.repositories/usersToSAQuery.repository';
-import { UsersViewType } from '../types/users/usersViewType';
+import { UsersViewModel } from '../types/users/usersViewModel';
 import { CreateUserCommand } from '../application/users.useCases/createUser.useCase';
 import { DeleteUserCommand } from '../application/users.useCases/deleteUser.useCase';
-import { UserViewType } from '../types/users/userViewType';
+import { UserViewModel } from '../types/users/userViewType';
 import { userQueryType } from '../types/users/userQueryType';
 import { BanOrUnbanUserCommand } from '../application/users.useCases/banOrUnbanUser.useCase';
 import { BasicAuthGuard } from '../../public/auth/guards/auth-guard';
-import { UserQueryPipe } from './pipes/users.pipes/userQueryPipe';
-import { userInputModelPipe } from './pipes/users.pipes/userInputDtoPipe';
-import { BanStatusInputModelPipe } from './pipes/users.pipes/banStatusInputModelPipe';
-import { BanOrUnbanBlogPipe } from './pipes/blogs.pipes/banOrUnbanBlog.pipe';
+import { UsersToSAQueryDto } from './pipes/users.pipes/usersToSAQuery.dto';
+import { userCreateInputDto } from './pipes/users.pipes/userCreateInput.dto';
+import { BanOrUnbanUserBySADto } from './pipes/users.pipes/banOrUnbanUserBySA.dto';
+import { BanOrUnbanBlogDto } from './pipes/blogs.pipes/banOrUnbanBlog.dto';
 import { BanOrUnbanBlogCommand } from '../application/blogs.useCases/banOrUnbanBlog.useCase';
 import { BlogBindToUserCommand } from '../application/blogs.useCases/blogBindToUser.useCase';
 import { blogQueryType } from '../../public/blogs/types/blogsQweryType';
-import { BlogQueryToSAPipe } from './pipes/blogs.pipes/blogQueryToSA.pipe';
+import { BlogsToSAQueryDto } from './pipes/blogs.pipes/blogsToSAQuery.dto';
 import { BlogsToSAQueryRepository } from './query.repositories/blogsToSAQuery.repository';
-import { BlogsSAType } from '../types/blogs/blogsSAType';
+import { BlogsSAModel } from '../types/blogs/blogsSAModel';
+import { ApiBasicAuth, ApiTags } from '@nestjs/swagger';
+import { GetBlogsBySASwaggerDecorator } from '../../../swagger/decorators/sa/blogs/getBlogsBySA.swagger.decorator';
+import { BlogBindToUserSwaggerDecorator } from '../../../swagger/decorators/sa/blogs/blogBindToUser.swagger.decorator';
+import { BanBlogBySASwaggerDecorator } from '../../../swagger/decorators/sa/blogs/banBlogBySA.swagger.decorator';
+import { GetUsersBySASwaggerDecorator } from '../../../swagger/decorators/sa/users/getUsersBySA.swagger.decorator';
+import { CreateUserBySASwaggerDecorator } from '../../../swagger/decorators/sa/users/createUserBySASwaggerDecorator';
+import { DeleteUserBySASwaggerDecorator } from '../../../swagger/decorators/sa/users/deleteUserBySA.swagger.decorator';
+import { BanUserBySASwaggerDecorator } from '../../../swagger/decorators/sa/users/banUserBySA.swagger.decorator';
 
+@ApiTags('SuperAdmin')
+@ApiBasicAuth()
 @UseGuards(BasicAuthGuard)
 @Controller('sa')
 export class SaController {
@@ -41,7 +50,8 @@ export class SaController {
   ) {}
 
   @Get('blogs')
-  async getAllBlogs(@Query() query: BlogQueryToSAPipe): Promise<BlogsSAType> {
+  @GetBlogsBySASwaggerDecorator()
+  async getAllBlogs(@Query() query: BlogsToSAQueryDto): Promise<BlogsSAModel> {
     const blogs = await this.blogsQueryRepository.findAllBlogsToSA(
       query as blogQueryType,
     );
@@ -49,19 +59,23 @@ export class SaController {
   }
 
   @Put('blogs/:id/bind-with-user/:userId')
+  @BlogBindToUserSwaggerDecorator()
   @HttpCode(204)
   async blogBindToUser(
     @Param('id') blogId: string,
     @Param('userId') userId: string,
   ): Promise<void> {
-    await this.commandBus.execute(new BlogBindToUserCommand(blogId, userId));
+    await this.commandBus.execute<BlogBindToUserCommand>(
+      new BlogBindToUserCommand(blogId, userId),
+    );
     return;
   }
 
   @Get('users')
+  @GetUsersBySASwaggerDecorator()
   async getAllUsers(
-    @Query() query: UserQueryPipe,
-  ): Promise<UsersViewType | string> {
+    @Query() query: UsersToSAQueryDto,
+  ): Promise<UsersViewModel> {
     const users = await this.usersQueryRepository.getAllUsers(
       query as userQueryType,
     );
@@ -69,10 +83,11 @@ export class SaController {
   }
 
   @Post('users')
+  @CreateUserBySASwaggerDecorator()
   async createUser(
-    @Body() userInputModel: userInputModelPipe,
-  ): Promise<UserViewType> {
-    const newUserId = await this.commandBus.execute(
+    @Body() userInputModel: userCreateInputDto,
+  ): Promise<UserViewModel> {
+    const newUserId = await this.commandBus.execute<CreateUserCommand, string>(
       new CreateUserCommand(
         userInputModel.login,
         userInputModel.email,
@@ -84,21 +99,25 @@ export class SaController {
   }
 
   @Delete('users/:id')
+  @DeleteUserBySASwaggerDecorator()
   @HttpCode(204)
   async deleteUserByUserId(
     @Param('id') userId: string,
   ): Promise<void | string> {
-    await this.commandBus.execute(new DeleteUserCommand(userId));
+    await this.commandBus.execute<DeleteUserCommand>(
+      new DeleteUserCommand(userId),
+    );
     return;
   }
 
   @Put('users/:id/ban')
+  @BanUserBySASwaggerDecorator()
   @HttpCode(204)
   async banOrUnbanUser(
     @Param('id') userId: string,
-    @Body() banStatusInputModel: BanStatusInputModelPipe,
+    @Body() banStatusInputModel: BanOrUnbanUserBySADto,
   ) {
-    await this.commandBus.execute(
+    await this.commandBus.execute<BanOrUnbanUserCommand>(
       new BanOrUnbanUserCommand(
         userId,
         banStatusInputModel.isBanned,
@@ -109,12 +128,13 @@ export class SaController {
   }
 
   @Put('blogs/:id/ban')
+  @BanBlogBySASwaggerDecorator()
   @HttpCode(204)
   async banOrUnbanBlog(
     @Param('id') blogId: string,
-    @Body() banStatusInputModel: BanOrUnbanBlogPipe,
+    @Body() banStatusInputModel: BanOrUnbanBlogDto,
   ) {
-    await this.commandBus.execute(
+    await this.commandBus.execute<BanOrUnbanBlogCommand>(
       new BanOrUnbanBlogCommand(blogId, banStatusInputModel.isBanned),
     );
     return;

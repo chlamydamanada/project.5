@@ -1,22 +1,34 @@
 import { Injectable } from '@nestjs/common';
-import { DeviceViewType } from '../../types/deviceViewType';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { DeviceViewModel } from '../../types/deviceViewModel';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Device } from '../../domain/device.entity';
 
 @Injectable()
 export class DevicesQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Device)
+    private readonly devicesRepository: Repository<Device>,
+  ) {}
 
-  async findDevicesByUserId(userId: string): Promise<DeviceViewType[] | null> {
-    const devices = await this.dataSource.query(
-      `SELECT "deviceId", "deviceIp" as "ip", "deviceTitle" as "title", "lastActiveDate"
-FROM public."device" WHERE "ownerId" = $1`,
-      [userId],
-    );
-    if (devices.length < 1) return null;
+  async findDevicesByUserId(userId: string): Promise<DeviceViewModel[] | null> {
+    const devices = await this.devicesRepository.find({
+      select: {
+        deviceId: true,
+        deviceIp: true,
+        deviceTitle: true,
+        lastActiveDate: true,
+      },
+      where: {
+        ownerId: userId,
+      },
+    });
+
+    if (!devices) return null;
     return devices.map((d) => ({
-      ip: d.ip,
-      title: d.title,
+      ip: d.deviceIp,
+      title: d.deviceTitle,
       lastActiveDate: new Date(d.lastActiveDate * 1000).toISOString(),
       deviceId: d.deviceId,
     }));

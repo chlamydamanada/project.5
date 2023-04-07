@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Post } from '../../../../bloggers/domain/post.entity';
-import { postsViewType } from '../../types/postsViewType';
+import { postsViewModel } from '../../types/postsViewModel';
 import { postQueryType } from '../../types/postsQueryType';
-import { postViewType } from '../../types/postViewType';
+import { postViewModel } from '../../types/postViewModel';
 import { PostLikeStatus } from '../../../likeStatus/domain/postLikeStatus.entity';
 
 @Injectable()
@@ -76,7 +76,7 @@ export class PostPublicQueryRepository {
     blogId: string,
     queryDto: postQueryType,
     userId?: string | null,
-  ): Promise<postsViewType> {
+  ): Promise<postsViewModel> {
     const posts = await this.postsRepository.find({
       select: {
         id: true,
@@ -136,7 +136,7 @@ export class PostPublicQueryRepository {
   async findPostByPostId(
     postId: string,
     userId?: string | null,
-  ): Promise<postViewType | null> {
+  ): Promise<postViewModel | null> {
     const post = await this.postsRepository.findOne({
       select: {
         id: true,
@@ -168,9 +168,9 @@ export class PostPublicQueryRepository {
   async convertToViewPost(
     post: Post,
     userId: string | null | undefined,
-  ): Promise<postViewType> {
+  ): Promise<postViewModel> {
     //make view post and find like count and dislike count
-    const newPost: postViewType = {
+    const newPost: postViewModel = {
       id: post.id,
       title: post.title,
       shortDescription: post.shortDescription,

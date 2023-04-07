@@ -5,6 +5,6 @@ export class EmailPipe {
   @IsEmail()
   @IsNotEmpty()
   @IsString()
-  @Transform(({ value }) => value?.trim())
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   email: string;
 }
