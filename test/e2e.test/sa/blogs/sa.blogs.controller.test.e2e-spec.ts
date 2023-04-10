@@ -49,6 +49,7 @@ describe('Testing sa blogs controller', () => {
     it('should login blogger and return access token', async () => {
       token = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(saBlogsConstants.login)
         .expect(200);
     });
@@ -129,21 +130,34 @@ describe('Testing sa blogs controller', () => {
         page: 1,
         pageSize: 10,
         totalCount: 4,
-        items: expect.any(Array).toHaveLength(4),
+        items: expect.any(Array),
       });
+
+      expect(blogs.body.items).toHaveLength(4);
     });
-    it('shouldn`t get posts of blog which was banned: STATUS 200', async () => {
-      const posts = await request(server)
-        .get(`/blogs${blog_1.body.id}/posts`)
+    it('shouldn`t get posts of blog which was banned: STATUS 404', async () => {
+      await request(server).get(`/blogs/${blog_1.body.id}/posts`).expect(404);
+    });
+    it('should unban blog by sa: STATUS 204', async () => {
+      await request(server)
+        .put(`/sa/blogs/${blog_1.body.id}/ban`)
+        .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
+        .send(saBlogsConstants.unbanBlog)
+        .expect(204);
+    });
+    it('should get blog by id which was unbanned in public api: STATUS 200', async () => {
+      const res = await request(server)
+        .get(`/blogs/${blog_1.body.id}`)
         .expect(200);
 
-      expect(posts.body).toEqual({
-        pagesCount: 1,
-        page: 1,
-        pageSize: 10,
-        totalCount: 0,
-        items: expect.any(Array).toHaveLength(0),
-      });
+      expect(res.body).toEqual(blog_1.body);
+    });
+    it('should get posts of blog which was unbanned: STATUS 200', async () => {
+      const res = await request(server)
+        .get(`/blogs/${blog_1.body.id}/posts`)
+        .expect(200);
+
+      expect(res.body.items).toHaveLength(2);
     });
   });
 
@@ -152,10 +166,7 @@ describe('Testing sa blogs controller', () => {
       await request(server).delete('/testing/all-data').expect(204);
     });
   });
-  //describe('', () => {});
-  //describe('', () => {});
-  //describe('', () => {});
-  //describe('', () => {});
+  //describe('GET BLOGS BY SA', () => {});
 
   afterAll(async () => {
     await request(server).delete('/testing/all-data').expect(204);

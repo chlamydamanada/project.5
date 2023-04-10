@@ -268,10 +268,6 @@ WHERE u."login" = $1 AND u."email" = $2`,
         .send(authConstants.login_1)
         .expect(200);
     });
-    /*it('delay', async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      expect(2 + 2).toBe(4);
-    });*/
     it('should login user with correct data: STATUS 200', async () => {
       await delay(1000);
       token_2 = await request(server)

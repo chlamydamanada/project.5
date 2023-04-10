@@ -86,15 +86,16 @@ export class UsersQueryRepositoryToSA {
     // make filter by ban status
     const banFilter: any = this.createBanStatusFilter(banStatus);
     if (login && email) {
-      banFilter.login = ILike(`%${login}%`);
-      banFilter.email = ILike(`%${email}%`);
-      return banFilter;
+      return [
+        { ...banFilter, login: ILike(`%${login}%`) },
+        { ...banFilter, email: ILike(`%${email}%`) },
+      ];
     }
     if (login) {
-      return (banFilter.login = ILike(`%${login}%`));
+      return { ...banFilter, login: ILike(`%${login}%`) };
     }
     if (email) {
-      return (banFilter.email = ILike(`%${email}%`));
+      return { ...banFilter, email: ILike(`%${email}%`) };
     }
     return banFilter;
   }

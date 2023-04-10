@@ -36,7 +36,10 @@ export const saUsersConstants = {
     password: '5678912',
     email: 'ann@gmail.com',
   },
-
+  valid_login_1: {
+    loginOrEmail: 'Kate',
+    password: '1234567',
+  },
   invalidUser_login: {
     login: 1234567,
     password: 'valid string',
