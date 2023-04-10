@@ -35,7 +35,7 @@ import { CheckEmailIsConfirmedCommand } from '../useCases/checkEmailIsConfirmed.
 import { CreateRecoveryCodeCommand } from '../useCases/createRecoveryCode.useCase';
 import { NewPassRecoveryDtoPipe } from './pipes/newPassRecoveryDtoPipe';
 import { ChangePasswordCommand } from '../useCases/changePassword.useCase';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { userCreateInputDto } from '../../../superAdmin/api/pipes/users.pipes/userCreateInput.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { TokensType } from '../types/tokensType';
@@ -79,7 +79,8 @@ export class AuthController {
   }
 
   @Post('registration')
-  @UseGuards(ThrottlerGuard)
+  @Throttle(5, 10)
+  //@UseGuards(ThrottlerGuard)
   @HttpCode(204)
   async registration(
     @Body() userInputModel: userCreateInputDto,
@@ -136,7 +137,6 @@ export class AuthController {
       ),
     );
     //console.log(tokens.refreshToken);
-
     response.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: true,
