@@ -81,6 +81,7 @@ describe('Testing auth public controller', () => {
     it('should login user and return access token in body and refresh token in cookie: STATUS 200 ', async () => {
       token = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(authConstants.login_1)
         .expect(200);
     });
@@ -247,24 +248,28 @@ WHERE u."login" = $1 AND u."email" = $2`,
     it('shouldn`t login user with incorrect loginOrEmail: STATUS 400', async () => {
       await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(authConstants.invalid_login_loginOrEmail)
         .expect(400);
     });
     it('shouldn`t login user with incorrect password: STATUS 400', async () => {
       await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(authConstants.invalid_login_password)
         .expect(400);
     });
     it('shouldn`t login user without authorization: STATUS 401', async () => {
       await request(server)
         .post('/auth/login')
-        .send(authConstants.login_2)
+        .set('User-Agent', 'Chrome')
+        .send(authConstants.login_1)
         .expect(401);
     });
     it('should login user with correct data: STATUS 200', async () => {
       token_1 = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(authConstants.login_1)
         .expect(200);
     });
@@ -272,6 +277,7 @@ WHERE u."login" = $1 AND u."email" = $2`,
       await delay(1000);
       token_2 = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(authConstants.login_1)
         .expect(200);
     });
@@ -391,12 +397,14 @@ WHERE u."login" = $1 AND u."email" = $2`,
     it('shouldn`t login user with old password: STATUS 401', async () => {
       await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(authConstants.login_1)
         .expect(401);
     });
     it('should login user with correct data: STATUS 200', async () => {
       await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(authConstants.new_login_1)
         .expect(200);
     });
@@ -421,6 +429,7 @@ WHERE u."login" = $1 AND u."email" = $2`,
     it('should login user and return access token in body and refresh token in cookie: STATUS 200 ', async () => {
       token_1 = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(authConstants.login_1)
         .expect(200);
     });

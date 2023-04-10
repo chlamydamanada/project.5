@@ -84,7 +84,7 @@ export class UsersQueryRepositoryToSA {
     banStatus: BanStatusType,
   ) {
     // make filter by ban status
-    const banFilter: any = this.createBanStatusFilter(banStatus);
+    const banFilter = this.createBanStatusFilter(banStatus);
     if (login && email) {
       return [
         { ...banFilter, login: ILike(`%${login}%`) },

@@ -78,8 +78,8 @@ export class AuthController {
     return user;
   }
 
-  @Post('registration')
   @UseGuards(ThrottlerGuard)
+  @Post('registration')
   @HttpCode(204)
   async registration(
     @Body() userInputModel: userCreateInputDto,
