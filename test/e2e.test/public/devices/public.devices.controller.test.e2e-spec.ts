@@ -33,6 +33,7 @@ describe('Testing device public controller', () => {
     it('should login first user and return tokens 1: STATUS 200', async () => {
       token_1 = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(devicesConstants.login_1)
         .expect(200);
     });
@@ -73,18 +74,21 @@ describe('Testing device public controller', () => {
     it('should login first user and return tokens 2: STATUS 200', async () => {
       token_2 = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(devicesConstants.login_1)
         .expect(200);
     });
     it('should login first user and return tokens 3: STATUS 200', async () => {
       token_3 = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(devicesConstants.login_1)
         .expect(200);
     });
     it('should login first user and return tokens 4: STATUS 200', async () => {
       token_4 = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(devicesConstants.login_1)
         .expect(200);
     });
@@ -107,13 +111,13 @@ describe('Testing device public controller', () => {
         .set('Cookie', token_2_1.headers['set-cookie'])
         .expect(403);
     });
-    it('should delete device by owner: STATUS 204', async () => {
+    it('should delete device by id by owner: STATUS 204', async () => {
       await request(server)
         .delete(`/security/devices/${devices.body[1].deviceId}`)
         .set('Cookie', token_1.headers['set-cookie'])
         .expect(204);
     });
-    it('should get all devices of first user: STATUS 200', async () => {
+    it('should get 3 devices of first user: STATUS 200', async () => {
       const res = await request(server)
         .get('/security/devices')
         .set('Cookie', token_1.headers['set-cookie'])
@@ -121,7 +125,7 @@ describe('Testing device public controller', () => {
 
       expect(res.body).toHaveLength(3);
     });
-    it('shouldn`t delete device which doesn`t exist by owner: STATUS 404', async () => {
+    it('shouldn`t delete device by id which doesn`t exist by owner: STATUS 404', async () => {
       await request(server)
         .delete(`/security/devices/${devices.body[1].deviceId}`)
         .set('Cookie', token_1.headers['set-cookie'])

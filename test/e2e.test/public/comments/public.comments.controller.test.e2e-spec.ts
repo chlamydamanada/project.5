@@ -40,12 +40,14 @@ describe('Testing comments by users public controller', () => {
     it('should login user_1 and return access token', async () => {
       token_1 = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(commentsConstants.login_1)
         .expect(200);
     });
     it('should login user_2 and return access token', async () => {
       token_2 = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(commentsConstants.login_2)
         .expect(200);
     });
@@ -208,12 +210,14 @@ describe('Testing comments by users public controller', () => {
     it('should login user_1 and return access token', async () => {
       token_1 = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(commentsConstants.login_1)
         .expect(200);
     });
     it('should login user_2 and return access token', async () => {
       token_2 = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(commentsConstants.login_2)
         .expect(200);
     });
@@ -317,12 +321,14 @@ describe('Testing comments by users public controller', () => {
     it('should login user_1 and return access token', async () => {
       token_1 = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(commentsConstants.login_1)
         .expect(200);
     });
     it('should login user_2 and return access token', async () => {
       token_2 = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(commentsConstants.login_2)
         .expect(200);
     });
@@ -404,12 +410,14 @@ describe('Testing comments by users public controller', () => {
     it('should login user_1 and return access token', async () => {
       token_1 = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(commentsConstants.login_1)
         .expect(200);
     });
     it('should login user_2 and return access token', async () => {
       token_2 = await request(server)
         .post('/auth/login')
+        .set('User-Agent', 'Chrome')
         .send(commentsConstants.login_2)
         .expect(200);
     });
