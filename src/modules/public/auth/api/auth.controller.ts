@@ -50,7 +50,7 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  @UseGuards(ThrottlerGuard, PasswordAuthGuard)
+  @UseGuards(/*ThrottlerGuard,*/ PasswordAuthGuard)
   @HttpCode(200)
   async login(
     @CurrentUserInfo() userInfo: UserInfoType,
@@ -79,7 +79,7 @@ export class AuthController {
   }
 
   @Post('registration')
-  @UseGuards(ThrottlerGuard)
+  //@UseGuards(ThrottlerGuard)
   @HttpCode(204)
   async registration(
     @Body() userInputModel: userCreateInputDto,
@@ -95,7 +95,7 @@ export class AuthController {
   }
 
   @Post('registration-confirmation')
-  @UseGuards(ThrottlerGuard)
+  //@UseGuards(ThrottlerGuard)
   @HttpCode(204)
   async registrationConfirmation(@Body() codeDto: CodePipe): Promise<void> {
     await this.commandBus.execute<ConfirmEmailCommand>(
@@ -105,7 +105,7 @@ export class AuthController {
   }
 
   @Post('registration-email-resending')
-  @UseGuards(ThrottlerGuard)
+  //@UseGuards(ThrottlerGuard)
   @HttpCode(204)
   async registrationEmailResending(@Body() emailDto: EmailPipe): Promise<void> {
     await this.commandBus.execute<CheckEmailIsConfirmedCommand>(
@@ -159,7 +159,7 @@ export class AuthController {
 
   @Post('password-recovery')
   @HttpCode(204)
-  @UseGuards(ThrottlerGuard)
+  //@UseGuards(ThrottlerGuard)
   async passwordRecovery(@Body() emailInputDto: EmailPipe): Promise<void> {
     await this.commandBus.execute<CreateRecoveryCodeCommand>(
       new CreateRecoveryCodeCommand(emailInputDto.email),
@@ -168,7 +168,7 @@ export class AuthController {
   }
 
   @Post('new-password')
-  @UseGuards(ThrottlerGuard)
+  //@UseGuards(ThrottlerGuard)
   @HttpCode(204)
   async newPassword(
     @Body() newPassRecoveryDto: NewPassRecoveryDtoPipe,
