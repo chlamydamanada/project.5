@@ -3,6 +3,7 @@ import { getApp } from '../../testsConnection';
 import request from 'supertest';
 import { saBlogsConstants } from './sa.blogs.constants';
 import { BlogToBloggerViewModel } from '../../../../src/modules/bloggers/types/blogs/blogToBloggerViewModel';
+import { createSeveralBlogs } from '../../helpers/createBlogs.helper';
 
 describe('Testing sa blogs controller', () => {
   let app: INestApplication;
@@ -16,20 +17,7 @@ describe('Testing sa blogs controller', () => {
     await request(server).delete('/testing/all-data').expect(204);
   });
 
-  const createSeveralBlogs = async (count: number) => {
-    const createdBlogs: BlogToBloggerViewModel[] = [];
-    for (let i = 0; i < count; i++) {
-      const result = await request(server)
-        .post('/sa/users')
-        .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(saBlogsConstants.blogger)
-        .expect(HttpStatus.CREATED);
-
-      createdBlogs.push(result.body);
-    }
-
-    return createdBlogs;
-  };
+  const blog = createSeveralBlogs(1, server);
 
   describe('BAN OR UNBAN BLOG by sa', () => {
     let blogs;

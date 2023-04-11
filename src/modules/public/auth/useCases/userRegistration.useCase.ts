@@ -66,10 +66,7 @@ export class UserRegistrationUseCase
       await this.usersRepository.saveEmailConfirmationInfo(confirmationInfo);
 
     //send confirmation code to user email
-    await this.mailService.sendRegistrationEmail(
-      confirmationCode,
-      command.email,
-    );
+    this.mailService.sendRegistrationEmail(confirmationCode, command.email);
     return;
   }
 }

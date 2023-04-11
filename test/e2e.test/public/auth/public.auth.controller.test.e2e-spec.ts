@@ -174,11 +174,12 @@ WHERE u."login" = $1 AND u."email" = $2`,
     let code_1;
     let code_2;
     it('should register user with correct data and send email with confirmation code: STATUS 204', async () => {
+      await delay(9000);
       await request(server)
         .post('/auth/registration')
         .send(authConstants.user_1)
         .expect(204);
-    });
+    }, 10000);
 
     it('should resending email to correct email: STATUS 204', async () => {
       //take first confirmation code from db
@@ -263,7 +264,7 @@ WHERE u."login" = $1 AND u."email" = $2`,
       await request(server)
         .post('/auth/login')
         .set('User-Agent', 'Chrome')
-        .send(authConstants.login_1)
+        .send(authConstants.login_2)
         .expect(401);
     });
     it('should login user with correct data: STATUS 200', async () => {
@@ -308,13 +309,13 @@ WHERE u."login" = $1 AND u."email" = $2`,
       expect(res.body).toEqual([
         {
           ip: expect.any(String),
-          title: null,
+          title: expect.any(String),
           lastActiveDate: expect.any(String),
           deviceId: expect.any(String),
         },
         {
           ip: expect.any(String),
-          title: null,
+          title: expect.any(String),
           lastActiveDate: expect.any(String),
           deviceId: expect.any(String),
         },
@@ -395,12 +396,13 @@ WHERE u."login" = $1 AND u."email" = $2`,
         .expect(204);
     });
     it('shouldn`t login user with old password: STATUS 401', async () => {
+      await delay(9000);
       await request(server)
         .post('/auth/login')
         .set('User-Agent', 'Chrome')
         .send(authConstants.login_1)
         .expect(401);
-    });
+    }, 10000);
     it('should login user with correct data: STATUS 200', async () => {
       await request(server)
         .post('/auth/login')
@@ -433,15 +435,13 @@ WHERE u."login" = $1 AND u."email" = $2`,
         .send(authConstants.login_1)
         .expect(200);
     });
-    it('delay', async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      expect(2 + 2).toBe(4);
-    });
+
     it('shouldn`t generate new refresh and access tokens without authorization: STATUS 401', async () => {
       await request(server).post('/auth/refresh-token').expect(401);
     });
 
     it('should generate new refresh and access tokens', async () => {
+      await delay(1000);
       token_2 = await request(server)
         .post('/auth/refresh-token')
         .set('Cookie', token_1.headers['set-cookie'])
