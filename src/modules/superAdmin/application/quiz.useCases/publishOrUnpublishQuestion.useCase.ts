@@ -20,6 +20,7 @@ export class PublishOrUnpublishQuestionUseCase
       throw new NotFoundException('The question with this id doesn`t exist');
     // change field published and save
     question.published = command.published;
+    question.updatedAt = new Date();
     await this.questionRepository.saveQuestion(question);
     return;
   }
