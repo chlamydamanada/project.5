@@ -162,29 +162,20 @@ const adapters = [BcryptAdapter, JwtAdapter];
     configModule,
     TypeOrmModule.forRootAsync({
       imports: [configModule],
-      useFactory: (configService: ConfigService) =>
-        configService.get('TEST') === 'test'
-          ? {
-              type: 'postgres',
-              //url: configService.get('DB_URL'),
-              host: configService.get('DB_HOST'),
-              port: parseInt(<string>configService.get('DB_PORT')),
-              username: configService.get('DB_USER_NAME'),
-              password: configService.get('DB_PASS'),
-              database: configService.get('DB_NAME'),
-              // entities: [],
-              //ssl: true,
-              autoLoadEntities: true,
-              synchronize: true,
-              logging: false,
-            }
-          : {
-              type: 'postgres',
-              url: configService.get('DB_URL'),
-              ssl: true,
-              autoLoadEntities: true,
-              synchronize: true,
-            },
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        url: configService.get('DB_URL'),
+        host: configService.get('DB_HOST'),
+        port: parseInt(<string>configService.get('DB_PORT')),
+        username: configService.get('DB_USER_NAME'),
+        password: configService.get('DB_PASS'),
+        database: configService.get('DB_NAME'),
+        // entities: [],
+        ssl: true,
+        autoLoadEntities: true,
+        synchronize: true,
+        logging: false,
+      }),
       inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([
