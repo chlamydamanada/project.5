@@ -17,5 +17,5 @@ export class QuestionViewModel {
   createdAt: Date;
 
   @ApiProperty()
-  updatedAt: Date;
+  updatedAt: Date | null;
 }

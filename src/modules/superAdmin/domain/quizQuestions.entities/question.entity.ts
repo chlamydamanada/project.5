@@ -14,8 +14,8 @@ export class Question {
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-  updatedAt: Date;
+  @Column({ type: 'timestamptz', nullable: true, default: null })
+  updatedAt: Date | null;
 
   @Column({ type: 'character varying', array: true })
   correctAnswers: string[];
