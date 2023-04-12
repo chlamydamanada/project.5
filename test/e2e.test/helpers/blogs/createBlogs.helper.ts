@@ -1,6 +1,6 @@
-import { BlogToBloggerViewModel } from '../../../src/modules/bloggers/types/blogs/blogToBloggerViewModel';
+import { BlogToBloggerViewModel } from '../../../../src/modules/bloggers/types/blogs/blogToBloggerViewModel';
 import request from 'supertest';
-import { saBlogsConstants } from '../sa/blogs/sa.blogs.constants';
+import { saBlogsConstants } from '../../sa/blogs/sa.blogs.constants';
 import { HttpStatus } from '@nestjs/common';
 
 export const createSeveralBlogs = async (count: number, server: any) => {

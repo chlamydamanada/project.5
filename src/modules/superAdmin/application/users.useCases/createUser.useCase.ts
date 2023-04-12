@@ -5,7 +5,6 @@ import { BcryptAdapter } from '../../../../adapters/bcrypt/bcryptAdapter';
 import { UsersRepositoryToSA } from '../../repositories/usersToSA.repository';
 import { User } from '../../domain/users.entities/user.entity';
 import { BanInfo } from '../../domain/users.entities/banInfo.entity';
-import { add } from 'date-fns';
 import { EmailConfirmationInfo } from '../../domain/users.entities/emailConfirmationInfo.entity';
 
 export class CreateUserCommand {

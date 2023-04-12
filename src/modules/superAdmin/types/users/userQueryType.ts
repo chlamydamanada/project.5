@@ -10,7 +10,7 @@ export type userQueryType = {
   sortDirection: SortDirection;
 };
 
-enum SortDirection {
+export enum SortDirection {
   desc = 'desc',
   asc = 'asc',
 }

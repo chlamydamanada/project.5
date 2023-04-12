@@ -30,13 +30,17 @@ export class MailService {
     passwordRecoveryCode: string,
     email: string,
   ): Promise<void> {
-    const message = emailExamples.passwordRecoveryEmail(passwordRecoveryCode);
-    await this.mailerService.sendMail({
-      to: email, //email of user
-      // from: in module default from
-      subject: 'Welcome! Confirm password recovery', // Subject line
-      html: message, // html body
-    });
-    return;
+    try {
+      const message = emailExamples.passwordRecoveryEmail(passwordRecoveryCode);
+      await this.mailerService.sendMail({
+        to: email, //email of user
+        // from: in module default from
+        subject: 'Welcome! Confirm password recovery', // Subject line
+        html: message, // html body
+      });
+      return;
+    } catch (e) {
+      console.log(e);
+    }
   }
 }

@@ -31,7 +31,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
   async validate(
     payload: RefreshTokenStrategyType,
   ): Promise<{ id: string; login: string; deviceId: string }> {
-    //console.log('RefreshTokenStrategy:', payload);
+    console.log('RefreshTokenStrategy:', payload);
 
     const device = await this.devicesRepository.findDeviceByDeviceId(
       payload.deviceId,

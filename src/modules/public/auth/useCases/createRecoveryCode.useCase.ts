@@ -40,7 +40,7 @@ export class CreateRecoveryCodeUseCase
     await this.usersRepository.saveRecoveryInfo(recoveryInfo);
 
     //send email with recovery code
-    await this.mailService.sendPasswordRecoveryEmail(
+    this.mailService.sendPasswordRecoveryEmail(
       passwordRecoveryCode,
       user.email,
     );

@@ -16,6 +16,7 @@ export class DeleteAllDataController {
       this.dataSource.query(`DELETE FROM public."post_like_status"`),
       this.dataSource.query(`DELETE FROM public."ban_list"`),
       this.dataSource.query(`DELETE FROM public."blog_ban_info"`),
+      this.dataSource.query(`DELETE FROM public."question"`),
     ]);
     await this.dataSource.query(`DELETE FROM public."comment"`);
     await this.dataSource.query(`DELETE FROM public."post"`);

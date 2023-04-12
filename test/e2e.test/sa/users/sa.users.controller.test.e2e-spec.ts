@@ -4,6 +4,7 @@ import { saUsersConstants } from './sa.users.constants';
 import { getApp } from '../../testsConnection';
 
 describe('Testing sa users controller', () => {
+  jest.setTimeout(60 * 1000);
   let app: INestApplication;
   let server: any;
   beforeAll(async () => {

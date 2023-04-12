@@ -82,6 +82,13 @@ import { PostLikeStatus } from './modules/public/likeStatus/domain/postLikeStatu
 import { GeneratePostLikeStatusUseCase } from './modules/public/likeStatus/useCases/generatePostLikeStatus.useCase';
 import { CommentLikeStatus } from './modules/public/likeStatus/domain/commentLikeStatus.entity';
 import { GenerateCommentLikeStatusUseCase } from './modules/public/likeStatus/useCases/generateCommentLikeStatus.useCase';
+import { Question } from './modules/superAdmin/domain/quizQuestions.entities/question.entity';
+import { QuestionsToSAQueryRepository } from './modules/superAdmin/api/query.repositories/questionsToSAQuery.repository';
+import { QuestionsToSARepository } from './modules/superAdmin/repositories/questionsToSA.repository';
+import { CreateQuestionUseCase } from './modules/superAdmin/application/quiz.useCases/createQuestion.useCase';
+import { DeleteQuestionUseCase } from './modules/superAdmin/application/quiz.useCases/deleteQuestion.useCase';
+import { PublishOrUnpublishQuestionUseCase } from './modules/superAdmin/application/quiz.useCases/publishOrUnpublishQuestion.useCase';
+import { UpdateQuestionUseCase } from './modules/superAdmin/application/quiz.useCases/updateQuestion.useCase';
 //import { IsBlogExistValidator } from './helpers/validators/isBlogExistById.validator';
 
 const repositories = [
@@ -106,6 +113,8 @@ const repositories = [
   PostsRepository,
   CommentsRepository,
   CommentsToBloggerQueryRepository,
+  QuestionsToSAQueryRepository,
+  QuestionsToSARepository,
 ];
 const useCases = [
   BanOrUnbanUserUseCase,
@@ -135,6 +144,10 @@ const useCases = [
   DeleteCommentUseCase,
   GeneratePostLikeStatusUseCase,
   GenerateCommentLikeStatusUseCase,
+  CreateQuestionUseCase,
+  DeleteQuestionUseCase,
+  PublishOrUnpublishQuestionUseCase,
+  UpdateQuestionUseCase,
 ];
 const strategies = [
   PasswordStrategy,
@@ -149,20 +162,26 @@ const adapters = [BcryptAdapter, JwtAdapter];
     configModule,
     TypeOrmModule.forRootAsync({
       imports: [configModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        url: configService.get('DB_URL'),
-        //host: configService.get('DB_HOST'),
-        //port: parseInt(<string>configService.get('DB_PORT')),
-        //username: configService.get('DB_USER_NAME'),
-        //password: configService.get('DB_PASS'),
-        //database: configService.get('DB_NAME'),
-        // entities: [],
-        ssl: true,
-        autoLoadEntities: true,
-        synchronize: true,
-        logging: false,
-      }),
+      useFactory: (configService: ConfigService) =>
+        configService.get('TEST')
+          ? {
+              type: 'postgres',
+              host: configService.get('DB_HOST'),
+              port: parseInt(<string>configService.get('DB_PORT')),
+              username: configService.get('DB_USER_NAME'),
+              password: configService.get('DB_PASS'),
+              database: configService.get('DB_NAME'),
+              autoLoadEntities: true,
+              synchronize: true,
+              logging: false,
+            }
+          : {
+              type: 'postgres',
+              url: configService.get('DB_URL'),
+              ssl: true,
+              autoLoadEntities: true,
+              synchronize: true,
+            },
       inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([
@@ -178,6 +197,7 @@ const adapters = [BcryptAdapter, JwtAdapter];
       Comment,
       PostLikeStatus,
       CommentLikeStatus,
+      Question,
     ]),
     PassportModule,
     MailModule, // 📧

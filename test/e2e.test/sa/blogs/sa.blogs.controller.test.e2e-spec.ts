@@ -3,7 +3,7 @@ import { getApp } from '../../testsConnection';
 import request from 'supertest';
 import { saBlogsConstants } from './sa.blogs.constants';
 import { BlogToBloggerViewModel } from '../../../../src/modules/bloggers/types/blogs/blogToBloggerViewModel';
-import { createSeveralBlogs } from '../../helpers/createBlogs.helper';
+import { createSeveralBlogs } from '../../helpers/blogs/createBlogs.helper';
 
 describe('Testing sa blogs controller', () => {
   let app: INestApplication;
