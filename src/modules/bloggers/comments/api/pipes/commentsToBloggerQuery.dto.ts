@@ -32,7 +32,7 @@ export class CommentToBloggerQueryDto {
   @ApiPropertyOptional({
     type: String,
     default: 'desc',
-    description: 'Available values : asc, desc',
+    enum: ['desc', 'asc'],
   })
   @IsOptional()
   @IsString()

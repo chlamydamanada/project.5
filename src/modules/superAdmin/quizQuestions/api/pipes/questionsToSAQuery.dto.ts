@@ -1,7 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
-import { SortDirectionType } from '../../../../../swagger/types/sortDirectionType';
 import { sortingDirection } from '../../../../../helpers/validators/sortingDirection';
 import { QuestionStatusType } from '../../types/questionStatusType';
 
@@ -17,7 +16,7 @@ export class QuestionsToSAQueryDto {
   bodySearchTerm: string | undefined;
 
   @ApiPropertyOptional({
-    type: QuestionStatusType,
+    type: String,
     default: 'all',
   })
   @IsOptional()
@@ -50,9 +49,9 @@ export class QuestionsToSAQueryDto {
   sortBy = 'createdAt';
 
   @ApiPropertyOptional({
-    type: SortDirectionType,
+    type: String,
     default: 'desc',
-    description: 'Available values : asc, desc',
+    enum: ['asc', 'desc'],
   })
   @IsString()
   @IsOptional()

@@ -14,15 +14,15 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CommentsPublicQueryRepository } from './query.repositories/commentsPublicQuery.repository';
 import { CurrentUserId } from '../../../../helpers/decorators/currentUserId.decorator';
 import { AccessTokenGuard } from '../../auth/guards/accessTokenAuth.guard';
-import { commentInputDtoPipe } from './pipes/commentInputDtoPipe';
+import { commentCreateInputDto } from './pipes/commentCreateInput.dto';
 import { UpdateCommentCommand } from '../useCases/updateComment.useCase';
 import { DeleteCommentCommand } from '../useCases/deleteComment.useCase';
 import { CurrentUserInfo } from '../../../../helpers/decorators/currentUserIdAndLogin';
 import { UserInfoType } from '../../auth/types/userInfoType';
-import { StatusPipe } from '../../likeStatus/pipes/statusPipe';
+import { LikeStatusDto } from '../../likeStatus/pipes/likeStatus.dto';
 import { GenerateCommentLikeStatusCommand } from '../../likeStatus/useCases/generateCommentLikeStatus.useCase';
 import { ApiTags } from '@nestjs/swagger';
-import { CommentViewType } from '../types/commentViewType';
+import { CommentViewModel } from '../types/commentViewModel';
 
 @ApiTags('Public Comments')
 @Controller('comments')
@@ -37,7 +37,7 @@ export class CommentsPublicController {
   async getCommentByCommentId(
     @Param('id') commentId: string,
     @CurrentUserId() userId: string | null,
-  ): Promise<CommentViewType> {
+  ): Promise<CommentViewModel> {
     const comment = await this.commentsQueryRepository.getCommentByCommentId(
       commentId,
       userId,
@@ -52,7 +52,7 @@ export class CommentsPublicController {
   @HttpCode(204)
   async updateCommentByCommentId(
     @Param('id') commentId: string,
-    @Body() commentInputDto: commentInputDtoPipe,
+    @Body() commentInputDto: commentCreateInputDto,
     @CurrentUserId() userId: string,
   ): Promise<void> {
     await this.commandBus.execute<UpdateCommentCommand>(
@@ -67,7 +67,7 @@ export class CommentsPublicController {
   async updateCommentStatusById(
     @Param('id') commentId: string,
     @CurrentUserInfo() userInfo: UserInfoType,
-    @Body() statusDto: StatusPipe,
+    @Body() statusDto: LikeStatusDto,
   ): Promise<void> {
     await this.commandBus.execute<GenerateCommentLikeStatusCommand>(
       new GenerateCommentLikeStatusCommand(

@@ -1,23 +1,25 @@
 import { applyDecorators } from '@nestjs/common';
 import {
-  ApiOkResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { SwaggerConstants } from '../../../swagger.constants';
-import { UsersViewModel } from '../../../../modules/superAdmin/users/types/usersViewModel';
 
-export function GetUsersBySASwaggerDecorator() {
+export function DeleteQuestionBySASwaggerDecorator() {
   return applyDecorators(
     ApiOperation({
-      summary: SwaggerConstants.getUsers,
+      summary: SwaggerConstants.deleteQuestion,
     }),
-    ApiOkResponse({
-      description: SwaggerConstants.success,
-      type: UsersViewModel,
+    ApiNoContentResponse({
+      description: SwaggerConstants.noContent,
     }),
     ApiUnauthorizedResponse({
       description: SwaggerConstants.unauthorized,
+    }),
+    ApiNotFoundResponse({
+      description: SwaggerConstants.notFound,
     }),
   );
 }

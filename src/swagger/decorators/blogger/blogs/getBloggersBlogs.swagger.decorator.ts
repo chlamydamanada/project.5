@@ -1,7 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import {
+  ApiOkResponse,
   ApiOperation,
-  ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { BlogsToBloggerViewModel } from '../../../../modules/bloggers/blogs/types/blogsToBloggerViewModel';
@@ -12,8 +12,7 @@ export function GetBloggersBlogsSwaggerDecorator() {
     ApiOperation({
       summary: SwaggerConstants.getBloggersBlogs,
     }),
-    ApiResponse({
-      status: 200,
+    ApiOkResponse({
       description: SwaggerConstants.success,
       type: BlogsToBloggerViewModel,
     }),

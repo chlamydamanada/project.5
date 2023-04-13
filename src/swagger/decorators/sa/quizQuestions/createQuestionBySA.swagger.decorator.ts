@@ -7,19 +7,21 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { SwaggerConstants } from '../../../swagger.constants';
+import { QuestionViewModel } from '../../../../modules/superAdmin/quizQuestions/types/questionViewModel';
 import { ErrorsModel } from '../../../types/errorType';
-import { userCreateInputDto } from '../../../../modules/superAdmin/users/api/pipes/userCreateInput.dto';
-import { UserViewModel } from '../../../../modules/superAdmin/users/types/userViewType';
+import { QuestionCreateInputDto } from '../../../../modules/superAdmin/quizQuestions/api/pipes/questionCreateInput.dto';
 
-export function CreateUserBySASwaggerDecorator() {
+export function CreateQuestionBySASwaggerDecorator() {
   return applyDecorators(
     ApiOperation({
-      summary: SwaggerConstants.createUser,
+      summary: SwaggerConstants.createQuestion,
     }),
-    ApiBody({ type: userCreateInputDto }),
+    ApiBody({
+      type: QuestionCreateInputDto,
+    }),
     ApiCreatedResponse({
-      description: SwaggerConstants.getCreatedUser,
-      type: UserViewModel,
+      description: SwaggerConstants.getCreatedQuestion,
+      type: QuestionViewModel,
     }),
     ApiBadRequestResponse({
       description: SwaggerConstants.badReq,

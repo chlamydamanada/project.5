@@ -2,7 +2,6 @@ import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { sortingDirection } from '../../../../../helpers/validators/sortingDirection';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { SortDirectionType } from '../../../../../swagger/types/sortDirectionType';
 import { BanStatusType } from '../../types/banStatusType';
 
 export class UsersToSAQueryDto {
@@ -47,7 +46,7 @@ export class UsersToSAQueryDto {
   searchEmailTerm: string | undefined;
 
   @ApiPropertyOptional({
-    type: BanStatusType,
+    type: String,
     default: 'all',
   })
   @IsOptional()
@@ -60,9 +59,9 @@ export class UsersToSAQueryDto {
   sortBy = 'createdAt';
 
   @ApiPropertyOptional({
-    type: SortDirectionType,
+    type: String,
     default: 'desc',
-    description: 'Available values : asc, desc',
+    enum: ['asc', 'desc'],
   })
   @IsString()
   @IsOptional()

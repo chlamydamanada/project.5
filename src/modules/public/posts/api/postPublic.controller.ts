@@ -17,21 +17,25 @@ import { postViewModel } from '../types/postViewModel';
 import { PostsQueryDto } from './pipes/postsQuery.dto';
 import { postQueryType } from '../types/postsQueryType';
 import { AccessTokenGuard } from '../../auth/guards/accessTokenAuth.guard';
-import { commentInputDtoPipe } from '../../comments/api/pipes/commentInputDtoPipe';
+import { commentCreateInputDto } from '../../comments/api/pipes/commentCreateInput.dto';
 import { CommentsPublicQueryRepository } from '../../comments/api/query.repositories/commentsPublicQuery.repository';
-import { CommentViewType } from '../../comments/types/commentViewType';
+import { CommentViewModel } from '../../comments/types/commentViewModel';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateCommentCommand } from '../../comments/useCases/createComment.useCase';
-import { CommentQueryDto } from '../../comments/api/pipes/commentQueryDto';
-import { CommentsViewType } from '../../comments/types/commentsViewType';
+import { CommentQueryDto } from '../../comments/api/pipes/commentQuery.dto';
+import { CommentsViewModel } from '../../comments/types/commentsViewModel';
 import { commentQueryType } from '../../comments/types/commentQueryType';
 import { postsViewModel } from '../types/postsViewModel';
 import { CurrentUserInfo } from '../../../../helpers/decorators/currentUserIdAndLogin';
 import { UserInfoType } from '../../auth/types/userInfoType';
-import { StatusPipe } from '../../likeStatus/pipes/statusPipe';
+import { LikeStatusDto } from '../../likeStatus/pipes/likeStatus.dto';
 import { GeneratePostLikeStatusCommand } from '../../likeStatus/useCases/generatePostLikeStatus.useCase';
 import { ApiTags } from '@nestjs/swagger';
 import { GetAllPostsSwaggerDecorator } from '../../../../swagger/decorators/public/posts/getAllPosts.swagger.decorator';
+import { GetPostByIdSwaggerDecorator } from '../../../../swagger/decorators/public/posts/getPostById.swagger.decorator';
+import { GetAllCommentsByPostIdSwaggerDecorator } from '../../../../swagger/decorators/public/posts/getAllCommentsByPostId.swagger.decorator';
+import { CreateCommentByPostIdSwaggerDecorator } from '../../../../swagger/decorators/public/posts/createCommentByPostId.swagger.decorator';
+import { UpdateLikeStatusOfPostSwaggerDecorator } from '../../../../swagger/decorators/public/posts/updateLikeStatusOfPost.swagger.decorator';
 
 @ApiTags('Public Posts')
 @Controller('posts')
@@ -57,6 +61,7 @@ export class PostPublicController {
   }
 
   @Get(':id')
+  @GetPostByIdSwaggerDecorator()
   @UseGuards(ExtractUserIdFromAT)
   async getPostByPostId(
     @Param('id') postId: string,
@@ -71,12 +76,13 @@ export class PostPublicController {
   }
 
   @Get(':postId/comments')
+  @GetAllCommentsByPostIdSwaggerDecorator()
   @UseGuards(ExtractUserIdFromAT)
   async getAllCommentsByPostId(
     @Param('postId') postId: string,
     @Query() query: CommentQueryDto,
     @CurrentUserId() userId: string | null,
-  ): Promise<CommentsViewType> {
+  ): Promise<CommentsViewModel> {
     const post = await this.postQueryRepository.findPostByPostId(postId);
     if (!post) throw new NotFoundException('Post with this id does not exist');
     const allComments =
@@ -89,12 +95,13 @@ export class PostPublicController {
   }
 
   @Post(':postId/comments')
+  @CreateCommentByPostIdSwaggerDecorator()
   @UseGuards(AccessTokenGuard)
   async createCommentByPostId(
     @Param('postId') postId: string,
-    @Body() commentInputDto: commentInputDtoPipe,
+    @Body() commentInputDto: commentCreateInputDto,
     @CurrentUserId() userId: string,
-  ): Promise<CommentViewType> {
+  ): Promise<CommentViewModel> {
     const commentId = await this.commandBus.execute<
       CreateCommentCommand,
       string
@@ -106,12 +113,13 @@ export class PostPublicController {
   }
 
   @Put(':id/like-status')
+  @UpdateLikeStatusOfPostSwaggerDecorator()
   @UseGuards(AccessTokenGuard)
   @HttpCode(204)
   async updatePostStatusById(
     @Param('id') postId: string,
     @CurrentUserInfo() userInfo: UserInfoType,
-    @Body() statusDto: StatusPipe,
+    @Body() statusDto: LikeStatusDto,
   ): Promise<void> {
     await this.commandBus.execute<GeneratePostLikeStatusCommand>(
       new GeneratePostLikeStatusCommand(

@@ -2,6 +2,7 @@ import { applyDecorators } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -19,8 +20,8 @@ export function CreatePostSwaggerDecorator() {
       summary: SwaggerConstants.createPost,
     }),
     ApiBody({ type: postCreateInputDto }),
-    ApiResponse({
-      status: 201,
+
+    ApiCreatedResponse({
       description: SwaggerConstants.getCreatedPost,
       type: postViewModel,
     }),

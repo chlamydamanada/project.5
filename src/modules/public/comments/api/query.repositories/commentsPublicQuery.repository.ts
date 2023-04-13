@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Comment } from '../../domain/comment.entity';
 import { commentQueryType } from '../../types/commentQueryType';
-import { CommentsViewType } from '../../types/commentsViewType';
-import { CommentViewType } from '../../types/commentViewType';
+import { CommentsViewModel } from '../../types/commentsViewModel';
+import { CommentViewModel } from '../../types/commentViewModel';
 import { CommentLikeStatus } from '../../../likeStatus/domain/commentLikeStatus.entity';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class CommentsPublicQueryRepository {
     postId: string,
     queryDto: commentQueryType,
     userId?: string | undefined | null,
-  ): Promise<CommentsViewType> {
+  ): Promise<CommentsViewModel> {
     // get array of all comments by filter, get page number by page size
     const comments = await this.commentsRepository.find({
       select: {
@@ -67,7 +67,7 @@ export class CommentsPublicQueryRepository {
   async getCommentByCommentId(
     commentId: string,
     userId?: string | undefined | null,
-  ): Promise<CommentViewType | null> {
+  ): Promise<CommentViewModel | null> {
     //found comment by id
     const comment = await this.commentsRepository.findOne({
       select: {
@@ -94,7 +94,7 @@ export class CommentsPublicQueryRepository {
   async convertToViewComment(
     comment: Comment,
     userId?: string | undefined | null,
-  ): Promise<CommentViewType> {
+  ): Promise<CommentViewModel> {
     // make view type of comment and count the number of likes or dislikes of comment
     const newComment = {
       id: comment.id,

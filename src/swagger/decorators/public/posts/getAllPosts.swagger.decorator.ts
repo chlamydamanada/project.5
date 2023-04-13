@@ -1,5 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SwaggerConstants } from '../../../swagger.constants';
 import { postsViewModel } from '../../../../modules/public/posts/types/postsViewModel';
 
@@ -8,8 +8,7 @@ export function GetAllPostsSwaggerDecorator() {
     ApiOperation({
       summary: SwaggerConstants.getPosts,
     }),
-    ApiResponse({
-      status: 200,
+    ApiOkResponse({
       description: SwaggerConstants.success,
       type: postsViewModel,
     }),

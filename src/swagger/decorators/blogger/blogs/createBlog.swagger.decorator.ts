@@ -2,8 +2,8 @@ import { applyDecorators } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiCreatedResponse,
   ApiOperation,
-  ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { blogCreateInputDto } from '../../../../modules/bloggers/blogs/api/pipes/blogCreateInput.dto';
@@ -17,11 +17,12 @@ export function CreateBlogSwaggerDecorator() {
       summary: SwaggerConstants.createBlog,
     }),
     ApiBody({ type: blogCreateInputDto }),
-    ApiResponse({
-      status: 201,
+
+    ApiCreatedResponse({
       description: SwaggerConstants.getCreatedBlog,
       type: BlogToBloggerViewModel,
     }),
+
     ApiBadRequestResponse({
       description: SwaggerConstants.badReq,
       type: ErrorsModel,

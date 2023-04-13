@@ -1,39 +1,39 @@
 import { applyDecorators } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiBody,
-  ApiForbiddenResponse,
+  ApiCreatedResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOperation,
-  ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { ErrorsModel } from '../../../types/errorType';
-import { blogUpdateInputDto } from '../../../../modules/bloggers/blogs/api/pipes/blogUpdateInput.dto';
 import { SwaggerConstants } from '../../../swagger.constants';
+import { LikeStatusDto } from '../../../../modules/public/likeStatus/pipes/likeStatus.dto';
+import { ErrorsModel } from '../../../types/errorType';
 
-export function UpdateBlogSwaggerDecorator() {
+export function UpdateLikeStatusOfPostSwaggerDecorator() {
   return applyDecorators(
+    ApiBearerAuth(),
     ApiOperation({
-      summary: SwaggerConstants.updateBlogById,
+      summary: SwaggerConstants.likeStatusOfPost,
     }),
-    ApiBody({ type: blogUpdateInputDto }),
-
+    ApiBody({
+      type: LikeStatusDto,
+    }),
     ApiNoContentResponse({
       description: SwaggerConstants.noContent,
     }),
-
     ApiBadRequestResponse({
       description: SwaggerConstants.badReq,
       type: ErrorsModel,
     }),
-
     ApiUnauthorizedResponse({
       description: SwaggerConstants.unauthorized,
     }),
-
-    ApiForbiddenResponse({
-      description: SwaggerConstants.forbidden,
+    ApiNotFoundResponse({
+      description: SwaggerConstants.postNotExist,
     }),
   );
 }

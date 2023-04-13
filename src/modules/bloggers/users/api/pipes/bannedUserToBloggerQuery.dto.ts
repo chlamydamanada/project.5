@@ -44,7 +44,7 @@ export class BannedUserToBloggerQueryDto {
   @ApiPropertyOptional({
     type: String,
     default: 'desc',
-    description: 'Available values : asc, desc',
+    enum: ['asc', 'desc'],
   })
   @IsOptional()
   @IsString()

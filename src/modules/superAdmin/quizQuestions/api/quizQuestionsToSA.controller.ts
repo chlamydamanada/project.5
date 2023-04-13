@@ -25,6 +25,11 @@ import { QuestionCreateInputDto } from './pipes/questionCreateInput.dto';
 import { QuestionPublishInputDto } from './pipes/questionPublishInput.dto';
 import { DeleteQuestionCommand } from '../useCases/deleteQuestion.useCase';
 import { QuestionUpdateInputDto } from './pipes/questionUpdateInput.dto';
+import { GetQuestionsBySASwaggerDecorator } from '../../../../swagger/decorators/sa/quizQuestions/getQuestionsBySA.swagger.decorator';
+import { CreateQuestionBySASwaggerDecorator } from '../../../../swagger/decorators/sa/quizQuestions/createQuestionBySA.swagger.decorator';
+import { UpdateQuestionBySASwaggerDecorator } from '../../../../swagger/decorators/sa/quizQuestions/updateQuestionBySA.swagger.decorator';
+import { PublishQuestionBySASwaggerDecorator } from '../../../../swagger/decorators/sa/quizQuestions/publishQuestionBySA.swagger.decorator';
+import { DeleteQuestionBySASwaggerDecorator } from '../../../../swagger/decorators/sa/quizQuestions/deleteQuestionBySA.swagger.decorator';
 
 @ApiTags('Quiz Questions')
 @ApiBasicAuth()
@@ -37,6 +42,7 @@ export class QuizQuestionsToSAController {
   ) {}
 
   @Get()
+  @GetQuestionsBySASwaggerDecorator()
   async getAllQuestions(
     @Query() query: QuestionsToSAQueryDto,
   ): Promise<QuestionsViewModel> {
@@ -47,6 +53,7 @@ export class QuizQuestionsToSAController {
   }
 
   @Post()
+  @CreateQuestionBySASwaggerDecorator()
   async createQuestion(
     @Body() questionCreateInputModel: QuestionCreateInputDto,
   ): Promise<QuestionViewModel> {
@@ -68,6 +75,7 @@ export class QuizQuestionsToSAController {
   }
 
   @Put(':questionId')
+  @UpdateQuestionBySASwaggerDecorator()
   @HttpCode(204)
   async updateQuestion(
     @Param('questionId') questionId: string,
@@ -84,6 +92,7 @@ export class QuizQuestionsToSAController {
   }
 
   @Put(':questionId/publish')
+  @PublishQuestionBySASwaggerDecorator()
   @HttpCode(204)
   async publishOrUnpublishQuestion(
     @Param('questionId') questionId: string,
@@ -99,6 +108,7 @@ export class QuizQuestionsToSAController {
   }
 
   @Delete(':questionId')
+  @DeleteQuestionBySASwaggerDecorator()
   @HttpCode(204)
   async deleteQuestion(@Param('questionId') questionId: string): Promise<void> {
     await this.commandBus.execute<DeleteQuestionCommand>(

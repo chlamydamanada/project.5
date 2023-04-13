@@ -7,7 +7,7 @@ export class DeviceViewModel {
   @ApiProperty()
   title: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: Date })
   lastActiveDate: string;
 
   @ApiProperty()

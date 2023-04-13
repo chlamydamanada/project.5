@@ -13,9 +13,9 @@ export class QuestionViewModel {
   @ApiProperty({ default: false })
   published: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ type: Date })
   createdAt: Date;
 
-  @ApiProperty()
+  @ApiProperty({ nullable: true, type: Date })
   updatedAt: Date | null;
 }

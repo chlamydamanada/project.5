@@ -2,38 +2,35 @@ import { applyDecorators } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBody,
-  ApiForbiddenResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOperation,
-  ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { ErrorsModel } from '../../../types/errorType';
-import { blogUpdateInputDto } from '../../../../modules/bloggers/blogs/api/pipes/blogUpdateInput.dto';
 import { SwaggerConstants } from '../../../swagger.constants';
+import { QuestionUpdateInputDto } from '../../../../modules/superAdmin/quizQuestions/api/pipes/questionUpdateInput.dto';
+import { ErrorsModel } from '../../../types/errorType';
 
-export function UpdateBlogSwaggerDecorator() {
+export function UpdateQuestionBySASwaggerDecorator() {
   return applyDecorators(
     ApiOperation({
-      summary: SwaggerConstants.updateBlogById,
+      summary: SwaggerConstants.updateQuestion,
     }),
-    ApiBody({ type: blogUpdateInputDto }),
-
+    ApiBody({
+      type: QuestionUpdateInputDto,
+    }),
     ApiNoContentResponse({
       description: SwaggerConstants.noContent,
     }),
-
     ApiBadRequestResponse({
       description: SwaggerConstants.badReq,
       type: ErrorsModel,
     }),
-
     ApiUnauthorizedResponse({
       description: SwaggerConstants.unauthorized,
     }),
-
-    ApiForbiddenResponse({
-      description: SwaggerConstants.forbidden,
+    ApiNotFoundResponse({
+      description: SwaggerConstants.notFound,
     }),
   );
 }

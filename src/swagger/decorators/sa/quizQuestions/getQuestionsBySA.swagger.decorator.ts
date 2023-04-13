@@ -5,16 +5,16 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { SwaggerConstants } from '../../../swagger.constants';
-import { UsersViewModel } from '../../../../modules/superAdmin/users/types/usersViewModel';
+import { QuestionsViewModel } from '../../../../modules/superAdmin/quizQuestions/types/questionsViewModel';
 
-export function GetUsersBySASwaggerDecorator() {
+export function GetQuestionsBySASwaggerDecorator() {
   return applyDecorators(
     ApiOperation({
-      summary: SwaggerConstants.getUsers,
+      summary: SwaggerConstants.getAllQuestions,
     }),
     ApiOkResponse({
       description: SwaggerConstants.success,
-      type: UsersViewModel,
+      type: QuestionsViewModel,
     }),
     ApiUnauthorizedResponse({
       description: SwaggerConstants.unauthorized,

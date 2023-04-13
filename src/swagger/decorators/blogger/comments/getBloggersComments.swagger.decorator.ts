@@ -1,5 +1,6 @@
 import { applyDecorators } from '@nestjs/common';
 import {
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiUnauthorizedResponse,
@@ -15,8 +16,7 @@ export function GetBloggersCommentsSwaggerDecorator() {
     ApiUnauthorizedResponse({
       description: SwaggerConstants.unauthorized,
     }),
-    ApiResponse({
-      status: 200,
+    ApiOkResponse({
       description: SwaggerConstants.success,
       type: CommentsViewForBloggerModel,
     }),

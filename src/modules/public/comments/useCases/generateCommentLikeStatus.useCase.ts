@@ -1,5 +1,5 @@
 /*import { UserInfoType } from '../../auth/types/userInfoType';
-import { StatusPipe } from '../../status/api/pipes/statusPipe';
+import { LikeStatusDto } from '../../status/api/pipes/statusPipe';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentsRepository } from '../repositories/comments.repository';
 import { NotFoundException } from '@nestjs/common';
@@ -8,7 +8,7 @@ export class GenerateCommentLikeStatusCommand {
   constructor(
     public commentId: string,
     public userInfo: UserInfoType,
-    public statusDto: StatusPipe,
+    public statusDto: LikeStatusDto,
   ) {}
 }
 @CommandHandler(GenerateCommentLikeStatusCommand)

@@ -1,19 +1,9 @@
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { sortingDirection } from '../../../../../helpers/validators/sortingDirection';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
-export class BlogsToSAQueryDto {
-  @ApiPropertyOptional({
-    type: String,
-    default: null,
-    description:
-      'Search term for blog Name: Name should contains this term in any position',
-  })
-  @IsString()
-  @IsOptional()
-  searchNameTerm: string | null;
-
+export class CommentQueryDto {
   @ApiPropertyOptional({
     default: 1,
     type: Number,

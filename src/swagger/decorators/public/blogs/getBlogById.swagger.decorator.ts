@@ -1,23 +1,23 @@
 import { applyDecorators } from '@nestjs/common';
 import {
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { SwaggerConstants } from '../../../swagger.constants';
-import { UsersViewModel } from '../../../../modules/superAdmin/users/types/usersViewModel';
+import { blogViewModel } from '../../../../modules/public/blogs/types/blogViewModel';
 
-export function GetUsersBySASwaggerDecorator() {
+export function GetBlogByIdSwaggerDecorator() {
   return applyDecorators(
     ApiOperation({
-      summary: SwaggerConstants.getUsers,
+      summary: SwaggerConstants.getBlog,
     }),
     ApiOkResponse({
       description: SwaggerConstants.success,
-      type: UsersViewModel,
+      type: blogViewModel,
     }),
-    ApiUnauthorizedResponse({
-      description: SwaggerConstants.unauthorized,
+    ApiNotFoundResponse({
+      description: SwaggerConstants.notFound,
     }),
   );
 }

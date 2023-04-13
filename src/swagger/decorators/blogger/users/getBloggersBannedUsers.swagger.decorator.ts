@@ -1,5 +1,6 @@
 import { applyDecorators } from '@nestjs/common';
 import {
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiUnauthorizedResponse,
@@ -12,8 +13,7 @@ export function GetBloggersBannedUsersSwaggerDecorator() {
     ApiOperation({
       summary: SwaggerConstants.getBloggersBannedUsers,
     }),
-    ApiResponse({
-      status: 200,
+    ApiOkResponse({
       description: SwaggerConstants.success,
       type: BannedUsersForBlogModel,
     }),
