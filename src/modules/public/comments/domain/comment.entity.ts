@@ -5,10 +5,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../../../superAdmin/domain/users.entities/user.entity';
-import { Post } from '../../../bloggers/domain/post.entity';
-import { PostLikeStatus } from '../../likeStatus/domain/postLikeStatus.entity';
+import { Post } from '../../../bloggers/posts/domain/post.entity';
 import { CommentLikeStatus } from '../../likeStatus/domain/commentLikeStatus.entity';
+import { User } from '../../../superAdmin/users/domain/user.entity';
 
 @Entity()
 export class Comment {

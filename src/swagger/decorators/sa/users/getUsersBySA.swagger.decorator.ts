@@ -5,7 +5,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { SwaggerConstants } from '../../../swagger.constants';
-import { UsersViewModel } from '../../../../modules/superAdmin/types/users/usersViewModel';
+import { UsersViewModel } from '../../../../modules/superAdmin/users/types/usersViewModel';
 
 export function GetUsersBySASwaggerDecorator() {
   return applyDecorators(

@@ -8,9 +8,9 @@ import {
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { postCreateInputDto } from '../../../../modules/bloggers/api/pipes/posts.pipes/postCreateInput.dto';
+import { postCreateInputDto } from '../../../../modules/bloggers/posts/api/pipes/postCreateInput.dto';
 import { ErrorsModel } from '../../../types/errorType';
-import { postViewModel } from '../../../../modules/bloggers/types/posts/postViewModel';
+import { postViewModel } from '../../../../modules/bloggers/posts/types/postViewModel';
 import { SwaggerConstants } from '../../../swagger.constants';
 
 export function CreatePostSwaggerDecorator() {

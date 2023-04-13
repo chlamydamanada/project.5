@@ -8,7 +8,7 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { postUpdateInputDto } from '../../../../modules/bloggers/api/pipes/posts.pipes/postUpdateInput.dto';
+import { postUpdateInputDto } from '../../../../modules/bloggers/posts/api/pipes/postUpdateInput.dto';
 import { ErrorsModel } from '../../../types/errorType';
 import { SwaggerConstants } from '../../../swagger.constants';
 

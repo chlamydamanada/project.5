@@ -5,9 +5,9 @@ import { MailService } from '../../../../adapters/email/email.service';
 import { BcryptAdapter } from '../../../../adapters/bcrypt/bcryptAdapter';
 import { BadRequestError } from '../../../../helpers/errorHelper/badRequestError';
 import { add } from 'date-fns';
-import { User } from '../../../superAdmin/domain/users.entities/user.entity';
-import { BanInfo } from '../../../superAdmin/domain/users.entities/banInfo.entity';
-import { EmailConfirmationInfo } from '../../../superAdmin/domain/users.entities/emailConfirmationInfo.entity';
+import { User } from '../../../superAdmin/users/domain/user.entity';
+import { BanInfo } from '../../../superAdmin/users/domain/banInfo.entity';
+import { EmailConfirmationInfo } from '../../../superAdmin/users/domain/emailConfirmationInfo.entity';
 
 export class UserRegistrationCommand {
   constructor(

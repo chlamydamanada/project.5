@@ -6,9 +6,9 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { BanUserByBloggerInputDto } from '../../../../modules/bloggers/api/pipes/users.pipes/banUserByBloggerInput.dto';
 import { ErrorsModel } from '../../../types/errorType';
 import { SwaggerConstants } from '../../../swagger.constants';
+import { BanUserByBloggerInputDto } from '../../../../modules/bloggers/users/api/pipes/banUserByBloggerInput.dto';
 
 export function BanUserByBloggerSwaggerDecorator() {
   return applyDecorators(

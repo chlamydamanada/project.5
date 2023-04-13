@@ -4,8 +4,8 @@ import {
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { BlogsSAModel } from '../../../../modules/superAdmin/types/blogs/blogsSAModel';
 import { SwaggerConstants } from '../../../swagger.constants';
+import { BlogsSAModel } from '../../../../modules/superAdmin/blogs/types/blogsSAModel';
 
 export function GetBlogsBySASwaggerDecorator() {
   return applyDecorators(

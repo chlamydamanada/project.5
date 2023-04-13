@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
-import { Blog } from '../../../../bloggers/domain/blog.entity';
+import { Blog } from '../../../../bloggers/blogs/domain/blog.entity';
 import { blogQueryType } from '../../types/blogsQweryType';
 import { blogsViewType } from '../../types/blogsViewType';
 import { blogViewType } from '../../types/blogViewType';

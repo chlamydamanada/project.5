@@ -1,7 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { reactionStatusType } from '../types/statusType';
-import { User } from '../../../superAdmin/domain/users.entities/user.entity';
-import { Post } from '../../../bloggers/domain/post.entity';
+import { Post } from '../../../bloggers/posts/domain/post.entity';
+import { User } from '../../../superAdmin/users/domain/user.entity';
 
 @Entity()
 export class PostLikeStatus {

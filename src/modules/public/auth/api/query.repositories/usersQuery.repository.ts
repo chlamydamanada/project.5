@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MeViewType } from '../../types/meViewType';
-import { User } from '../../../../superAdmin/domain/users.entities/user.entity';
+import { User } from '../../../../superAdmin/users/domain/user.entity';
 
 @Injectable()
 export class UsersQueryRepository {

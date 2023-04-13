@@ -6,10 +6,10 @@ import {
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { userCreateInputDto } from '../../../../modules/superAdmin/api/pipes/users.pipes/userCreateInput.dto';
 import { SwaggerConstants } from '../../../swagger.constants';
 import { ErrorsModel } from '../../../types/errorType';
-import { UserViewModel } from '../../../../modules/superAdmin/types/users/userViewType';
+import { userCreateInputDto } from '../../../../modules/superAdmin/users/api/pipes/userCreateInput.dto';
+import { UserViewModel } from '../../../../modules/superAdmin/users/types/userViewType';
 
 export function CreateUserBySASwaggerDecorator() {
   return applyDecorators(

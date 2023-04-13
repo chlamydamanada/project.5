@@ -4,7 +4,7 @@ import {
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { BannedUsersForBlogModel } from '../../../../modules/bloggers/types/users/bannedUsersForBlogModel';
+import { BannedUsersForBlogModel } from '../../../../modules/bloggers/users/types/bannedUsersForBlogModel';
 import { SwaggerConstants } from '../../../swagger.constants';
 
 export function GetBloggersBannedUsersSwaggerDecorator() {

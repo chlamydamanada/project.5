@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserToCheckCredentialsType } from '../types/userToCheckCredentialsType';
-import { User } from '../../../superAdmin/domain/users.entities/user.entity';
-import { BanList } from '../../../bloggers/domain/banStatus.entity';
-import { BanInfo } from '../../../superAdmin/domain/users.entities/banInfo.entity';
-import { EmailConfirmationInfo } from '../../../superAdmin/domain/users.entities/emailConfirmationInfo.entity';
-import { PasswordRecoveryInfo } from '../../../superAdmin/domain/users.entities/passwordRecoveryInfo.entity';
+import { User } from '../../../superAdmin/users/domain/user.entity';
+import { EmailConfirmationInfo } from '../../../superAdmin/users/domain/emailConfirmationInfo.entity';
+import { PasswordRecoveryInfo } from '../../../superAdmin/users/domain/passwordRecoveryInfo.entity';
+import { BanList } from '../../../bloggers/users/domain/banList.entity';
+import { BanInfo } from '../../../superAdmin/users/domain/banInfo.entity';
 
 @Injectable()
 export class UsersRepository {

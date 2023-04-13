@@ -4,7 +4,7 @@ import {
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { BlogsToBloggerViewModel } from '../../../../modules/bloggers/types/blogs/blogsToBloggerViewModel';
+import { BlogsToBloggerViewModel } from '../../../../modules/bloggers/blogs/types/blogsToBloggerViewModel';
 import { SwaggerConstants } from '../../../swagger.constants';
 
 export function GetBloggersBlogsSwaggerDecorator() {

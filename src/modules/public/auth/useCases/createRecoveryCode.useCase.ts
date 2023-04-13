@@ -3,7 +3,7 @@ import { UsersRepository } from '../repositories/users.repository';
 import { MailService } from '../../../../adapters/email/email.service';
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
-import { PasswordRecoveryInfo } from '../../../superAdmin/domain/users.entities/passwordRecoveryInfo.entity';
+import { PasswordRecoveryInfo } from '../../../superAdmin/users/domain/passwordRecoveryInfo.entity';
 
 export class CreateRecoveryCodeCommand {
   constructor(public email: string) {}

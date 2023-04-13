@@ -35,10 +35,10 @@ import { CheckEmailIsConfirmedCommand } from '../useCases/checkEmailIsConfirmed.
 import { CreateRecoveryCodeCommand } from '../useCases/createRecoveryCode.useCase';
 import { NewPassRecoveryDtoPipe } from './pipes/newPassRecoveryDtoPipe';
 import { ChangePasswordCommand } from '../useCases/changePassword.useCase';
-import { userCreateInputDto } from '../../../superAdmin/api/pipes/users.pipes/userCreateInput.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { TokensType } from '../types/tokensType';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { userCreateInputDto } from '../../../superAdmin/users/api/pipes/userCreateInput.dto';
 
 @ApiTags('Public Auth')
 @Controller('auth')

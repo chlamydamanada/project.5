@@ -4,7 +4,7 @@ import {
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { CommentsViewForBloggerModel } from '../../../../modules/bloggers/types/comments/commentsViewForBloggerModel';
+import { CommentsViewForBloggerModel } from '../../../../modules/bloggers/comments/types/commentsViewForBloggerModel';
 import { SwaggerConstants } from '../../../swagger.constants';
 
 export function GetBloggersCommentsSwaggerDecorator() {

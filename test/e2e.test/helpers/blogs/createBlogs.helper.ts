@@ -1,4 +1,4 @@
-import { BlogToBloggerViewModel } from '../../../../src/modules/bloggers/types/blogs/blogToBloggerViewModel';
+import { BlogToBloggerViewModel } from '../../../../src/modules/bloggers/blogs/types/blogToBloggerViewModel';
 import request from 'supertest';
 import { saBlogsConstants } from '../../sa/blogs/sa.blogs.constants';
 import { HttpStatus } from '@nestjs/common';

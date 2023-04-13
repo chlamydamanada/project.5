@@ -6,9 +6,9 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { BanOrUnbanUserBySADto } from '../../../../modules/superAdmin/api/pipes/users.pipes/banOrUnbanUserBySA.dto';
 import { SwaggerConstants } from '../../../swagger.constants';
 import { ErrorsModel } from '../../../types/errorType';
+import { BanOrUnbanUserBySADto } from '../../../../modules/superAdmin/users/api/pipes/banOrUnbanUserBySA.dto';
 
 export function BanUserBySASwaggerDecorator() {
   return applyDecorators(

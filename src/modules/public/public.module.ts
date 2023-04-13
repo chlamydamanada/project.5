@@ -6,15 +6,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../superAdmin/domain/users.entities/user.entity';
-import { BanInfo } from '../superAdmin/domain/users.entities/banInfo.entity';
-import { EmailConfirmationInfo } from '../superAdmin/domain/users.entities/emailConfirmationInfo.entity';
-import { PasswordRecoveryInfo } from '../superAdmin/domain/users.entities/passwordRecoveryInfo.entity';
 import { Device } from './devices/domain/device.entity';
-import { Blog } from '../bloggers/domain/blog.entity';
-import { Post } from '../bloggers/domain/post.entity';
-import { BanList } from '../bloggers/domain/banStatus.entity';
-import { BlogBanInfo } from '../bloggers/domain/blogBanInfo.entity';
+import { Blog } from '../bloggers/blogs/domain/blog.entity';
+import { Post } from '../bloggers/posts/domain/post.entity';
+import { BanList } from '../bloggers/users/domain/banList.entity';
+import { BlogBanInfo } from '../bloggers/blogs/domain/blogBanInfo.entity';
 import { Comment } from './comments/domain/comment.entity';
 import { PostLikeStatus } from './likeStatus/domain/postLikeStatus.entity';
 import { CommentLikeStatus } from './likeStatus/domain/commentLikeStatus.entity';
@@ -52,6 +48,10 @@ import { PostPublicQueryRepository } from './posts/api/query.repositories/postPu
 import { CommentsPublicQueryRepository } from './comments/api/query.repositories/commentsPublicQuery.repository';
 import { PostsRepository } from './posts/repositories/posts.repository';
 import { CommentsRepository } from './comments/repositories/comments.repository';
+import { User } from '../superAdmin/users/domain/user.entity';
+import { EmailConfirmationInfo } from '../superAdmin/users/domain/emailConfirmationInfo.entity';
+import { PasswordRecoveryInfo } from '../superAdmin/users/domain/passwordRecoveryInfo.entity';
+import { BanInfo } from '../superAdmin/users/domain/banInfo.entity';
 
 const useCases = [
   ChangePasswordUseCase,

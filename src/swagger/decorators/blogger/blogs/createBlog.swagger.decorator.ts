@@ -7,7 +7,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { blogCreateInputDto } from '../../../../modules/bloggers/blogs/api/pipes/blogCreateInput.dto';
-import { BlogToBloggerViewModel } from '../../../../modules/bloggers/types/blogs/blogToBloggerViewModel';
+import { BlogToBloggerViewModel } from '../../../../modules/bloggers/blogs/types/blogToBloggerViewModel';
 import { ErrorsModel } from '../../../types/errorType';
 import { SwaggerConstants } from '../../../swagger.constants';
 

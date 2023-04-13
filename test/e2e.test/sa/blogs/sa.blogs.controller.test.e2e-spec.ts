@@ -2,7 +2,7 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { getApp } from '../../testsConnection';
 import request from 'supertest';
 import { saBlogsConstants } from './sa.blogs.constants';
-import { BlogToBloggerViewModel } from '../../../../src/modules/bloggers/types/blogs/blogToBloggerViewModel';
+import { BlogToBloggerViewModel } from '../../../../src/modules/bloggers/blogs/types/blogToBloggerViewModel';
 import { createSeveralBlogs } from '../../helpers/blogs/createBlogs.helper';
 
 describe('Testing sa blogs controller', () => {

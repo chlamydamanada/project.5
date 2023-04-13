@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { User } from '../../../superAdmin/domain/users.entities/user.entity';
 import { Comment } from '../../comments/domain/comment.entity';
+import { User } from '../../../superAdmin/users/domain/user.entity';
 
 @Entity()
 export class CommentLikeStatus {
