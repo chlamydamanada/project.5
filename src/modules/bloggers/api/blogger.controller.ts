@@ -15,8 +15,8 @@ import {
 import { AccessTokenGuard } from '../../public/auth/guards/accessTokenAuth.guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { PostsToBloggerQueryRepository } from './query.repositories/postsToBloggerQuery.repository';
-import { BlogsToBloggerQueryRepository } from './query.repositories/blogsToBloggerQuery.repository';
-import { blogCreateInputDto } from './pipes/blogs.pipes/blogCreateInput.dto';
+import { BlogsToBloggerQueryRepository } from '../blogs/api/query.repositories/blogsToBloggerQuery.repository';
+import { blogCreateInputDto } from '../blogs/api/pipes/blogCreateInput.dto';
 import { CurrentUserInfo } from '../../../helpers/decorators/currentUserIdAndLogin';
 import { UserInfoType } from '../../public/auth/types/userInfoType';
 import { CreateBlogCommand } from '../application/blogs.useCases/createBlog.useCase';
@@ -35,14 +35,14 @@ import { UsersToBloggerQueryRepository } from './query.repositories/usersToBlogg
 import { BannedUsersForBlogModel } from '../types/users/bannedUsersForBlogModel';
 import { BannedUserToBloggerQueryDto } from './pipes/users.pipes/bannedUserToBloggerQuery.dto';
 import { BannedUserQueryDtoType } from '../types/users/bannedUserQueryDtoType';
-import { BlogsToBloggerQueryDto } from './pipes/blogs.pipes/blogsToBloggerQuery.dto';
+import { BlogsToBloggerQueryDto } from '../blogs/api/pipes/blogsToBloggerQuery.dto';
 import { BlogQueryToBloggerType } from '../types/blogs/blogQueryToBloggerType';
 import { BlogsToBloggerViewModel } from '../types/blogs/blogsToBloggerViewModel';
 import { CommentsViewForBloggerModel } from '../types/comments/commentsViewForBloggerModel';
 import { commentQueryType } from '../../public/comments/types/commentQueryType';
 import { CommentsToBloggerQueryRepository } from './query.repositories/commentsToBloggerQuery.repository';
 import { CommentToBloggerQueryDto } from './pipes/comments.pipes/commentsToBloggerQuery.dto';
-import { blogUpdateInputDto } from './pipes/blogs.pipes/blogUpdateInput.dto';
+import { blogUpdateInputDto } from '../blogs/api/pipes/blogUpdateInput.dto';
 import { postUpdateInputDto } from './pipes/posts.pipes/postUpdateInput.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateBlogSwaggerDecorator } from '../../../swagger/decorators/blogger/blogs/createBlog.swagger.decorator';

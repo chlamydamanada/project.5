@@ -8,7 +8,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ErrorsModel } from '../../../types/errorType';
-import { blogUpdateInputDto } from '../../../../modules/bloggers/api/pipes/blogs.pipes/blogUpdateInput.dto';
+import { blogUpdateInputDto } from '../../../../modules/bloggers/blogs/api/pipes/blogUpdateInput.dto';
 import { SwaggerConstants } from '../../../swagger.constants';
 
 export function UpdateBlogSwaggerDecorator() {

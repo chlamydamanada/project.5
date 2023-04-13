@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Blog } from '../../domain/blog.entity';
+import { Blog } from '../../../domain/blog.entity';
 import { ILike, Repository } from 'typeorm';
-import { BlogQueryToBloggerType } from '../../types/blogs/blogQueryToBloggerType';
-import { BlogsToBloggerViewModel } from '../../types/blogs/blogsToBloggerViewModel';
-import { BlogToBloggerViewModel } from '../../types/blogs/blogToBloggerViewModel';
+import { BlogQueryToBloggerType } from '../../../types/blogs/blogQueryToBloggerType';
+import { BlogsToBloggerViewModel } from '../../../types/blogs/blogsToBloggerViewModel';
+import { BlogToBloggerViewModel } from '../../../types/blogs/blogToBloggerViewModel';
 
 @Injectable()
 export class BlogsToBloggerQueryRepository {
