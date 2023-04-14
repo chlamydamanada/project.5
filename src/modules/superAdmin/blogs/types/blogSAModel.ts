@@ -1,20 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-
-export class BlogOwnerInfoModel {
-  @ApiProperty()
-  userId: string;
-
-  @ApiProperty()
-  userLogin: string;
-}
-
-export class BlogBanInfoModel {
-  @ApiProperty()
-  isBanned: boolean;
-
-  @ApiProperty({ nullable: true, type: Date })
-  banDate: string | null;
-}
+import { BlogOwnerInfoModel } from './blogOwnerInfoModel';
+import { BlogBanInfoModel } from './blogBanInfoModel';
 
 export class BlogSAModel {
   @ApiProperty()

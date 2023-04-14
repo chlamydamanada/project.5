@@ -37,7 +37,7 @@ import { GetAllCommentsByPostIdSwaggerDecorator } from '../../../../swagger/deco
 import { CreateCommentByPostIdSwaggerDecorator } from '../../../../swagger/decorators/public/posts/createCommentByPostId.swagger.decorator';
 import { UpdateLikeStatusOfPostSwaggerDecorator } from '../../../../swagger/decorators/public/posts/updateLikeStatusOfPost.swagger.decorator';
 
-@ApiTags('Public Posts')
+@ApiTags('Posts')
 @Controller('posts')
 export class PostPublicController {
   constructor(

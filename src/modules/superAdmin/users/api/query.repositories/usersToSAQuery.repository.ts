@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, ILike, Repository } from 'typeorm';
 import { User } from '../../domain/user.entity';
-import { UserViewModel } from '../../types/userViewType';
+import { UserViewModel } from '../../types/userViewModel';
 import { userQueryType } from '../../types/userQueryType';
 import { BanStatusType } from '../../types/banStatusType';
 

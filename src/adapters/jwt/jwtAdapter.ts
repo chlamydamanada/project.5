@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Injectable } from '@nestjs/common';
-import { AccessTokenViewType } from '../../modules/public/auth/types/accessTokenViewType';
+import { AccessTokenViewModel } from '../../modules/public/auth/types/accessTokenViewModel';
 
 @Injectable()
 export class JwtAdapter {
@@ -32,7 +32,7 @@ export class JwtAdapter {
   async createAccessToken(
     userId: string,
     userLogin: string,
-  ): Promise<AccessTokenViewType> {
+  ): Promise<AccessTokenViewModel> {
     const token = await this.jwtService.signAsync(
       { userId, userLogin },
       {

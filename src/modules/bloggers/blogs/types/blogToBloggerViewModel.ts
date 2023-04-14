@@ -14,7 +14,7 @@ export class BlogToBloggerViewModel {
   websiteUrl: string;
 
   @ApiProperty()
-  createdAt: Date; // but it is string
+  createdAt: Date;
 
   @ApiProperty()
   isMembership: boolean;

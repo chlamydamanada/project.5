@@ -22,7 +22,7 @@ import { userQueryType } from '../types/userQueryType';
 import { CreateUserCommand } from '../useCases/createUser.useCase';
 import { ApiBasicAuth, ApiTags } from '@nestjs/swagger';
 import { userCreateInputDto } from './pipes/userCreateInput.dto';
-import { UserViewModel } from '../types/userViewType';
+import { UserViewModel } from '../types/userViewModel';
 import { DeleteUserCommand } from '../useCases/deleteUser.useCase';
 import { BanOrUnbanUserCommand } from '../useCases/banOrUnbanUser.useCase';
 import { UsersToSAQueryDto } from './pipes/usersToSAQuery.dto';

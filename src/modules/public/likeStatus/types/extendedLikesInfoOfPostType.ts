@@ -1,5 +1,4 @@
 import { newestLikesForPostModel } from './newestLikesForPostModel';
-import { reactionStatusType } from './statusType';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class extendedLikesInfoModel {

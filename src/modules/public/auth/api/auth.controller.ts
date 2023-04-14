@@ -19,28 +19,37 @@ import { CreateRTMetaCommand } from '../useCases/createRTMeta.useCase';
 import { PasswordAuthGuard } from '../guards/pass.auth.guard';
 import { UserRegistrationCommand } from '../useCases/userRegistration.useCase';
 import { AccessTokenGuard } from '../guards/accessTokenAuth.guard';
-import { MeViewType } from '../types/meViewType';
+import { MeViewModel } from '../types/meViewModel';
 import { CurrentUserId } from '../../../../helpers/decorators/currentUserId.decorator';
 import { UsersQueryRepository } from './query.repositories/usersQuery.repository';
 import { UserInfoRtType } from '../types/userIdDeviceIdType';
 import { CurrentUserInfoAndDeviceId } from '../../../../helpers/decorators/currentUserIdDeviceId';
 import { RefreshTokenGuard } from '../guards/refreshTokenAuth.guard';
 import { DeleteDeviceCommand } from '../../devices/useCases/deleteDevice.useCase';
-import { AccessTokenViewType } from '../types/accessTokenViewType';
+import { AccessTokenViewModel } from '../types/accessTokenViewModel';
 import { UpdateRTMetaCommand } from '../useCases/updateRTMeta.useCase';
-import { CodePipe } from './pipes/codePipe';
+import { CodeInputDto } from './pipes/codeInput.dto';
 import { ConfirmEmailCommand } from '../useCases/confirmEmail.useCase';
-import { EmailPipe } from './pipes/emailPipe';
+import { EmailInputDto } from './pipes/emailInput.dto';
 import { CheckEmailIsConfirmedCommand } from '../useCases/checkEmailIsConfirmed.useCase';
 import { CreateRecoveryCodeCommand } from '../useCases/createRecoveryCode.useCase';
-import { NewPassRecoveryDtoPipe } from './pipes/newPassRecoveryDtoPipe';
+import { NewPassRecoveryDto } from './pipes/newPassRecovery.dto';
 import { ChangePasswordCommand } from '../useCases/changePassword.useCase';
 import { ApiTags } from '@nestjs/swagger';
 import { TokensType } from '../types/tokensType';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { userCreateInputDto } from '../../../superAdmin/users/api/pipes/userCreateInput.dto';
+import { LoginSwaggerDecorator } from '../../../../swagger/decorators/public/auth/login.swagger.decorator';
+import { RegistrationSwaggerDecorator } from '../../../../swagger/decorators/public/auth/registration.swagger.decorator';
+import { GetCurrentInfoSwaggerDecorator } from '../../../../swagger/decorators/public/auth/getCurrentInfo.swagger.decorator';
+import { RegistrationConfirmationSwaggerDecorator } from '../../../../swagger/decorators/public/auth/registrationConfirmation.swagger.decorator';
+import { RegistrationEmailResendingSwaggerDecorator } from '../../../../swagger/decorators/public/auth/registrationEmailResending.swagger.decorator';
+import { RefreshTokenSwaggerDecorator } from '../../../../swagger/decorators/public/auth/refreshToken.swagger.decorator';
+import { LogoutSwaggerDecorator } from '../../../../swagger/decorators/public/auth/logout.swagger.decorator';
+import { PasswordRecoverySwaggerDecorator } from '../../../../swagger/decorators/public/auth/passwordRecovery.swagger.decorator';
+import { NewPasswordSwaggerDecorator } from '../../../../swagger/decorators/public/auth/newPassword.swagger.decorator';
 
-@ApiTags('Public Auth')
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -50,6 +59,7 @@ export class AuthController {
   ) {}
 
   @Post('login')
+  @LoginSwaggerDecorator()
   @UseGuards(/*ThrottlerGuard,*/ PasswordAuthGuard)
   @HttpCode(200)
   async login(
@@ -71,14 +81,16 @@ export class AuthController {
   }
 
   @UseGuards(AccessTokenGuard)
+  @GetCurrentInfoSwaggerDecorator()
   @Get('me')
-  async getMyProfile(@CurrentUserId() userId: string): Promise<MeViewType> {
+  async getMyProfile(@CurrentUserId() userId: string): Promise<MeViewModel> {
     const user = await this.usersQueryRepository.getMyProfile(userId);
     if (!user) throw new NotFoundException('Can`t find your profile');
     return user;
   }
 
   @Post('registration')
+  @RegistrationSwaggerDecorator()
   //@UseGuards(ThrottlerGuard)
   @HttpCode(204)
   async registration(
@@ -95,9 +107,10 @@ export class AuthController {
   }
 
   @Post('registration-confirmation')
+  @RegistrationConfirmationSwaggerDecorator()
   //@UseGuards(ThrottlerGuard)
   @HttpCode(204)
-  async registrationConfirmation(@Body() codeDto: CodePipe): Promise<void> {
+  async registrationConfirmation(@Body() codeDto: CodeInputDto): Promise<void> {
     await this.commandBus.execute<ConfirmEmailCommand>(
       new ConfirmEmailCommand(codeDto.code),
     );
@@ -105,9 +118,12 @@ export class AuthController {
   }
 
   @Post('registration-email-resending')
+  @RegistrationEmailResendingSwaggerDecorator()
   //@UseGuards(ThrottlerGuard)
   @HttpCode(204)
-  async registrationEmailResending(@Body() emailDto: EmailPipe): Promise<void> {
+  async registrationEmailResending(
+    @Body() emailDto: EmailInputDto,
+  ): Promise<void> {
     await this.commandBus.execute<CheckEmailIsConfirmedCommand>(
       new CheckEmailIsConfirmedCommand(emailDto.email),
     );
@@ -115,6 +131,7 @@ export class AuthController {
   }
 
   @Post('refresh-token')
+  @RefreshTokenSwaggerDecorator()
   @UseGuards(RefreshTokenGuard)
   @HttpCode(200)
   async updateTokens(
@@ -122,7 +139,7 @@ export class AuthController {
     @Ip() ip: string,
     @Headers('user-agent') deviceTitle: string,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<AccessTokenViewType> {
+  ): Promise<AccessTokenViewModel> {
     const tokens = await this.commandBus.execute<
       UpdateRTMetaCommand,
       TokensType
@@ -144,6 +161,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @LogoutSwaggerDecorator()
   @UseGuards(RefreshTokenGuard)
   @HttpCode(204)
   async logout(
@@ -158,9 +176,10 @@ export class AuthController {
   }
 
   @Post('password-recovery')
+  @PasswordRecoverySwaggerDecorator()
   @HttpCode(204)
   //@UseGuards(ThrottlerGuard)
-  async passwordRecovery(@Body() emailInputDto: EmailPipe): Promise<void> {
+  async passwordRecovery(@Body() emailInputDto: EmailInputDto): Promise<void> {
     await this.commandBus.execute<CreateRecoveryCodeCommand>(
       new CreateRecoveryCodeCommand(emailInputDto.email),
     );
@@ -168,10 +187,11 @@ export class AuthController {
   }
 
   @Post('new-password')
+  @NewPasswordSwaggerDecorator()
   //@UseGuards(ThrottlerGuard)
   @HttpCode(204)
   async newPassword(
-    @Body() newPassRecoveryDto: NewPassRecoveryDtoPipe,
+    @Body() newPassRecoveryDto: NewPassRecoveryDto,
   ): Promise<void> {
     await this.commandBus.execute<ChangePasswordCommand>(
       new ChangePasswordCommand(

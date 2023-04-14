@@ -20,7 +20,7 @@ import { BlogsSAModel } from './types/blogsSAModel';
 import { BanOrUnbanBlogDto } from './api/pipes/banOrUnbanBlog.dto';
 import { BanOrUnbanBlogCommand } from './useCases/banOrUnbanBlog.useCase';
 import { GetBlogsBySASwaggerDecorator } from '../../../swagger/decorators/sa/blogs/getBlogsBySA.swagger.decorator';
-import { blogQueryType } from '../../public/blogs/types/blogsQweryType';
+import { blogQueryType } from '../../public/blogs/types/blogsQueryType';
 
 @ApiTags('Blogs')
 @ApiBasicAuth()

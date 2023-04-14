@@ -1,7 +1,9 @@
 import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
-export class CodePipe {
+export class CodeInputDto {
+  @ApiProperty()
   @IsUUID()
   @IsNotEmpty()
   @IsString()

@@ -1,16 +1,16 @@
-import { LoginDto } from './pass.validator';
 import { BadRequestException } from '@nestjs/common';
 import { validate } from 'class-validator';
+import { loginInputDto } from '../../modules/public/auth/api/pipes/loginInput.dto';
 
 export const validateLoginOrEmail = async (
   loginOrEmail: string,
   password: string,
 ) => {
-  const loginDto = new LoginDto();
+  const loginDto = new loginInputDto();
   loginDto.password = password;
   loginDto.loginOrEmail = loginOrEmail;
   const errors = await validate(loginDto);
-  // if get some errors in [], should take it in correct form
+  // if got some errors in [], should take it in correct form
   if (errors.length > 0)
     throw new BadRequestException(
       errors.map((e) => ({

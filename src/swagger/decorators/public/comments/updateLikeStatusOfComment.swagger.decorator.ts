@@ -3,7 +3,6 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
-  ApiCreatedResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -13,7 +12,7 @@ import { SwaggerConstants } from '../../../swagger.constants';
 import { LikeStatusDto } from '../../../../modules/public/likeStatus/pipes/likeStatus.dto';
 import { ErrorsModel } from '../../../types/errorType';
 
-export function UpdateLikeStatusOfPostSwaggerDecorator() {
+export function UpdateLikeStatusOfCommentSwaggerDecorator() {
   return applyDecorators(
     ApiBearerAuth(),
     ApiOperation({
@@ -33,7 +32,7 @@ export function UpdateLikeStatusOfPostSwaggerDecorator() {
       description: SwaggerConstants.unauthorized,
     }),
     ApiNotFoundResponse({
-      description: SwaggerConstants.postNotExist,
+      description: SwaggerConstants.commentNotExist,
     }),
   );
 }

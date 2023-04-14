@@ -1,4 +1,4 @@
-import { UserViewModel } from './userViewType';
+import { UserViewModel } from './userViewModel';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UsersViewModel {

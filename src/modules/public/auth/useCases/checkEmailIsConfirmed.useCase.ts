@@ -1,4 +1,3 @@
-import { EmailType } from '../types/emailType';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BadRequestException } from '@nestjs/common';
 import { UsersRepository } from '../repositories/users.repository';

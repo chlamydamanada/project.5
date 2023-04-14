@@ -23,8 +23,12 @@ import { LikeStatusDto } from '../../likeStatus/pipes/likeStatus.dto';
 import { GenerateCommentLikeStatusCommand } from '../../likeStatus/useCases/generateCommentLikeStatus.useCase';
 import { ApiTags } from '@nestjs/swagger';
 import { CommentViewModel } from '../types/commentViewModel';
+import { GetCommentByIdSwaggerDecorator } from '../../../../swagger/decorators/public/comments/getCommentById.swagger.decorator';
+import { UpdateCommentSwaggerDecorator } from '../../../../swagger/decorators/public/comments/updateComment.swagger.decorator';
+import { UpdateLikeStatusOfCommentSwaggerDecorator } from '../../../../swagger/decorators/public/comments/updateLikeStatusOfComment.swagger.decorator';
+import { DeleteCommentSwaggerDecorator } from '../../../../swagger/decorators/public/comments/deleteComment.swagger.decorator';
 
-@ApiTags('Public Comments')
+@ApiTags('Comments')
 @Controller('comments')
 export class CommentsPublicController {
   constructor(
@@ -33,6 +37,7 @@ export class CommentsPublicController {
   ) {}
 
   @Get(':id')
+  @GetCommentByIdSwaggerDecorator()
   @UseGuards(ExtractUserIdFromAT)
   async getCommentByCommentId(
     @Param('id') commentId: string,
@@ -48,6 +53,7 @@ export class CommentsPublicController {
   }
 
   @Put(':id')
+  @UpdateCommentSwaggerDecorator()
   @UseGuards(AccessTokenGuard)
   @HttpCode(204)
   async updateCommentByCommentId(
@@ -62,6 +68,7 @@ export class CommentsPublicController {
   }
 
   @Put(':id/like-status')
+  @UpdateLikeStatusOfCommentSwaggerDecorator()
   @UseGuards(AccessTokenGuard)
   @HttpCode(204)
   async updateCommentStatusById(
@@ -80,6 +87,7 @@ export class CommentsPublicController {
   }
 
   @Delete(':id')
+  @DeleteCommentSwaggerDecorator()
   @UseGuards(AccessTokenGuard)
   @HttpCode(204)
   async deleteCommentById(

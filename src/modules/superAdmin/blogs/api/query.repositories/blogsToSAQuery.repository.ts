@@ -5,7 +5,7 @@ import { BlogBanInfo } from '../../../../bloggers/blogs/domain/blogBanInfo.entit
 import { User } from '../../../users/domain/user.entity';
 import { BlogsSAModel } from '../../types/blogsSAModel';
 import { Blog } from '../../../../bloggers/blogs/domain/blog.entity';
-import { blogQueryType } from '../../../../public/blogs/types/blogsQweryType';
+import { blogQueryType } from '../../../../public/blogs/types/blogsQueryType';
 
 @Injectable()
 export class BlogsToSAQueryRepository {

@@ -9,7 +9,7 @@ import {
 import { BlogPublicQueryRepository } from './query.repositories/blogPublicQuery.repository';
 import { BlogQueryDto } from './pipes/blogQuery.dto';
 import { blogsViewModel } from '../types/blogsViewModel';
-import { blogQueryType } from '../types/blogsQweryType';
+import { blogQueryType } from '../types/blogsQueryType';
 import { blogViewModel } from '../types/blogViewModel';
 import { PostPublicQueryRepository } from '../../posts/api/query.repositories/postPublicQuery.repository';
 import { ExtractUserIdFromAT } from '../../auth/guards/extractUserIdFromAT.guard';
@@ -22,7 +22,7 @@ import { GetAllBlogsSwaggerDecorator } from '../../../../swagger/decorators/publ
 import { GetBlogByIdSwaggerDecorator } from '../../../../swagger/decorators/public/blogs/getBlogById.swagger.decorator';
 import { GetAllPostsByBlogIdSwaggerDecorator } from '../../../../swagger/decorators/public/blogs/getAllPostsByBlogId.swagger.decorator';
 
-@ApiTags('Public Blogs')
+@ApiTags('Blogs')
 @Controller('blogs')
 export class BlogPublicController {
   constructor(

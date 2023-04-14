@@ -1,23 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-
-export class CommentatorInfo {
-  @ApiProperty()
-  userId: string;
-
-  @ApiProperty()
-  userLogin: string;
-}
-
-export class LikesInfo {
-  @ApiProperty()
-  likesCount: number;
-
-  @ApiProperty()
-  dislikesCount: number;
-
-  @ApiProperty()
-  myStatus: string;
-}
+import { CommentatorInfo } from './commentatorInfo';
+import { LikesInfo } from './likesInfo';
 
 export class CommentViewModel {
   @ApiProperty()

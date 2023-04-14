@@ -9,7 +9,7 @@ import {
 import { SwaggerConstants } from '../../../swagger.constants';
 import { ErrorsModel } from '../../../types/errorType';
 import { userCreateInputDto } from '../../../../modules/superAdmin/users/api/pipes/userCreateInput.dto';
-import { UserViewModel } from '../../../../modules/superAdmin/users/types/userViewType';
+import { UserViewModel } from '../../../../modules/superAdmin/users/types/userViewModel';
 
 export function CreateUserBySASwaggerDecorator() {
   return applyDecorators(

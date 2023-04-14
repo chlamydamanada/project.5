@@ -1,39 +1,31 @@
 import { applyDecorators } from '@nestjs/common';
 import {
-  ApiBadRequestResponse,
   ApiBearerAuth,
-  ApiBody,
-  ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { SwaggerConstants } from '../../../swagger.constants';
-import { LikeStatusDto } from '../../../../modules/public/likeStatus/pipes/likeStatus.dto';
-import { ErrorsModel } from '../../../types/errorType';
 
-export function UpdateLikeStatusOfPostSwaggerDecorator() {
+export function DeleteCommentSwaggerDecorator() {
   return applyDecorators(
     ApiBearerAuth(),
     ApiOperation({
-      summary: SwaggerConstants.likeStatus,
-    }),
-    ApiBody({
-      type: LikeStatusDto,
+      summary: SwaggerConstants.deleteComment,
     }),
     ApiNoContentResponse({
       description: SwaggerConstants.noContent,
     }),
-    ApiBadRequestResponse({
-      description: SwaggerConstants.badReq,
-      type: ErrorsModel,
-    }),
     ApiUnauthorizedResponse({
       description: SwaggerConstants.unauthorized,
     }),
+    ApiForbiddenResponse({
+      description: SwaggerConstants.forbidden,
+    }),
     ApiNotFoundResponse({
-      description: SwaggerConstants.postNotExist,
+      description: SwaggerConstants.commentNotExist,
     }),
   );
 }

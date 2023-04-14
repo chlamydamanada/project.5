@@ -3,24 +3,24 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
-  ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { SwaggerConstants } from '../../../swagger.constants';
-import { LikeStatusDto } from '../../../../modules/public/likeStatus/pipes/likeStatus.dto';
+import { commentCreateInputDto } from '../../../../modules/public/comments/api/pipes/commentCreateInput.dto';
 import { ErrorsModel } from '../../../types/errorType';
 
-export function UpdateLikeStatusOfPostSwaggerDecorator() {
+export function UpdateCommentSwaggerDecorator() {
   return applyDecorators(
     ApiBearerAuth(),
     ApiOperation({
-      summary: SwaggerConstants.likeStatus,
+      summary: SwaggerConstants.updateComment,
     }),
     ApiBody({
-      type: LikeStatusDto,
+      type: commentCreateInputDto,
     }),
     ApiNoContentResponse({
       description: SwaggerConstants.noContent,
@@ -32,8 +32,11 @@ export function UpdateLikeStatusOfPostSwaggerDecorator() {
     ApiUnauthorizedResponse({
       description: SwaggerConstants.unauthorized,
     }),
+    ApiForbiddenResponse({
+      description: SwaggerConstants.forbidden,
+    }),
     ApiNotFoundResponse({
-      description: SwaggerConstants.postNotExist,
+      description: SwaggerConstants.commentNotExist,
     }),
   );
 }

@@ -1,29 +1,28 @@
 import { applyDecorators } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
-  ApiBearerAuth,
   ApiBody,
-  ApiCreatedResponse,
-  ApiNoContentResponse,
-  ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
+  ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { SwaggerConstants } from '../../../swagger.constants';
-import { LikeStatusDto } from '../../../../modules/public/likeStatus/pipes/likeStatus.dto';
+import { loginInputDto } from '../../../../modules/public/auth/api/pipes/loginInput.dto';
 import { ErrorsModel } from '../../../types/errorType';
+import { AccessTokenViewModel } from '../../../../modules/public/auth/types/accessTokenViewModel';
 
-export function UpdateLikeStatusOfPostSwaggerDecorator() {
+export function LoginSwaggerDecorator() {
   return applyDecorators(
-    ApiBearerAuth(),
     ApiOperation({
-      summary: SwaggerConstants.likeStatus,
+      summary: SwaggerConstants.login,
     }),
     ApiBody({
-      type: LikeStatusDto,
+      type: loginInputDto,
     }),
-    ApiNoContentResponse({
-      description: SwaggerConstants.noContent,
+    ApiOkResponse({
+      description: SwaggerConstants.jwtOk,
+      type: AccessTokenViewModel,
     }),
     ApiBadRequestResponse({
       description: SwaggerConstants.badReq,
@@ -32,8 +31,8 @@ export function UpdateLikeStatusOfPostSwaggerDecorator() {
     ApiUnauthorizedResponse({
       description: SwaggerConstants.unauthorized,
     }),
-    ApiNotFoundResponse({
-      description: SwaggerConstants.postNotExist,
+    ApiTooManyRequestsResponse({
+      description: SwaggerConstants.throttler,
     }),
   );
 }

@@ -1,36 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-export class PostInfoModel {
-  @ApiProperty()
-  id: string;
-
-  @ApiProperty()
-  title: string;
-
-  @ApiProperty()
-  blogId: string;
-
-  @ApiProperty()
-  blogName: string;
-}
-
-export class CommentatorInfoModel {
-  @ApiProperty()
-  userId: string;
-
-  @ApiProperty()
-  userLogin: string;
-}
-
-export class LikesInfoModel {
-  @ApiProperty()
-  likesCount: number;
-
-  @ApiProperty()
-  dislikesCount: number;
-
-  @ApiProperty()
-  myStatus: string;
-}
+import { PostInfoModel } from './postInfoModel';
+import { CommentatorInfoModel } from './commentatorInfoModel';
+import { LikesInfoModel } from './likesInfoModel';
 
 export class CommentViewForBloggerModel {
   @ApiProperty()

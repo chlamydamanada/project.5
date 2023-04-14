@@ -20,7 +20,7 @@ import { GetUserDevicesSwaggerDecorator } from '../../../../swagger/decorators/p
 import { DeleteAllDevicesExceptThisSwaggerDecorator } from '../../../../swagger/decorators/public/devices/deleteAllDevicesExeptThis.swagger.decorator';
 import { DeleteDeviceByIdSwaggerDecorator } from '../../../../swagger/decorators/public/devices/deleteDeviceById.swagger.decorator';
 
-@ApiTags('Public Devices')
+@ApiTags('Devices')
 @ApiCookieAuth()
 @Controller('security')
 export class DevicesController {

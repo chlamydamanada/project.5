@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MeViewType } from '../../types/meViewType';
+import { MeViewModel } from '../../types/meViewModel';
 import { User } from '../../../../superAdmin/users/domain/user.entity';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class UsersQueryRepository {
     private readonly usersRepository: Repository<User>,
   ) {}
 
-  async getMyProfile(userId: string): Promise<MeViewType | null> {
+  async getMyProfile(userId: string): Promise<MeViewModel | null> {
     const user = await this.usersRepository.findOne({
       select: {
         id: true,
