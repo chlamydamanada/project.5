@@ -2,8 +2,8 @@ import { INestApplication } from '@nestjs/common';
 import { getApp } from '../../testsConnection';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
-import { quizConstants } from './sa.quiz.constants';
-import { createQuestion } from '../../helpers/questions/createQuestion.hf';
+import { QuestionsConstants } from '../../testsConstants/questionsConstants';
+import { createSeveralQuestions } from '../../helpers/questions/createSeveralQuestions.helper';
 import { publishOrUnpublishQuestion } from '../../helpers/questions/publishQuestion.hf';
 
 describe('Testing sa users controller', () => {
@@ -27,14 +27,14 @@ describe('Testing sa users controller', () => {
     it('shouldn`t create new question without authorization: STATUS 401', async () => {
       await request(server)
         .post('/sa/quiz/questions')
-        .send(quizConstants.create_question)
+        .send(QuestionsConstants.create_question)
         .expect(401);
     });
     it('shouldn`t create new question with incorrect body(isn`t string): STATUS 400', async () => {
       const res = await request(server)
         .post('/sa/quiz/questions')
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_body_1)
+        .send(QuestionsConstants.invalid_question_body_1)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('body');
@@ -43,7 +43,7 @@ describe('Testing sa users controller', () => {
       const res = await request(server)
         .post('/sa/quiz/questions')
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_body_2)
+        .send(QuestionsConstants.invalid_question_body_2)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('body');
@@ -52,7 +52,7 @@ describe('Testing sa users controller', () => {
       const res = await request(server)
         .post('/sa/quiz/questions')
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_body_3)
+        .send(QuestionsConstants.invalid_question_body_3)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('body');
@@ -61,7 +61,7 @@ describe('Testing sa users controller', () => {
       const res = await request(server)
         .post('/sa/quiz/questions')
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_answers_1)
+        .send(QuestionsConstants.invalid_question_answers_1)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('correctAnswers');
@@ -70,7 +70,7 @@ describe('Testing sa users controller', () => {
       const res = await request(server)
         .post('/sa/quiz/questions')
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_answers_2)
+        .send(QuestionsConstants.invalid_question_answers_2)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('correctAnswers');
@@ -79,7 +79,7 @@ describe('Testing sa users controller', () => {
       const res = await request(server)
         .post('/sa/quiz/questions')
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_answers_3)
+        .send(QuestionsConstants.invalid_question_answers_3)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('correctAnswers');
@@ -88,7 +88,7 @@ describe('Testing sa users controller', () => {
       const res = await request(server)
         .post('/sa/quiz/questions')
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_answers_4)
+        .send(QuestionsConstants.invalid_question_answers_4)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('correctAnswers');
@@ -97,7 +97,7 @@ describe('Testing sa users controller', () => {
       const res = await request(server)
         .post('/sa/quiz/questions')
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_answers_5)
+        .send(QuestionsConstants.invalid_question_answers_5)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('correctAnswers');
@@ -106,7 +106,7 @@ describe('Testing sa users controller', () => {
       const res = await request(server)
         .post('/sa/quiz/questions')
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question)
+        .send(QuestionsConstants.invalid_question)
         .expect(400);
       //should be 2 errors in body field and correctAnswers field
       expect(res.body.errorsMessages).toHaveLength(2);
@@ -115,7 +115,7 @@ describe('Testing sa users controller', () => {
       await request(server)
         .post('/sa/quiz/questions')
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.create_question)
+        .send(QuestionsConstants.create_question)
         .expect(201);
     });
     it('should take question from db and be the same question which try to create', async () => {
@@ -124,7 +124,7 @@ describe('Testing sa users controller', () => {
 SELECT "id", "body", "published", "createdAt", "updatedAt", "correctAnswers"
 FROM public.question
 WHERE "body" = $1`,
-        [quizConstants.create_question.body],
+        [QuestionsConstants.create_question.body],
       );
       expect(question[0]).toBeTruthy();
       expect(question).toHaveLength(1);
@@ -140,7 +140,7 @@ WHERE "body" = $1`,
   describe('DELETE QUESTION BY ID', () => {
     let question;
     beforeAll(async () => {
-      question = await createQuestion(quizConstants.create_question, server);
+      question = await createSeveralQuestions(1, server);
     });
     it('shouldn`t delete question without authorization: STATUS 401', async () => {
       await request(server)
@@ -175,40 +175,40 @@ WHERE "id" = $1`,
   describe('PUBLISH OR UNPUBLISH QUESTION', () => {
     let question;
     beforeAll(async () => {
-      question = await createQuestion(quizConstants.create_question, server);
+      question = await createSeveralQuestions(1, server);
     });
     it('shouldn`t publish question without authorization: STATUS 401', async () => {
       await request(server)
         .put(`/sa/quiz/questions/${question.body.id}/publish`)
-        .send(quizConstants.publish)
+        .send(QuestionsConstants.publish)
         .expect(401);
     });
     it('shouldn`t publish question with incorrect data(string): STATUS 400', async () => {
       await request(server)
         .put(`/sa/quiz/questions/${question.body.id}/publish`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_publish_1)
+        .send(QuestionsConstants.invalid_publish_1)
         .expect(400);
     });
     it('shouldn`t publish question with incorrect data(number): STATUS 400', async () => {
       await request(server)
         .put(`/sa/quiz/questions/${question.body.id}/publish`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_publish_2)
+        .send(QuestionsConstants.invalid_publish_2)
         .expect(400);
     });
     it('shouldn`t publish question which doesn`t exist: STATUS 404', async () => {
       await request(server)
-        .put(`/sa/quiz/questions/${quizConstants.invalid_id}/publish`)
+        .put(`/sa/quiz/questions/${QuestionsConstants.invalid_id}/publish`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.publish)
+        .send(QuestionsConstants.publish)
         .expect(404);
     });
     it('should publish question by correct data: STATUS 204', async () => {
       await request(server)
         .put(`/sa/quiz/questions/${question.body.id}/publish`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.publish)
+        .send(QuestionsConstants.publish)
         .expect(204);
     });
     it('should get question from db and check is published true', async () => {
@@ -233,19 +233,19 @@ WHERE "id" = $1`,
   describe('UPDATE QUESTION BY ID', () => {
     let question;
     beforeAll(async () => {
-      question = await createQuestion(quizConstants.create_question, server);
+      question = await createSeveralQuestions(1, server);
     });
     it('shouldn`t update question without authorization: STATUS 401', async () => {
       await request(server)
         .put(`/sa/quiz/questions/${question.body.id}`)
-        .send(quizConstants.update_question)
+        .send(QuestionsConstants.update_question)
         .expect(401);
     });
     it('shouldn`t update question with incorrect body(isn`t string): STATUS 400', async () => {
       const res = await request(server)
         .put(`/sa/quiz/questions/${question.body.id}`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_body_1)
+        .send(QuestionsConstants.invalid_question_body_1)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('body');
@@ -254,7 +254,7 @@ WHERE "id" = $1`,
       const res = await request(server)
         .put(`/sa/quiz/questions/${question.body.id}`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_body_2)
+        .send(QuestionsConstants.invalid_question_body_2)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('body');
@@ -263,7 +263,7 @@ WHERE "id" = $1`,
       const res = await request(server)
         .put(`/sa/quiz/questions/${question.body.id}`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_body_3)
+        .send(QuestionsConstants.invalid_question_body_3)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('body');
@@ -272,7 +272,7 @@ WHERE "id" = $1`,
       const res = await request(server)
         .put(`/sa/quiz/questions/${question.body.id}`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_answers_1)
+        .send(QuestionsConstants.invalid_question_answers_1)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('correctAnswers');
@@ -281,7 +281,7 @@ WHERE "id" = $1`,
       const res = await request(server)
         .put(`/sa/quiz/questions/${question.body.id}`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_answers_2)
+        .send(QuestionsConstants.invalid_question_answers_2)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('correctAnswers');
@@ -290,7 +290,7 @@ WHERE "id" = $1`,
       const res = await request(server)
         .put(`/sa/quiz/questions/${question.body.id}`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_answers_3)
+        .send(QuestionsConstants.invalid_question_answers_3)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('correctAnswers');
@@ -299,7 +299,7 @@ WHERE "id" = $1`,
       const res = await request(server)
         .put(`/sa/quiz/questions/${question.body.id}`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_answers_4)
+        .send(QuestionsConstants.invalid_question_answers_4)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('correctAnswers');
@@ -308,7 +308,7 @@ WHERE "id" = $1`,
       const res = await request(server)
         .put(`/sa/quiz/questions/${question.body.id}`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question_answers_5)
+        .send(QuestionsConstants.invalid_question_answers_5)
         .expect(400);
 
       expect(res.body.errorsMessages[0].field).toBe('correctAnswers');
@@ -317,7 +317,7 @@ WHERE "id" = $1`,
       const res = await request(server)
         .put(`/sa/quiz/questions/${question.body.id}`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.invalid_question)
+        .send(QuestionsConstants.invalid_question)
         .expect(400);
       //should be 2 errors in body field and correctAnswers field
       expect(res.body.errorsMessages).toHaveLength(2);
@@ -325,33 +325,33 @@ WHERE "id" = $1`,
 
     it('shouldn`t update question which doesn`t exist: STATUS 404', async () => {
       await request(server)
-        .put(`/sa/quiz/questions/${quizConstants.invalid_id}`)
+        .put(`/sa/quiz/questions/${QuestionsConstants.invalid_id}`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.update_question)
+        .send(QuestionsConstants.update_question)
         .expect(404);
     });
     it('shouldn`t update question which is published: STATUS 400', async () => {
       await publishOrUnpublishQuestion(
         server,
         question.body.id,
-        quizConstants.publish,
+        QuestionsConstants.publish,
       );
       await request(server)
         .put(`/sa/quiz/questions/${question.body.id}`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.update_question)
+        .send(QuestionsConstants.update_question)
         .expect(400);
     });
     it('should update question with correct data: STATUS 204', async () => {
       await publishOrUnpublishQuestion(
         server,
         question.body.id,
-        quizConstants.unpublish,
+        QuestionsConstants.unpublish,
       );
       await request(server)
         .put(`/sa/quiz/questions/${question.body.id}`)
         .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(quizConstants.update_question)
+        .send(QuestionsConstants.update_question)
         .expect(204);
     });
     it('should get question from db and check is question updated', async () => {
@@ -363,8 +363,10 @@ WHERE "id" = $1`,
         [question.body.id],
       );
       expect(questionDb).toHaveLength(1);
-      expect(questionDb[0].body).toBe(quizConstants.update_question.body);
-      expect(questionDb[0].body).not.toBe(quizConstants.create_question.body);
+      expect(questionDb[0].body).toBe(QuestionsConstants.update_question.body);
+      expect(questionDb[0].body).not.toBe(
+        QuestionsConstants.create_question.body,
+      );
       expect(questionDb[0].correctAnswers).toHaveLength(2);
     });
   });
@@ -376,23 +378,17 @@ WHERE "id" = $1`,
   });
 
   describe('GET ALL QUESTIONS by sa', () => {
-    const questions: any = [];
+    let questions: any = [];
 
     beforeAll(async () => {
       //create 7 question
-      for (let i = 1; i <= 7; i++) {
-        const res = await createQuestion(
-          quizConstants[`question_` + i],
-          server,
-        );
-        questions.push(res.body);
-      }
+      questions = await createSeveralQuestions(7, server);
       // publish 2 of all questions
       for (let i = 0; i < 2; i++) {
         await publishOrUnpublishQuestion(
           server,
           questions[i].id,
-          quizConstants.publish,
+          QuestionsConstants.publish,
         );
       }
     });

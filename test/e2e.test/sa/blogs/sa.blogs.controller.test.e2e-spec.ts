@@ -1,9 +1,8 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { getApp } from '../../testsConnection';
 import request from 'supertest';
 import { saBlogsConstants } from './sa.blogs.constants';
-import { BlogToBloggerViewModel } from '../../../../src/modules/bloggers/blogs/types/blogToBloggerViewModel';
-import { createSeveralBlogs } from '../../helpers/blogs/createBlogs.helper';
+import { createSeveralBlogs } from '../../helpers/blogs/createSeveralBlogs.helper';
 
 describe('Testing sa blogs controller', () => {
   let app: INestApplication;
@@ -17,11 +16,11 @@ describe('Testing sa blogs controller', () => {
     await request(server).delete('/testing/all-data').expect(204);
   });
 
-  const blog = createSeveralBlogs(1, server);
+  const blog = createSeveralBlogs(1, server, '123');
 
   describe('BAN OR UNBAN BLOG by sa', () => {
     let blogs;
-    beforeAll(() => {
+    beforeAll(async () => {
       //create 1 user
       //create blogs
     });

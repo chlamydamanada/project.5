@@ -5,10 +5,6 @@ import { authConstants } from './public.auth.constants';
 import { DataSource } from 'typeorm';
 import { delay } from '../../../delayFunction';
 
-/*const delay = (delayInSec: number) => {
-  return new Promise((resolve) => setTimeout(resolve, 1000));
-};*/
-
 describe('Testing auth public controller', () => {
   let app: INestApplication;
   let server: any;

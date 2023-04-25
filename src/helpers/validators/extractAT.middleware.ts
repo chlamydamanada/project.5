@@ -9,7 +9,7 @@ export class ExtractATMiddleware implements NestMiddleware {
     if (req.headers.authorization) {
       const token = req.headers.authorization.split(' ')[1];
       const payload: any = await this.jwtService.decode(token);
-      // todo uncomment
+
       // req.user = { id: payload.userId };
     } else {
       // req.user = { id: null };

@@ -22,6 +22,9 @@ export class AccessTokenStrategy extends PassportStrategy(
   ): Promise<{ id: string; login: string }> {
     //console.log('AccessTokenStrategy:', payload);
     if (!payload) throw new UnauthorizedException();
+
+    //todo check does user exist(404: user not found)
+
     return { id: payload.userId, login: payload.userLogin };
   }
 }

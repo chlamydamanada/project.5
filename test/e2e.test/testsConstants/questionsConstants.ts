@@ -1,4 +1,4 @@
-export const quizConstants = {
+export const QuestionsConstants = {
   create_question: {
     body: 'What`s two + two = ?',
     correctAnswers: ['4', 'four', '2*2'],
@@ -56,31 +56,31 @@ export const quizConstants = {
     published: 1234568,
   },
   invalid_id: '111a11b1-11c1-1111-1111-d1e1ab11c111',
-  question_1: {
+  valid_question_1: {
     body: 'What`s 1 + 1 = ?',
     correctAnswers: ['2', 'two'],
   },
-  question_2: {
+  valid_question_2: {
     body: 'What`s 12 + 2 = ?',
     correctAnswers: ['14', 'fourteen'],
   },
-  question_3: {
+  valid_question_3: {
     body: 'What`s 3 + 3 = ?',
     correctAnswers: ['6', 'six'],
   },
-  question_4: {
+  valid_question_4: {
     body: 'What`s 4 + 4 = ?',
     correctAnswers: ['8', 'eight'],
   },
-  question_5: {
+  valid_question_5: {
     body: 'What`s 5 + 5 = ?',
     correctAnswers: ['10', 'ten'],
   },
-  question_6: {
+  valid_question_6: {
     body: 'What`s 6 + 6 = ?',
     correctAnswers: ['12', 'twelve'],
   },
-  question_7: {
+  valid_question_7: {
     body: 'What`s 7 + 7 = ?',
     correctAnswers: ['14', 'fourteen'],
   },

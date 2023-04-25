@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { QuestionOfGame } from '../../../public/quizGame/domain/questionOfGame.entity';
 
 @Entity()
 export class Question {
@@ -19,4 +20,7 @@ export class Question {
 
   @Column({ type: 'character varying', array: true })
   correctAnswers: string[];
+
+  @OneToMany(() => QuestionOfGame, (q) => q.question)
+  questionOfGame: QuestionOfGame;
 }

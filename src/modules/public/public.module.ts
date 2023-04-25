@@ -52,6 +52,16 @@ import { User } from '../superAdmin/users/domain/user.entity';
 import { EmailConfirmationInfo } from '../superAdmin/users/domain/emailConfirmationInfo.entity';
 import { PasswordRecoveryInfo } from '../superAdmin/users/domain/passwordRecoveryInfo.entity';
 import { BanInfo } from '../superAdmin/users/domain/banInfo.entity';
+import { Game } from './quizGame/domain/game.entity';
+import { Answer } from './quizGame/domain/answer.entity';
+import { QuestionOfGame } from './quizGame/domain/questionOfGame.entity';
+import { PlayerProgress } from './quizGame/domain/player.entity';
+import { Question } from '../superAdmin/quizQuestions/domain/question.entity';
+import { QuizGamePublicController } from './quizGame/api/quizGame.controller';
+import { QuizGamePublicRepository } from './quizGame/repositories/quizGame.repository';
+import { QuizGamePublicQueryRepository } from './quizGame/api/query.repositories/quizGameQuery.repository';
+import { ConnectionToGameUseCase } from './quizGame/useCases/connectionToGame.useCase';
+import { CreateAnswerOfCurrentUserUseCase } from './quizGame/useCases/createAnswerOfCurrentUser.useCase';
 
 const useCases = [
   ChangePasswordUseCase,
@@ -69,6 +79,8 @@ const useCases = [
   DeleteCommentUseCase,
   GeneratePostLikeStatusUseCase,
   GenerateCommentLikeStatusUseCase,
+  ConnectionToGameUseCase,
+  CreateAnswerOfCurrentUserUseCase,
 ];
 
 const repositories = [
@@ -81,6 +93,8 @@ const repositories = [
   CommentsPublicQueryRepository,
   PostsRepository,
   CommentsRepository,
+  QuizGamePublicRepository,
+  QuizGamePublicQueryRepository,
 ];
 
 const strategies = [
@@ -115,6 +129,11 @@ const adapters = [BcryptAdapter, JwtAdapter];
       Comment,
       PostLikeStatus,
       CommentLikeStatus,
+      Game,
+      Answer,
+      QuestionOfGame,
+      PlayerProgress,
+      Question,
     ]),
   ],
   controllers: [
@@ -123,6 +142,7 @@ const adapters = [BcryptAdapter, JwtAdapter];
     BlogPublicController,
     PostPublicController,
     CommentsPublicController,
+    QuizGamePublicController,
   ],
   providers: [...useCases, ...repositories, ...adapters, ...strategies],
 })

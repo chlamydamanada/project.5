@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Comment } from '../../../../public/comments/domain/comment.entity';
 import { commentQueryType } from '../../../../public/comments/types/commentQueryType';
 import { CommentsViewForBloggerModel } from '../../types/commentsViewForBloggerModel';
@@ -48,6 +48,9 @@ export class CommentsToBloggerQueryRepository {
           banInfo: {
             isBanned: false,
           },
+          // banList: {
+          //   bloggerId: Not(bloggerId),
+          // },
         },
       },
       order: { [queryDto.sortBy]: queryDto.sortDirection },
