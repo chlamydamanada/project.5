@@ -141,20 +141,14 @@ export class QuizGamePublicQueryRepository {
       firstPlayerProgress: {
         score: game.firstPlayerProgress.score,
         player: game.firstPlayerProgress.player,
-        answers:
-          game.firstPlayerProgress.answers?.length === 0
-            ? null
-            : game.firstPlayerProgress.answers,
+        answers: game.firstPlayerProgress.answers,
       },
       secondPlayerProgress: !game.secondPlayerProgress
         ? null
         : {
             score: game.secondPlayerProgress.score,
             player: game.secondPlayerProgress.player,
-            answers:
-              game.secondPlayerProgress.answers?.length === 0
-                ? null
-                : game.secondPlayerProgress.answers,
+            answers: game.secondPlayerProgress.answers,
           },
       questions:
         !game.questions || game.questions.length === 0

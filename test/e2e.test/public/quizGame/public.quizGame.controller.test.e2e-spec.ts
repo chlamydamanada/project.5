@@ -68,7 +68,7 @@ describe('Testing QUIZ GAME', () => {
         questions: null,
         firstPlayerProgress: {
           score: 0,
-          answers: null,
+          answers: expect.any(Array),
           player: {
             id: expect.any(String),
             login: UsersConstants.valid_user_1.login,
@@ -98,7 +98,7 @@ describe('Testing QUIZ GAME', () => {
         questions: expect.any(Array),
         firstPlayerProgress: {
           score: 0,
-          answers: null,
+          answers: expect.any(Array),
           player: {
             id: expect.any(String),
             login: UsersConstants.valid_user_1.login,
@@ -106,7 +106,7 @@ describe('Testing QUIZ GAME', () => {
         },
         secondPlayerProgress: {
           score: 0,
-          answers: null,
+          answers: expect.any(Array),
           player: {
             id: expect.any(String),
             login: UsersConstants.valid_user_2.login,
@@ -513,7 +513,7 @@ WHERE g."id" = $1`,
         questions: null,
         firstPlayerProgress: {
           score: 0,
-          answers: null,
+          answers: expect.any(Array),
           player: {
             id: expect.any(String),
             login: UsersConstants.valid_user_1.login,
@@ -541,7 +541,7 @@ WHERE g."id" = $1`,
         questions: expect.any(Array),
         firstPlayerProgress: {
           score: 0,
-          answers: null,
+          answers: expect.any(Array),
           player: {
             id: expect.any(String),
             login: UsersConstants.valid_user_1.login,
@@ -549,7 +549,7 @@ WHERE g."id" = $1`,
         },
         secondPlayerProgress: {
           score: 0,
-          answers: null,
+          answers: expect.any(Array),
           player: {
             id: expect.any(String),
             login: UsersConstants.valid_user_2.login,
@@ -662,7 +662,7 @@ WHERE g."id" = $1`,
         questions: null,
         firstPlayerProgress: {
           score: 0,
-          answers: null,
+          answers: expect.any(Array),
           player: {
             id: expect.any(String),
             login: UsersConstants.valid_user_1.login,
@@ -690,7 +690,7 @@ WHERE g."id" = $1`,
         questions: expect.any(Array),
         firstPlayerProgress: {
           score: 0,
-          answers: null,
+          answers: expect.any(Array),
           player: {
             id: expect.any(String),
             login: UsersConstants.valid_user_1.login,
@@ -698,7 +698,7 @@ WHERE g."id" = $1`,
         },
         secondPlayerProgress: {
           score: 0,
-          answers: null,
+          answers: expect.any(Array),
           player: {
             id: expect.any(String),
             login: UsersConstants.valid_user_2.login,
