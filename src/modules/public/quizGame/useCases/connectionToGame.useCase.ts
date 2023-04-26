@@ -76,14 +76,17 @@ export class ConnectionToGameUseCase
         'Not found questions for game. Try join to game later',
       );
     // save questions for game
-    const result = questions.map((q) => {
-      const questionOfGame = new QuestionOfGame();
-      questionOfGame.questionId = q.id;
-      questionOfGame.gameId = gameId;
-      return questionOfGame;
-    });
+    const result = Promise.all(
+      questions.map(async (q) => {
+        const questionOfGame = new QuestionOfGame();
+        questionOfGame.questionId = q.id;
+        questionOfGame.gameId = gameId;
 
-    return this.quizGameRepository.saveQuestionsOfGame(result);
+        return this.quizGameRepository.saveQuestionOfGame(questionOfGame);
+      }),
+    );
+
+    return result;
   }
 
   private async createPlayer(gameId: string, userId: string): Promise<string> {

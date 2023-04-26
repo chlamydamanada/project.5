@@ -12,6 +12,7 @@ import { delay } from '../../../delayFunction';
 import { DataSource } from 'typeorm';
 import { connectUserToGameHelper } from '../../helpers/quizGame/connectionToGame.helper';
 import { addAnswersByUserHelper } from '../../helpers/quizGame/addAnswersByUser.helper';
+import { AnswerStatusType } from '../../../../src/modules/public/quizGame/types/answerStatusType';
 
 describe('Testing QUIZ GAME', () => {
   let app: INestApplication;
@@ -76,6 +77,9 @@ describe('Testing QUIZ GAME', () => {
         },
         secondPlayerProgress: null,
       });
+
+      //should be empty array of answers of first user
+      expect(res.body.firstPlayerProgress.answers).toHaveLength(0);
     });
     it('shouldn`t connect first user to the game twice(connecting to pending game): STATUS 403', async () => {
       await request(server)
@@ -114,6 +118,9 @@ describe('Testing QUIZ GAME', () => {
         },
       });
       expect(startGame.body.questions).toHaveLength(5);
+      //should be empty array of answers of first and second users
+      expect(startGame.body.firstPlayerProgress.answers).toHaveLength(0);
+      expect(startGame.body.secondPlayerProgress.answers).toHaveLength(0);
     });
     it('shouldn`t connection to game if current user hasn`t finished the first game yet(create new game): STATUS 403', async () => {
       await request(server)
@@ -189,10 +196,11 @@ describe('Testing QUIZ GAME', () => {
       //get questions and correct answers by game id from db for first and second user
       firstActiveGameQuestions = await dataSource.query(
         `
-SELECT q."body", q."correctAnswers" FROM public."game" g 
-LEFT JOIN "question_of_game" qg ON qg."gameId" = g."id"
-LEFT JOIN "question" q ON qg."questionId" = q."id"
-WHERE g."id" = $1`,
+  SELECT q."id", q."body", q."correctAnswers" FROM public."game" g
+  LEFT JOIN "question_of_game" qg ON qg."gameId" = g."id"
+  LEFT JOIN "question" q ON qg."questionId" = q."id"
+  WHERE g."id" = $1
+  ORDER BY qg."addedAt" ASC`,
         [firstGame.body.id],
       );
 
@@ -204,7 +212,7 @@ WHERE g."id" = $1`,
         .expect(HttpStatus.OK);
 
       expect(firstRes.body).toEqual({
-        questionId: expect.any(String),
+        questionId: firstActiveGameQuestions[0].id,
         answerStatus: 'Correct',
         addedAt: expect.any(String),
       });
@@ -217,7 +225,7 @@ WHERE g."id" = $1`,
         .expect(HttpStatus.OK);
 
       expect(secondRes.body).toEqual({
-        questionId: expect.any(String),
+        questionId: firstActiveGameQuestions[0].id,
         answerStatus: 'Incorrect',
         addedAt: expect.any(String),
       });
@@ -231,7 +239,7 @@ WHERE g."id" = $1`,
         .expect(HttpStatus.OK);
 
       expect(firstRes.body).toEqual({
-        questionId: expect.any(String),
+        questionId: firstActiveGameQuestions[1].id,
         answerStatus: 'Incorrect',
         addedAt: expect.any(String),
       });
@@ -244,7 +252,7 @@ WHERE g."id" = $1`,
         .expect(HttpStatus.OK);
 
       expect(secondRes.body).toEqual({
-        questionId: expect.any(String),
+        questionId: firstActiveGameQuestions[1].id,
         answerStatus: 'Correct',
         addedAt: expect.any(String),
       });
@@ -258,7 +266,7 @@ WHERE g."id" = $1`,
         .expect(HttpStatus.OK);
 
       expect(firstRes.body).toEqual({
-        questionId: expect.any(String),
+        questionId: firstActiveGameQuestions[2].id,
         answerStatus: 'Incorrect',
         addedAt: expect.any(String),
       });
@@ -271,7 +279,7 @@ WHERE g."id" = $1`,
         .expect(HttpStatus.OK);
 
       expect(secondRes.body).toEqual({
-        questionId: expect.any(String),
+        questionId: firstActiveGameQuestions[2].id,
         answerStatus: 'Correct',
         addedAt: expect.any(String),
       });
@@ -285,7 +293,7 @@ WHERE g."id" = $1`,
         .expect(HttpStatus.OK);
 
       expect(firstRes.body).toEqual({
-        questionId: expect.any(String),
+        questionId: firstActiveGameQuestions[3].id,
         answerStatus: 'Correct',
         addedAt: expect.any(String),
       });
@@ -298,7 +306,7 @@ WHERE g."id" = $1`,
         .expect(HttpStatus.OK);
 
       expect(secondRes.body).toEqual({
-        questionId: expect.any(String),
+        questionId: firstActiveGameQuestions[3].id,
         answerStatus: 'Correct',
         addedAt: expect.any(String),
       });
@@ -312,7 +320,7 @@ WHERE g."id" = $1`,
         .expect(HttpStatus.OK);
 
       expect(firstRes.body).toEqual({
-        questionId: expect.any(String),
+        questionId: firstActiveGameQuestions[4].id,
         answerStatus: 'Incorrect',
         addedAt: expect.any(String),
       });
@@ -335,7 +343,7 @@ WHERE g."id" = $1`,
         .expect(HttpStatus.OK);
 
       expect(secondRes.body).toEqual({
-        questionId: expect.any(String),
+        questionId: firstActiveGameQuestions[4].id,
         answerStatus: 'Incorrect',
         addedAt: expect.any(String),
       });
@@ -344,12 +352,12 @@ WHERE g."id" = $1`,
     it('should find game: status - finished, scores: 3 - 3(1 bonus for first user), finishedDate', async () => {
       const firstPlayerGame = await dataSource.query(
         `
-SELECT  g."id", g."status", g."pairCreatedDate", g."startGameDate", g."finishGameDate", 
-pp."id" as "firstPlayerId", pp."score", a."answerStatus" 
-FROM public."game" g
-LEFT JOIN "player_progress" pp ON pp."id" = g."firstPlayerProgressId"
-LEFT JOIN "answer" a ON a."playerId" = pp."id"
-WHERE g."id" = $1`,
+  SELECT  g."id", g."status", g."pairCreatedDate", g."startGameDate", g."finishGameDate",
+  pp."id" as "firstPlayerId", pp."score", a."answerStatus"
+  FROM public."game" g
+  LEFT JOIN "player_progress" pp ON pp."id" = g."firstPlayerProgressId"
+  LEFT JOIN "answer" a ON a."playerId" = pp."id"
+  WHERE g."id" = $1`,
         [firstGame.body.id],
       );
 
@@ -360,12 +368,12 @@ WHERE g."id" = $1`,
 
       const secondPlayerGame = await dataSource.query(
         `
-SELECT  g."id", g."status", g."pairCreatedDate", g."startGameDate", g."finishGameDate", 
-pp."id" as "secondPlayerId", pp."score", a."answerStatus"
-FROM public."game" g
-LEFT JOIN "player_progress" pp ON pp."id" = g."secondPlayerProgressId"
-LEFT JOIN "answer" a ON a."playerId" = pp."id"
-WHERE g."id" = $1`,
+  SELECT  g."id", g."status", g."pairCreatedDate", g."startGameDate", g."finishGameDate",
+  pp."id" as "secondPlayerId", pp."score", a."answerStatus"
+  FROM public."game" g
+  LEFT JOIN "player_progress" pp ON pp."id" = g."secondPlayerProgressId"
+  LEFT JOIN "answer" a ON a."playerId" = pp."id"
+  WHERE g."id" = $1`,
         [firstGame.body.id],
       );
       expect(secondPlayerGame[0].status).toBe('Finished');
@@ -382,10 +390,10 @@ WHERE g."id" = $1`,
       //get questions and correct answers by game id from db for first and second user
       const secondActiveGameQuestions = await dataSource.query(
         `
-SELECT q."body", q."correctAnswers" FROM public."game" g 
-LEFT JOIN "question_of_game" qg ON qg."gameId" = g."id"
-LEFT JOIN "question" q ON qg."questionId" = q."id"
-WHERE g."id" = $1`,
+  SELECT q."body", q."correctAnswers" FROM public."game" g
+  LEFT JOIN "question_of_game" qg ON qg."gameId" = g."id"
+  LEFT JOIN "question" q ON qg."questionId" = q."id"
+  WHERE g."id" = $1`,
         [secondGame.body.id],
       );
 
@@ -414,12 +422,12 @@ WHERE g."id" = $1`,
     it('should get game with firstUser.score = 0(no bonus), secondUser.score = 1', async () => {
       const firstPlayerGame = await dataSource.query(
         `
-SELECT  g."id", g."status", g."pairCreatedDate", g."startGameDate", g."finishGameDate", 
-pp."id" as "firstPlayerId", pp."score", a."answerStatus" 
-FROM public."game" g
-LEFT JOIN "player_progress" pp ON pp."id" = g."firstPlayerProgressId"
-LEFT JOIN "answer" a ON a."playerId" = pp."id"
-WHERE g."id" = $1`,
+  SELECT  g."id", g."status", g."pairCreatedDate", g."startGameDate", g."finishGameDate",
+  pp."id" as "firstPlayerId", pp."score", a."answerStatus"
+  FROM public."game" g
+  LEFT JOIN "player_progress" pp ON pp."id" = g."firstPlayerProgressId"
+  LEFT JOIN "answer" a ON a."playerId" = pp."id"
+  WHERE g."id" = $1`,
         [secondGame.body.id],
       );
 
@@ -430,12 +438,12 @@ WHERE g."id" = $1`,
 
       const secondPlayerGame = await dataSource.query(
         `
-SELECT  g."id", g."status", g."pairCreatedDate", g."startGameDate", g."finishGameDate", 
-pp."id" as "secondPlayerId", pp."score", a."answerStatus"
-FROM public."game" g
-LEFT JOIN "player_progress" pp ON pp."id" = g."secondPlayerProgressId"
-LEFT JOIN "answer" a ON a."playerId" = pp."id"
-WHERE g."id" = $1`,
+  SELECT  g."id", g."status", g."pairCreatedDate", g."startGameDate", g."finishGameDate",
+  pp."id" as "secondPlayerId", pp."score", a."answerStatus"
+  FROM public."game" g
+  LEFT JOIN "player_progress" pp ON pp."id" = g."secondPlayerProgressId"
+  LEFT JOIN "answer" a ON a."playerId" = pp."id"
+  WHERE g."id" = $1`,
         [secondGame.body.id],
       );
       expect(secondPlayerGame[0].status).toBe('Finished');
@@ -521,6 +529,9 @@ WHERE g."id" = $1`,
         },
         secondPlayerProgress: null,
       });
+
+      //should be empty array of answers of first user
+      expect(res.body.firstPlayerProgress.answers).toHaveLength(0);
     });
     it('should find game by id by second user(status: Active): STATUS 200', async () => {
       //add second user to game
@@ -556,6 +567,10 @@ WHERE g."id" = $1`,
           },
         },
       });
+
+      //should be empty array of answers of first and second users
+      expect(res.body.firstPlayerProgress.answers).toHaveLength(0);
+      expect(res.body.secondPlayerProgress.answers).toHaveLength(0);
     });
     it('should find game by id (status: Finished): STATUS 200', async () => {
       //add answers of first user
@@ -602,6 +617,13 @@ WHERE g."id" = $1`,
           },
         },
       });
+
+      //array of questions should contain 5 questions
+      expect(res.body.questions).toHaveLength(5);
+
+      //array of answers should contain 5 answers of both users
+      expect(res.body.firstPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.secondPlayerProgress.answers).toHaveLength(5);
     });
   });
 
@@ -614,6 +636,7 @@ WHERE g."id" = $1`,
   describe('GET MY-CURRENT GAME', () => {
     let tokens;
     let game;
+    let questionsOfGame;
     beforeAll(async () => {
       //create 5 questions by sa
       const questions = await createSeveralQuestions(5, server);
@@ -670,6 +693,9 @@ WHERE g."id" = $1`,
         },
         secondPlayerProgress: null,
       });
+
+      //array of answers should contain 0 answers of first user
+      expect(res.body.firstPlayerProgress.answers).toHaveLength(0);
     });
     it('should find game with status Active for current user: STATUS 200', async () => {
       //add second user to game
@@ -705,18 +731,124 @@ WHERE g."id" = $1`,
           },
         },
       });
+
+      //array of questions should contain 5 questions
+      expect(res.body.questions).toHaveLength(5);
+
+      //array of answers should contain  answers of both users
+      expect(res.body.firstPlayerProgress.answers).toHaveLength(0);
+      expect(res.body.secondPlayerProgress.answers).toHaveLength(0);
     });
+    it('should add first answer by first user and get current game with answer: STATUS 200', async () => {
+      //get questions and correct answers by game id from db
+      questionsOfGame = await dataSource.query(
+        `
+SELECT q."body", q."correctAnswers" FROM public."game" g 
+LEFT JOIN "question_of_game" qg ON qg."gameId" = g."id"
+LEFT JOIN "question" q ON qg."questionId" = q."id"
+WHERE g."id" = $1`,
+        [game.body.id],
+      );
+
+      // add first incorrect answer by first user
+      const firstAnswer = await addAnswersByUserHelper(
+        ['nothing'],
+        tokens[0].accessToken,
+        server,
+      );
+
+      // find game for first user
+      const res = await request(server)
+        .get('/pair-game-quiz/pairs/my-current')
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      //should add one answer to array
+      expect(res.body.firstPlayerProgress.answers).toHaveLength(1);
+
+      expect(firstAnswer[0]).toEqual({
+        questionId: res.body.questions[0].id,
+        answerStatus: AnswerStatusType.Incorrect,
+        addedAt: expect.any(String),
+      });
+
+      expect(firstAnswer[0]).toEqual({
+        questionId: res.body.firstPlayerProgress.answers[0].questionId,
+        answerStatus: res.body.firstPlayerProgress.answers[0].answerStatus,
+        addedAt: res.body.firstPlayerProgress.answers[0].addedAt,
+      });
+    });
+    it('should add second answer by first user and get current game with answers: STATUS 200', async () => {
+      // add second correct answer by first user
+      const secondAnswer = await addAnswersByUserHelper(
+        [questionsOfGame[1].correctAnswers[0]],
+        tokens[0].accessToken,
+        server,
+      );
+
+      // find game for first user
+      const res = await request(server)
+        .get('/pair-game-quiz/pairs/my-current')
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      //should be 2 answers of first user
+      expect(res.body.firstPlayerProgress.answers).toHaveLength(2);
+
+      expect(secondAnswer[0]).toEqual({
+        questionId: res.body.questions[1].id,
+        answerStatus: AnswerStatusType.Correct,
+        addedAt: expect.any(String),
+      });
+
+      expect(secondAnswer[0]).toEqual({
+        questionId: res.body.firstPlayerProgress.answers[1].questionId,
+        answerStatus: res.body.firstPlayerProgress.answers[1].answerStatus,
+        addedAt: res.body.firstPlayerProgress.answers[1].addedAt,
+      });
+    });
+
+    it('should add first answer by second user and get current game with answer: STATUS 200', async () => {
+      // add first incorrect answer by second user
+      const firstAnswer = await addAnswersByUserHelper(
+        ['nothing'],
+        tokens[1].accessToken,
+        server,
+      );
+
+      // find game for second user
+      const res = await request(server)
+        .get('/pair-game-quiz/pairs/my-current')
+        .set('Authorization', `Bearer ${tokens[1].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      //should be 1 answer of second user
+      expect(res.body.firstPlayerProgress.answers).toHaveLength(2);
+
+      expect(firstAnswer[0]).toEqual({
+        questionId: res.body.questions[0].id,
+        answerStatus: AnswerStatusType.Incorrect,
+        addedAt: expect.any(String),
+      });
+
+      expect(firstAnswer[0]).toEqual({
+        questionId: res.body.secondPlayerProgress.answers[0].questionId,
+        answerStatus: res.body.secondPlayerProgress.answers[0].answerStatus,
+        addedAt: res.body.secondPlayerProgress.answers[0].addedAt,
+      });
+    });
+
     it('shouldn`t get game with status Finished for current user: STATUS 404 ', async () => {
       //add answers of first user
       await addAnswersByUserHelper(
-        ['ten', 'twelve', 'six', 'two', 'nothing'],
+        ['six', 'two', 'nothing'],
         tokens[0].accessToken,
         server,
       );
 
       //add answers of second user
       await addAnswersByUserHelper(
-        ['two', 'nothing', 'ten', 'six', 'twelve'],
+        ['nothing', 'ten', 'six', 'twelve'],
         tokens[1].accessToken,
         server,
       );
@@ -729,9 +861,9 @@ WHERE g."id" = $1`,
     });
   });
 
-  afterAll(async () => {
-    await request(server).delete('/testing/all-data').expect(204);
-  });
+  // afterAll(async () => {
+  //   await request(server).delete('/testing/all-data').expect(204);
+  // });
 
   afterAll(async () => {
     await app.close();

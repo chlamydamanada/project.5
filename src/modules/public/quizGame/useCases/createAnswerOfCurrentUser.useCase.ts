@@ -36,7 +36,7 @@ export class CreateAnswerOfCurrentUserUseCase
       activeGame.secondPlayerProgress.answers?.length !==
         activeGame.questions?.length
     ) {
-      newAnswerId = this.addAnswerToPlayer(
+      newAnswerId = await this.addAnswerToPlayer(
         activeGame,
         activeGame.secondPlayerProgress,
         command.answer,
@@ -46,7 +46,7 @@ export class CreateAnswerOfCurrentUserUseCase
       activeGame.firstPlayerProgress.answers?.length !==
         activeGame.questions?.length
     ) {
-      newAnswerId = this.addAnswerToPlayer(
+      newAnswerId = await this.addAnswerToPlayer(
         activeGame,
         activeGame.firstPlayerProgress,
         command.answer,
@@ -74,11 +74,11 @@ export class CreateAnswerOfCurrentUserUseCase
     //console.log('*GAME*', activeGame);
     return newAnswerId;
   }
-  private addAnswerToPlayer(
+  private async addAnswerToPlayer(
     game: Game,
     player: PlayerProgress,
     answer: string,
-  ): string {
+  ): Promise<string> {
     // find current question
     if (!game.questions)
       throw new InternalServerErrorException('The game haven`t questions');
@@ -95,7 +95,7 @@ export class CreateAnswerOfCurrentUserUseCase
     newAnswer.id = uuidv4();
     newAnswer.body = answer;
     newAnswer.playerId = player.playerId;
-    newAnswer.questionId = currentQuestion.questionId;
+    newAnswer.questionId = currentQuestion.question.id;
     newAnswer.answerStatus = isCorrectAnswer
       ? AnswerStatusType.Correct
       : AnswerStatusType.Incorrect;

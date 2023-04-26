@@ -26,4 +26,7 @@ export class QuestionOfGame {
   @ManyToOne(() => Question, (q) => q.questionOfGame)
   @JoinColumn()
   question: Question;
+
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  addedAt: Date;
 }

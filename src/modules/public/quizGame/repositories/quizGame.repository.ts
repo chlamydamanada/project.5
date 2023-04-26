@@ -33,10 +33,8 @@ export class QuizGamePublicRepository {
     return;
   }
 
-  async saveQuestionsOfGame(
-    questionsArray: QuestionOfGame[],
-  ): Promise<QuestionOfGame[]> {
-    return await this.questionsOfGameRepository.save(questionsArray);
+  async saveQuestionOfGame(question: QuestionOfGame): Promise<QuestionOfGame> {
+    return await this.questionsOfGameRepository.save(question);
   }
 
   async saveAnswer(answer: Answer): Promise<void> {
@@ -58,14 +56,14 @@ export class QuizGamePublicRepository {
   async findActiveGameByUserId(userId: string): Promise<Game | null> {
     return await this.quizGameRepository.findOne({
       relations: {
+        questions: {
+          question: true,
+        },
         firstPlayerProgress: {
           answers: true,
         },
         secondPlayerProgress: {
           answers: true,
-        },
-        questions: {
-          question: true,
         },
       },
       where: [
@@ -78,6 +76,11 @@ export class QuizGamePublicRepository {
           secondPlayerProgress: { playerId: userId },
         },
       ],
+      order: {
+        questions: {
+          addedAt: 'ASC',
+        },
+      },
     });
   }
 
