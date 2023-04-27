@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryColumn,
   PrimaryGeneratedColumn,
@@ -17,10 +18,11 @@ export class Answer {
   body: string;
 
   @ManyToOne(() => PlayerProgress, (p) => p.answers)
+  @JoinColumn()
   player: PlayerProgress;
 
   @Column({ type: 'uuid' })
-  playerId: string;
+  playerId: string; //  PlayerProgressId
 
   @Column({ type: 'uuid' })
   questionId: string;

@@ -130,7 +130,7 @@ describe('Testing QUIZ GAME', () => {
     });
   });
 
-  describe('DELETE ALL DATA', () => {
+  describe('DELETE ALL DATA 1', () => {
     it('should delete all data', async () => {
       await request(server).delete('/testing/all-data').expect(204);
     });
@@ -393,7 +393,8 @@ describe('Testing QUIZ GAME', () => {
   SELECT q."body", q."correctAnswers" FROM public."game" g
   LEFT JOIN "question_of_game" qg ON qg."gameId" = g."id"
   LEFT JOIN "question" q ON qg."questionId" = q."id"
-  WHERE g."id" = $1`,
+  WHERE g."id" = $1
+  ORDER BY qg."addedAt" ASC`,
         [secondGame.body.id],
       );
 
@@ -746,7 +747,8 @@ describe('Testing QUIZ GAME', () => {
 SELECT q."body", q."correctAnswers" FROM public."game" g 
 LEFT JOIN "question_of_game" qg ON qg."gameId" = g."id"
 LEFT JOIN "question" q ON qg."questionId" = q."id"
-WHERE g."id" = $1`,
+WHERE g."id" = $1
+ORDER BY qg."addedAt" ASC`,
         [game.body.id],
       );
 
@@ -861,9 +863,298 @@ WHERE g."id" = $1`,
     });
   });
 
-  // afterAll(async () => {
-  //   await request(server).delete('/testing/all-data').expect(204);
-  // });
+  describe('DELETE ALL DATA 4', () => {
+    it('should delete all data', async () => {
+      await request(server).delete('/testing/all-data').expect(204);
+    });
+  });
+
+  describe('GET ALL GAMES OF CURRENT USER', () => {
+    let tokens;
+    let firstGame;
+    let secondGame;
+    let thirdGame;
+    beforeAll(async () => {
+      //create 10 questions by sa
+      const questions = await createSeveralQuestions(10, server);
+      //publish 10 questions by sa
+      for (let i = 0; i < 10; i++) {
+        await publishOrUnpublishQuestion(
+          server,
+          questions[i].id,
+          QuestionsConstants.publish,
+        );
+      }
+
+      //create 4 users by sa
+      await createSeveralUsers(4, server);
+
+      //login 4 users
+      tokens = await loginSeveralUsers(4, server);
+    });
+    it('shouldn`t find all games of current user without authorization: STATUS 401', async () => {
+      await request(server)
+        .get('/pair-game-quiz/pairs/my')
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+    it('should find empty array of games of current user: STATUS 200', async () => {
+      //find all games for first user
+      const res = await request(server)
+        .get('/pair-game-quiz/pairs/my')
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(res.body).toEqual({
+        pagesCount: 0,
+        page: 1,
+        pageSize: 10,
+        totalCount: 0,
+        items: expect.any(Array),
+      });
+      expect(res.body.items).toHaveLength(0);
+    });
+    it('should find array with one active game of current user: STATUS 200', async () => {
+      //connect first user and second user to game
+      await connectUserToGameHelper(tokens[0].accessToken, server);
+      firstGame = await connectUserToGameHelper(tokens[1].accessToken, server);
+
+      //find all games for first user
+      const res = await request(server)
+        .get('/pair-game-quiz/pairs/my')
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(res.body).toEqual({
+        pagesCount: 1,
+        page: 1,
+        pageSize: 10,
+        totalCount: 1,
+        items: expect.any(Array),
+      });
+      expect(res.body.items).toHaveLength(1);
+      expect(res.body.items[0].id).toBe(firstGame.body.id);
+      expect(res.body.items[0].questions).toHaveLength(5);
+      expect(res.body.items[0].status).toBe('Active');
+      expect(res.body.items[0].firstPlayerProgress.answers).toHaveLength(0);
+      expect(res.body.items[0].secondPlayerProgress.answers).toHaveLength(0);
+    });
+    it('should find array with one finished game of current user: STATUS 200', async () => {
+      //add answers of first user
+      await addAnswersByUserHelper(
+        ['nothing', 'ten', 'six', 'twelve', '777'],
+        tokens[0].accessToken,
+        server,
+      );
+
+      //add answers of second user
+      await addAnswersByUserHelper(
+        ['nothing', 'ten', 'six', 'twelve', '777'],
+        tokens[1].accessToken,
+        server,
+      );
+
+      //find all games for first user
+      const res = await request(server)
+        .get('/pair-game-quiz/pairs/my')
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(res.body).toEqual({
+        pagesCount: 1,
+        page: 1,
+        pageSize: 10,
+        totalCount: 1,
+        items: expect.any(Array),
+      });
+      //first game should be:
+      expect(res.body.items).toHaveLength(1);
+      expect(res.body.items[0].id).toBe(firstGame.body.id);
+      expect(res.body.items[0].questions).toHaveLength(5);
+      expect(res.body.items[0].status).toBe('Finished');
+      expect(res.body.items[0].firstPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[0].secondPlayerProgress.answers).toHaveLength(5);
+    });
+    it('should find array with two games(finished and active) of current user: STATUS 200', async () => {
+      //connect first user and third user to game
+      await connectUserToGameHelper(tokens[0].accessToken, server);
+      secondGame = await connectUserToGameHelper(tokens[2].accessToken, server);
+
+      //find all games for first user
+      const res = await request(server)
+        .get('/pair-game-quiz/pairs/my')
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(res.body).toEqual({
+        pagesCount: 1,
+        page: 1,
+        pageSize: 10,
+        totalCount: 2,
+        items: expect.any(Array),
+      });
+
+      //should be two different games in array
+      expect(res.body.items[0].id).not.toBe(res.body.items[1].id);
+
+      //should be 2 games: active and finished
+      expect(res.body.items).toHaveLength(2);
+
+      //first in array should be new game: status active, have 5 questions, 0 answers
+      expect(res.body.items[0].questions).toHaveLength(5);
+      expect(res.body.items[0].id).toBe(secondGame.body.id);
+      expect(res.body.items[0].status).toBe('Active');
+      expect(res.body.items[0].firstPlayerProgress.answers).toHaveLength(0);
+      expect(res.body.items[0].secondPlayerProgress.answers).toHaveLength(0);
+
+      //second in array should be first game: status finished, have 5 questions, 5 answers by both users
+      expect(res.body.items[1].id).toBe(firstGame.body.id);
+      expect(res.body.items[1].questions).toHaveLength(5);
+      expect(res.body.items[1].status).toBe('Finished');
+      expect(res.body.items[1].firstPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[1].secondPlayerProgress.answers).toHaveLength(5);
+    });
+    it('should find array with two finished game of current user: STATUS 200', async () => {
+      //add answers of first user
+      await addAnswersByUserHelper(
+        ['nothing', 'ten', 'six', 'twelve', '777'],
+        tokens[0].accessToken,
+        server,
+      );
+
+      //add answers of third user
+      await addAnswersByUserHelper(
+        ['nothing', 'ten', 'six', 'twelve', '777'],
+        tokens[2].accessToken,
+        server,
+      );
+
+      //find all games for first user
+      const res = await request(server)
+        .get('/pair-game-quiz/pairs/my')
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(res.body).toEqual({
+        pagesCount: 1,
+        page: 1,
+        pageSize: 10,
+        totalCount: 2,
+        items: expect.any(Array),
+      });
+
+      //should be two different games in array
+      expect(res.body.items[0].id).not.toBe(res.body.items[1].id);
+
+      //should be 2 games: two are finished
+      expect(res.body.items).toHaveLength(2);
+
+      //first in array should be new game: status finished, have 5 questions, 5 answers by both users
+      expect(res.body.items[0].id).toBe(secondGame.body.id);
+      expect(res.body.items[0].questions).toHaveLength(5);
+      expect(res.body.items[0].status).toBe('Finished');
+      expect(res.body.items[0].firstPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[0].secondPlayerProgress.answers).toHaveLength(5);
+
+      //second in array should be first game: status finished, have 5 questions, 5 answers by both users
+      expect(res.body.items[1].id).toBe(firstGame.body.id);
+      expect(res.body.items[1].questions).toHaveLength(5);
+      expect(res.body.items[1].status).toBe('Finished');
+      expect(res.body.items[1].firstPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[1].secondPlayerProgress.answers).toHaveLength(5);
+    });
+    it('should find array with one active and two finished games of current user: STATUS 200', async () => {
+      //connect first user and second user to game
+      await connectUserToGameHelper(tokens[0].accessToken, server);
+      thirdGame = await connectUserToGameHelper(tokens[1].accessToken, server);
+
+      //find all games for first user
+      const res = await request(server)
+        .get('/pair-game-quiz/pairs/my')
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(res.body).toEqual({
+        pagesCount: 1,
+        page: 1,
+        pageSize: 10,
+        totalCount: 3,
+        items: expect.any(Array),
+      });
+
+      //should be 3 games of current user: first in array - active, two - finished
+      expect(res.body.items).toHaveLength(3);
+
+      //first game - third game of current user
+      expect(res.body.items[0].id).toBe(thirdGame.body.id);
+      expect(res.body.items[0].questions).toHaveLength(5);
+      expect(res.body.items[0].status).toBe('Active');
+      expect(res.body.items[0].firstPlayerProgress.answers).toHaveLength(0);
+      expect(res.body.items[0].secondPlayerProgress.answers).toHaveLength(0);
+
+      //second game - second game of current user with status Finished
+      expect(res.body.items[1].id).toBe(secondGame.body.id);
+      expect(res.body.items[1].questions).toHaveLength(5);
+      expect(res.body.items[1].status).toBe('Finished');
+      expect(res.body.items[1].firstPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[1].secondPlayerProgress.answers).toHaveLength(5);
+
+      //third game - first game of current user with status Finished
+      expect(res.body.items[2].id).toBe(firstGame.body.id);
+      expect(res.body.items[2].questions).toHaveLength(5);
+      expect(res.body.items[2].status).toBe('Finished');
+      expect(res.body.items[2].firstPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[2].secondPlayerProgress.answers).toHaveLength(5);
+    });
+
+    it('should get array of one game with sortBy: status, pageSize 2, pageNumber 2, default sortDirection: STATUS 200', async () => {
+      const res = await request(server)
+        .get('/pair-game-quiz/pairs/my?sortBy=status&pageSize=2&pageNumber=2')
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(res.body).toEqual({
+        pagesCount: 2,
+        page: 2,
+        pageSize: 2,
+        totalCount: 3,
+        items: expect.any(Array),
+      });
+
+      expect(res.body.items).toHaveLength(1);
+      expect(res.body.items[0].id).toBe(thirdGame.body.id);
+      expect(res.body.items[0].questions).toHaveLength(5);
+      expect(res.body.items[0].status).toBe('Active');
+      expect(res.body.items[0].firstPlayerProgress.answers).toHaveLength(0);
+      expect(res.body.items[0].secondPlayerProgress.answers).toHaveLength(0);
+    });
+    it('should get array of one game with sortBy-status, pageSize-2, pageNumber-2, sortDirection-asc: STATUS 200', async () => {
+      const res = await request(server)
+        .get(
+          '/pair-game-quiz/pairs/my?sortBy=status&pageSize=2&pageNumber=2&sortDirection=asc',
+        )
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(res.body).toEqual({
+        pagesCount: 2,
+        page: 2,
+        pageSize: 2,
+        totalCount: 3,
+        items: expect.any(Array),
+      });
+
+      expect(res.body.items).toHaveLength(1);
+      expect(res.body.items[0].id).toBe(firstGame.body.id);
+      expect(res.body.items[0].questions).toHaveLength(5);
+      expect(res.body.items[0].status).toBe('Finished');
+      expect(res.body.items[0].firstPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[0].secondPlayerProgress.answers).toHaveLength(5);
+    });
+  });
+
+  afterAll(async () => {
+    await request(server).delete('/testing/all-data').expect(204);
+  });
 
   afterAll(async () => {
     await app.close();

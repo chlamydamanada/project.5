@@ -36,7 +36,7 @@ export class ConnectionToGameUseCase
     const pendingGame = await this.quizGameRepository.findPendingGame();
     if (pendingGame) {
       //check user try join to game twice
-      if (pendingGame.firstPlayerProgress.playerId === command.userId)
+      if (pendingGame.firstPlayerProgress.userId === command.userId)
         throw new ForbiddenException('You should wait for the second player');
 
       //create 5 random questions
@@ -92,7 +92,7 @@ export class ConnectionToGameUseCase
   private async createPlayer(gameId: string, userId: string): Promise<string> {
     const player = new PlayerProgress();
     player.gameId = gameId;
-    player.playerId = userId;
+    player.userId = userId;
     const playerId = await this.quizGameRepository.savePlayer(player);
     return playerId;
   }

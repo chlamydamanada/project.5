@@ -10,6 +10,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AccessTokenGuard } from '../../auth/guards/accessTokenAuth.guard';
@@ -21,6 +22,12 @@ import { AnswerCreateInputDto } from './pipes/answerCreateInput.dto';
 import { CreateAnswerOfCurrentUserCommand } from '../useCases/createAnswerOfCurrentUser.useCase';
 import { AnswerViewModel } from '../types/answerViewModel';
 import { ConnectionToGameSwaggerDecorator } from '../../../../swagger/decorators/public/quizGame/connectionToGame.swagger.decorator';
+import { GetCurrentGameSwaggerDecorator } from '../../../../swagger/decorators/public/quizGame/getCurrentGame.swagger.decorator';
+import { CreateAnswerOfCurrentUserSwaggerDecorator } from '../../../../swagger/decorators/public/quizGame/createAnswerOfCurrentUser.swagger.decorator';
+import { GetGameByIdSwaggerDecorator } from '../../../../swagger/decorators/public/quizGame/getGameById.swagger.decorator';
+import { QueryGamesDto } from './pipes/queryGames.dto';
+import { GamesQueryType } from '../types/gamesQueryType';
+import { GamesViewModel } from '../types/gamesViewModel';
 
 @ApiTags('PairGameQuiz')
 @Controller('pair-game-quiz')
@@ -46,6 +53,7 @@ export class QuizGamePublicController {
   }
 
   @Get('pairs/my-current')
+  @GetCurrentGameSwaggerDecorator()
   async getCurrentGameByUserId(
     @CurrentUserId() userId: string,
   ): Promise<GameViewModel> {
@@ -57,9 +65,22 @@ export class QuizGamePublicController {
     return game;
   }
 
+  @Get('pairs/my')
+  async getAllGamesByUserId(
+    @Query() queryDto: QueryGamesDto,
+    @CurrentUserId() userId: string,
+  ): Promise<GamesViewModel> {
+    const games = await this.quizGameQueryRepository.findAllGamesByUserId(
+      userId,
+      queryDto as GamesQueryType,
+    );
+    return games;
+  }
+
   @Post('pairs/my-current/answers')
+  @CreateAnswerOfCurrentUserSwaggerDecorator()
   @HttpCode(200)
-  async createAnswerOfCurrentUSer(
+  async createAnswerOfCurrentUser(
     @CurrentUserId() userId: string,
     @Body() answerDto: AnswerCreateInputDto,
   ): Promise<AnswerViewModel> {
@@ -75,6 +96,7 @@ export class QuizGamePublicController {
   }
 
   @Get('pairs/:id')
+  @GetGameByIdSwaggerDecorator()
   async getGameById(
     @CurrentUserId() userId: string,
     @Param('id', new ParseUUIDPipe()) gameId: string,

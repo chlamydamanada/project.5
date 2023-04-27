@@ -5,7 +5,6 @@ import {
   OneToMany,
   OneToOne,
   PrimaryColumn,
-  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { GameStatusModel } from '../types/gameStatusType';
 import { QuestionOfGame } from './questionOfGame.entity';

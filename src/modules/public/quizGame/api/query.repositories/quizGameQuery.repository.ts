@@ -7,6 +7,7 @@ import { GameStatusModel } from '../../types/gameStatusType';
 import { Answer } from '../../domain/answer.entity';
 import { AnswerViewModel } from '../../types/answerViewModel';
 import { AnswerStatusType } from '../../types/answerStatusType';
+import { GamesQueryType } from '../../types/gamesQueryType';
 
 @Injectable()
 export class QuizGamePublicQueryRepository {
@@ -24,11 +25,11 @@ export class QuizGamePublicQueryRepository {
           question: true,
         },
         firstPlayerProgress: {
-          player: true,
+          user: true,
           answers: true,
         },
         secondPlayerProgress: {
-          player: true,
+          user: true,
           answers: true,
         },
       },
@@ -41,7 +42,7 @@ export class QuizGamePublicQueryRepository {
         questions: true,
         firstPlayerProgress: {
           score: true,
-          player: {
+          user: {
             id: true,
             login: true,
           },
@@ -54,7 +55,7 @@ export class QuizGamePublicQueryRepository {
         },
         secondPlayerProgress: {
           score: true,
-          player: {
+          user: {
             id: true,
             login: true,
           },
@@ -95,11 +96,11 @@ export class QuizGamePublicQueryRepository {
           question: true,
         },
         firstPlayerProgress: {
-          player: true,
+          user: true,
           answers: true,
         },
         secondPlayerProgress: {
-          player: true,
+          user: true,
           answers: true,
         },
       },
@@ -112,7 +113,7 @@ export class QuizGamePublicQueryRepository {
         questions: true,
         firstPlayerProgress: {
           score: true,
-          player: {
+          user: {
             id: true,
             login: true,
           },
@@ -125,7 +126,7 @@ export class QuizGamePublicQueryRepository {
         },
         secondPlayerProgress: {
           score: true,
-          player: {
+          user: {
             id: true,
             login: true,
           },
@@ -139,11 +140,11 @@ export class QuizGamePublicQueryRepository {
       },
       where: [
         {
-          firstPlayerProgress: { playerId: userId },
+          firstPlayerProgress: { userId: userId },
           status: Not(GameStatusModel.finished),
         },
         {
-          secondPlayerProgress: { playerId: userId },
+          secondPlayerProgress: { userId: userId },
           status: Not(GameStatusModel.finished),
         },
       ],
@@ -167,40 +168,92 @@ export class QuizGamePublicQueryRepository {
     return this.mapToViewGameModel(game);
   }
 
-  private mapToViewGameModel(game: Game): GameViewModel {
-    return {
-      id: game.id,
-      status: game.status,
-      pairCreatedDate: game.pairCreatedDate,
-      startGameDate: game.startGameDate,
-      finishGameDate: game.finishGameDate,
-      firstPlayerProgress: {
-        score: game.firstPlayerProgress.score,
-        player: game.firstPlayerProgress.player,
-        answers: game.firstPlayerProgress.answers.map((a) => ({
-          questionId: a.questionId,
-          answerStatus: a.answerStatus,
-          addedAt: a.addedAt,
-        })),
+  async findAllGamesByUserId(userId: string, queryDto: GamesQueryType) {
+    const [games, count] = await this.quizGameRepository.findAndCount({
+      relations: {
+        questions: {
+          question: true,
+        },
+        firstPlayerProgress: {
+          user: true,
+          answers: true,
+        },
+        secondPlayerProgress: {
+          user: true,
+          answers: true,
+        },
       },
-      secondPlayerProgress: !game.secondPlayerProgress
-        ? null
-        : {
-            score: game.secondPlayerProgress.score,
-            player: game.secondPlayerProgress.player,
-            answers: game.secondPlayerProgress.answers.map((a) => ({
-              questionId: a.questionId,
-              answerStatus: a.answerStatus,
-              addedAt: a.addedAt,
-            })),
+      select: {
+        id: true,
+        status: true,
+        pairCreatedDate: true,
+        startGameDate: true,
+        finishGameDate: true,
+        questions: true,
+        firstPlayerProgress: {
+          id: true,
+          score: true,
+          user: {
+            id: true,
+            login: true,
           },
-      questions:
-        !game.questions || game.questions.length === 0
-          ? null
-          : game.questions.map((q) => ({
-              id: q.question.id,
-              body: q.question.body,
-            })),
+          answers: {
+            id: true,
+            questionId: true,
+            addedAt: true,
+            answerStatus: true,
+          },
+        },
+        secondPlayerProgress: {
+          id: true,
+          score: true,
+          user: {
+            id: true,
+            login: true,
+          },
+          answers: {
+            id: true,
+            questionId: true,
+            addedAt: true,
+            answerStatus: true,
+          },
+        },
+      },
+      where: [
+        {
+          firstPlayerProgress: { userId: userId },
+        },
+        {
+          secondPlayerProgress: { userId: userId },
+        },
+      ],
+      order: {
+        [queryDto.sortBy]: queryDto.sortDirection,
+        pairCreatedDate: 'DESC',
+        // firstPlayerProgress: {
+        //   answers: {
+        //     addedAt: 'ASC',
+        //   },
+        // },
+        // secondPlayerProgress: {
+        //   answers: {
+        //     addedAt: 'ASC',
+        //   },
+        // },
+        // questions: {
+        //   addedAt: 'ASC',
+        // },
+      },
+      skip: (queryDto.pageNumber - 1) * queryDto.pageSize,
+      take: queryDto.pageSize,
+    });
+
+    return {
+      pagesCount: Math.ceil(count / queryDto.pageSize),
+      page: queryDto.pageNumber,
+      pageSize: queryDto.pageSize,
+      totalCount: count,
+      items: games.map((g) => this.mapToViewGameModel(g)),
     };
   }
 
@@ -215,5 +268,48 @@ export class QuizGamePublicQueryRepository {
         id: answerId,
       },
     });
+  }
+
+  private mapToViewGameModel(game: Game): GameViewModel {
+    return {
+      id: game.id,
+      status: game.status,
+      pairCreatedDate: game.pairCreatedDate,
+      startGameDate: game.startGameDate,
+      finishGameDate: game.finishGameDate,
+      firstPlayerProgress: {
+        score: game.firstPlayerProgress.score,
+        player: game.firstPlayerProgress.user,
+        answers: game.firstPlayerProgress.answers
+          .map((a) => ({
+            questionId: a.questionId,
+            answerStatus: a.answerStatus,
+            addedAt: a.addedAt,
+          }))
+          .sort((a, b) => Number(a.addedAt) - Number(b.addedAt)), // sort like asc
+      },
+      secondPlayerProgress: !game.secondPlayerProgress
+        ? null
+        : {
+            score: game.secondPlayerProgress.score,
+            player: game.secondPlayerProgress.user,
+            answers: game.secondPlayerProgress.answers
+              .map((a) => ({
+                questionId: a.questionId,
+                answerStatus: a.answerStatus,
+                addedAt: a.addedAt,
+              }))
+              .sort((a, b) => Number(a.addedAt) - Number(b.addedAt)), // sort like asc
+          },
+      questions:
+        !game.questions || game.questions.length === 0
+          ? null
+          : game.questions
+              .sort((a, b) => Number(a.addedAt) - Number(b.addedAt)) // sort like asc,
+              .map((q) => ({
+                id: q.question.id,
+                body: q.question.body,
+              })),
+    };
   }
 }

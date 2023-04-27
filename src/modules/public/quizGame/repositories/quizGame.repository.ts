@@ -69,11 +69,11 @@ export class QuizGamePublicRepository {
       where: [
         {
           status: GameStatusModel.active,
-          firstPlayerProgress: { playerId: userId },
+          firstPlayerProgress: { userId: userId },
         },
         {
           status: GameStatusModel.active,
-          secondPlayerProgress: { playerId: userId },
+          secondPlayerProgress: { userId: userId },
         },
       ],
       order: {

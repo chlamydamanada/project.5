@@ -1,29 +1,29 @@
 import { applyDecorators } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { GameViewModel } from '../../../../modules/public/quizGame/types/gameViewModel';
 import { SwaggerConstants } from '../../../swagger.constants';
+import { GameViewModel } from '../../../../modules/public/quizGame/types/gameViewModel';
 
-export function ConnectionToGameSwaggerDecorator() {
+export function GetCurrentGameSwaggerDecorator() {
   return applyDecorators(
     ApiBearerAuth(),
     ApiOperation({
-      summary: SwaggerConstants.connection,
+      summary: SwaggerConstants.getCurrentGame,
     }),
     ApiOkResponse({
-      description: SwaggerConstants.connectionOk,
+      description: SwaggerConstants.getCurrentGameOk,
       type: GameViewModel,
     }),
     ApiUnauthorizedResponse({
       description: SwaggerConstants.unauthorized,
     }),
-    ApiForbiddenResponse({
-      description: SwaggerConstants.connectionForbidden,
+    ApiNotFoundResponse({
+      description: SwaggerConstants.notFound,
     }),
   );
 }

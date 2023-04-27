@@ -84,4 +84,16 @@ export const QuestionsConstants = {
     body: 'What`s 7 + 7 = ?',
     correctAnswers: ['14', 'fourteen'],
   },
+  valid_question_8: {
+    body: 'What`s 8 + 8 = ?',
+    correctAnswers: ['16', 'sixteen'],
+  },
+  valid_question_9: {
+    body: 'What`s 9 + 9 = ?',
+    correctAnswers: ['18', 'eighteen'],
+  },
+  valid_question_10: {
+    body: 'What`s 10 + 10 = ?',
+    correctAnswers: ['20', 'twenty'],
+  },
 };

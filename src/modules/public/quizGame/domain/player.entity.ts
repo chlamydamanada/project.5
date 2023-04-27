@@ -23,19 +23,19 @@ export class PlayerProgress {
   game: Game;
 
   @Column({ type: 'uuid' })
-  playerId: string; //userId
+  userId: string;
 
   @ManyToOne(() => User)
   @JoinColumn()
-  player: User;
+  user: User;
 
   @Column({ type: Number, default: 0 })
   score: number;
 
   @OneToMany(() => Answer, (a) => a.player, {
-    cascade: true,
+    //cascade: true,
     nullable: true,
-    onUpdate: 'CASCADE',
+    //onUpdate: 'CASCADE',
   })
   answers: Answer[];
 }

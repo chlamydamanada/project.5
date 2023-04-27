@@ -28,35 +28,21 @@ export class CreateAnswerOfCurrentUserUseCase
     if (!activeGame)
       throw new ForbiddenException('You haven`t active games for now');
 
-    // first step of game: check answer, create and save it, change score of player
-    let newAnswerId: string;
+    // first step of game: get current user, check answer, create and save it, change score of player
+    const currentPlayer = this.getCurrentPlayer(activeGame, command.userId);
 
-    if (
-      activeGame.secondPlayerProgress?.playerId === command.userId &&
-      activeGame.secondPlayerProgress.answers?.length !==
-        activeGame.questions?.length
-    ) {
-      newAnswerId = await this.addAnswerToPlayer(
-        activeGame,
-        activeGame.secondPlayerProgress,
-        command.answer,
-      );
-    } else if (
-      activeGame.firstPlayerProgress.playerId === command.userId &&
-      activeGame.firstPlayerProgress.answers?.length !==
-        activeGame.questions?.length
-    ) {
-      newAnswerId = await this.addAnswerToPlayer(
-        activeGame,
-        activeGame.firstPlayerProgress,
-        command.answer,
-      );
-    } else {
-      // if user isn`t player of this game or user has answered all questions
+    if (currentPlayer.answers.length === activeGame.questions?.length) {
+      // if user has answered all questions
       throw new ForbiddenException(
         'You already answered all the questions and finished game',
       );
     }
+    const newAnswerId = await this.addAnswerToPlayer(
+      activeGame,
+      currentPlayer,
+      command.answer,
+    );
+
     //second step of game: check is game finished(players should answer all questions)
     const isFinished = this.isGameFinished(activeGame);
 
@@ -67,13 +53,25 @@ export class CreateAnswerOfCurrentUserUseCase
       activeGame.status = GameStatusModel.finished;
       activeGame.finishGameDate = new Date();
     }
+    //save current user
+    //await this.quizGameRepository.savePlayer(currentPlayer);
 
     //save game changes
     await this.quizGameRepository.saveGame(activeGame);
 
-    //console.log('*GAME*', activeGame);
     return newAnswerId;
   }
+
+  private getCurrentPlayer(activeGame: Game, userId: string): PlayerProgress {
+    if (
+      activeGame.secondPlayerProgress &&
+      activeGame.secondPlayerProgress.userId === userId
+    ) {
+      return activeGame.secondPlayerProgress;
+    }
+    return activeGame.firstPlayerProgress;
+  }
+
   private async addAnswerToPlayer(
     game: Game,
     player: PlayerProgress,
@@ -94,31 +92,19 @@ export class CreateAnswerOfCurrentUserUseCase
     const newAnswer = new Answer();
     newAnswer.id = uuidv4();
     newAnswer.body = answer;
-    newAnswer.playerId = player.playerId;
+    newAnswer.playerId = player.id;
     newAnswer.questionId = currentQuestion.question.id;
     newAnswer.answerStatus = isCorrectAnswer
       ? AnswerStatusType.Correct
       : AnswerStatusType.Incorrect;
     newAnswer.addedAt = new Date();
 
+    await this.quizGameRepository.saveAnswer(newAnswer);
+
     // add answer to player and if answer is correct change score of player
     player.answers.push(newAnswer);
     isCorrectAnswer ? (player.score += 1) : (player.score += 0);
 
-    // console.log(
-    //   '++FIRST:',
-    //   game.firstPlayerProgress.answers,
-    //   '++SECOND:',
-    //   game.secondPlayerProgress?.answers,
-    // );
-    // //console.log();
-    // //console.log();
-    // console.log(
-    //   '++FIRST:',
-    //   game.firstPlayerProgress.score,
-    //   '++SECOND:',
-    //   game.secondPlayerProgress?.score,
-    // );
     return newAnswer.id;
   }
   private isAnswerCorrect(answer: string, question: Question): boolean {
@@ -134,11 +120,11 @@ export class CreateAnswerOfCurrentUserUseCase
   }
 
   private addBonusPoint(game: Game): void {
-    // sort first player`s answers by date: last answer will be first
+    // sort first player`s answers by date: last answer will be first(like desc)
     const answersOfFirstPlayer = game.firstPlayerProgress.answers.sort(
       (a, b) => Number(b.addedAt) - Number(a.addedAt),
     );
-    // sort first player`s answers by date: last answer will be first
+    // sort first player`s answers by date: last answer will be first(like desc)
     const answersOfSecondPlayer = game.secondPlayerProgress!.answers.sort(
       (a, b) => Number(b.addedAt) - Number(a.addedAt),
     );
