@@ -15,6 +15,7 @@ import { addAnswersByUserHelper } from '../../helpers/quizGame/addAnswersByUser.
 import { AnswerStatusType } from '../../../../src/modules/public/quizGame/types/answerStatusType';
 
 describe('Testing QUIZ GAME', () => {
+  jest.setTimeout(60 * 1000);
   let app: INestApplication;
   let server: any;
   let dataSource;
@@ -869,11 +870,16 @@ ORDER BY qg."addedAt" ASC`,
     });
   });
 
-  describe('GET ALL GAMES OF CURRENT USER', () => {
+  describe('GET ALL GAMES AND STATISTIC OF CURRENT USER', () => {
     let tokens;
     let firstGame;
+    let firstGameAnswers;
     let secondGame;
+    let secondGameAnswers;
     let thirdGame;
+    let thirdGameAnswers;
+    let fourthGame;
+    let fourthGameAnswers;
     beforeAll(async () => {
       //create 10 questions by sa
       const questions = await createSeveralQuestions(10, server);
@@ -917,6 +923,22 @@ ORDER BY qg."addedAt" ASC`,
       //connect first user and second user to game
       await connectUserToGameHelper(tokens[0].accessToken, server);
       firstGame = await connectUserToGameHelper(tokens[1].accessToken, server);
+      firstGameAnswers = await dataSource.query(
+        `
+      select g."id" as "gameId", array(
+        select row_to_json(row) from(
+            select qq."questionId" as "id", qq."body", qq."correctAnswers" from (
+                select * from "question_of_game" qg
+                left join "question" q
+                on q."id" = qg."questionId"
+                order by qg."addedAt"  asc) qq
+            where qq."gameId" = g."id")
+        as row)
+      as questions
+      from "game" g
+      where g."id" = $1`,
+        [firstGame.body.id],
+      );
 
       //find all games for first user
       const res = await request(server)
@@ -941,14 +963,26 @@ ORDER BY qg."addedAt" ASC`,
     it('should find array with one finished game of current user: STATUS 200', async () => {
       //add answers of first user
       await addAnswersByUserHelper(
-        ['nothing', 'ten', 'six', 'twelve', '777'],
+        [
+          firstGameAnswers[0].questions[0].correctAnswers[0],
+          firstGameAnswers[0].questions[1].correctAnswers[0],
+          firstGameAnswers[0].questions[2].correctAnswers[0],
+          'null',
+          'null',
+        ],
         tokens[0].accessToken,
         server,
       );
 
       //add answers of second user
       await addAnswersByUserHelper(
-        ['nothing', 'ten', 'six', 'twelve', '777'],
+        [
+          firstGameAnswers[0].questions[0].correctAnswers[0],
+          firstGameAnswers[0].questions[1].correctAnswers[0],
+          firstGameAnswers[0].questions[2].correctAnswers[0],
+          firstGameAnswers[0].questions[3].correctAnswers[0],
+          firstGameAnswers[0].questions[4].correctAnswers[0],
+        ],
         tokens[1].accessToken,
         server,
       );
@@ -972,12 +1006,62 @@ ORDER BY qg."addedAt" ASC`,
       expect(res.body.items[0].questions).toHaveLength(5);
       expect(res.body.items[0].status).toBe('Finished');
       expect(res.body.items[0].firstPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[0].firstPlayerProgress.score).toBe(4);
       expect(res.body.items[0].secondPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[0].secondPlayerProgress.score).toBe(5);
+    });
+    it('should get statistic with one game to first user: STATUS 200', async () => {
+      //statistic for first user
+      const firstUserStatistic = await request(server)
+        .get('/pair-game-quiz/users/my-statistic')
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(firstUserStatistic.body).toEqual({
+        sumScore: 4,
+        avgScores: 4,
+        gamesCount: 1,
+        winsCount: 0,
+        lossesCount: 1,
+        drawsCount: 0,
+      });
+    });
+    it('should get statistic with one game to second user: STATUS 200', async () => {
+      //statistic for second user
+      const secondUserStatistic = await request(server)
+        .get('/pair-game-quiz/users/my-statistic')
+        .set('Authorization', `Bearer ${tokens[1].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(secondUserStatistic.body).toEqual({
+        sumScore: 5,
+        avgScores: 5,
+        gamesCount: 1,
+        winsCount: 1,
+        lossesCount: 0,
+        drawsCount: 0,
+      });
     });
     it('should find array with two games(finished and active) of current user: STATUS 200', async () => {
       //connect first user and third user to game
       await connectUserToGameHelper(tokens[0].accessToken, server);
       secondGame = await connectUserToGameHelper(tokens[2].accessToken, server);
+      secondGameAnswers = await dataSource.query(
+        `
+      select g."id" as "gameId", array(
+        select row_to_json(row) from(
+            select qq."questionId" as "id", qq."body", qq."correctAnswers" from (
+                select * from "question_of_game" qg
+                left join "question" q
+                on q."id" = qg."questionId"
+                order by qg."addedAt"  asc) qq
+            where qq."gameId" = g."id")
+        as row)
+      as questions
+      from "game" g
+      where g."id" = $1`,
+        [secondGame.body.id],
+      );
 
       //find all games for first user
       const res = await request(server)
@@ -1016,14 +1100,26 @@ ORDER BY qg."addedAt" ASC`,
     it('should find array with two finished game of current user: STATUS 200', async () => {
       //add answers of first user
       await addAnswersByUserHelper(
-        ['nothing', 'ten', 'six', 'twelve', '777'],
+        [
+          secondGameAnswers[0].questions[0].correctAnswers[0],
+          secondGameAnswers[0].questions[1].correctAnswers[0],
+          secondGameAnswers[0].questions[2].correctAnswers[0],
+          secondGameAnswers[0].questions[3].correctAnswers[0],
+          secondGameAnswers[0].questions[4].correctAnswers[0],
+        ],
         tokens[0].accessToken,
         server,
       );
-
+      await delay(500);
       //add answers of third user
       await addAnswersByUserHelper(
-        ['nothing', 'ten', 'six', 'twelve', '777'],
+        [
+          secondGameAnswers[0].questions[0].correctAnswers[0],
+          secondGameAnswers[0].questions[1].correctAnswers[0],
+          'null',
+          'null',
+          '7777777',
+        ],
         tokens[2].accessToken,
         server,
       );
@@ -1053,7 +1149,9 @@ ORDER BY qg."addedAt" ASC`,
       expect(res.body.items[0].questions).toHaveLength(5);
       expect(res.body.items[0].status).toBe('Finished');
       expect(res.body.items[0].firstPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[0].firstPlayerProgress.score).toBe(6);
       expect(res.body.items[0].secondPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[0].secondPlayerProgress.score).toBe(2);
 
       //second in array should be first game: status finished, have 5 questions, 5 answers by both users
       expect(res.body.items[1].id).toBe(firstGame.body.id);
@@ -1062,10 +1160,58 @@ ORDER BY qg."addedAt" ASC`,
       expect(res.body.items[1].firstPlayerProgress.answers).toHaveLength(5);
       expect(res.body.items[1].secondPlayerProgress.answers).toHaveLength(5);
     });
+    it('should get statistic with two games to first user: STATUS 200', async () => {
+      //statistic for first user
+      const firstUserStatistic = await request(server)
+        .get('/pair-game-quiz/users/my-statistic')
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(firstUserStatistic.body).toEqual({
+        sumScore: 10,
+        avgScores: 5,
+        gamesCount: 2,
+        winsCount: 1,
+        lossesCount: 1,
+        drawsCount: 0,
+      });
+    });
+    it('should get statistic with two games to third user: STATUS 200', async () => {
+      //statistic for third user
+      const thirdUserStatistic = await request(server)
+        .get('/pair-game-quiz/users/my-statistic')
+        .set('Authorization', `Bearer ${tokens[2].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(thirdUserStatistic.body).toEqual({
+        sumScore: 2,
+        avgScores: 2,
+        gamesCount: 1,
+        winsCount: 0,
+        lossesCount: 1,
+        drawsCount: 0,
+      });
+    });
     it('should find array with one active and two finished games of current user: STATUS 200', async () => {
       //connect first user and second user to game
       await connectUserToGameHelper(tokens[0].accessToken, server);
       thirdGame = await connectUserToGameHelper(tokens[1].accessToken, server);
+      thirdGameAnswers = await dataSource.query(
+        `
+      select g."id" as "gameId", array(
+        select row_to_json(row) from(
+            select qq."questionId" as "id", qq."body", qq."correctAnswers" from (
+                select * from "question_of_game" qg
+                left join "question" q
+                on q."id" = qg."questionId"
+                order by qg."addedAt"  asc) qq
+            where qq."gameId" = g."id")
+        as row)
+      as questions
+      from "game" g
+      where g."id" = $1`,
+        [thirdGame.body.id],
+      );
 
       //find all games for first user
       const res = await request(server)
@@ -1106,16 +1252,39 @@ ORDER BY qg."addedAt" ASC`,
       expect(res.body.items[2].secondPlayerProgress.answers).toHaveLength(5);
     });
 
-    it('should get array of one game with sortBy: status, pageSize 2, pageNumber 2, default sortDirection: STATUS 200', async () => {
+    it('should get array of one game with sortBy: status, pageSize 1, pageNumber 1, default sortDirection: STATUS 200', async () => {
       const res = await request(server)
-        .get('/pair-game-quiz/pairs/my?sortBy=status&pageSize=2&pageNumber=2')
+        .get('/pair-game-quiz/pairs/my?sortBy=status&pageSize=1&pageNumber=1')
         .set('Authorization', `Bearer ${tokens[0].accessToken}`)
         .expect(HttpStatus.OK);
 
       expect(res.body).toEqual({
-        pagesCount: 2,
-        page: 2,
-        pageSize: 2,
+        pagesCount: 3,
+        page: 1,
+        pageSize: 1,
+        totalCount: 3,
+        items: expect.any(Array),
+      });
+
+      expect(res.body.items).toHaveLength(1);
+      expect(res.body.items[0].id).toBe(secondGame.body.id);
+      expect(res.body.items[0].questions).toHaveLength(5);
+      expect(res.body.items[0].status).toBe('Finished');
+      expect(res.body.items[0].firstPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[0].secondPlayerProgress.answers).toHaveLength(5);
+    });
+    it('should get array of one game with sortBy-status, pageSize-1, pageNumber-1, sortDirection-asc: STATUS 200', async () => {
+      const res = await request(server)
+        .get(
+          '/pair-game-quiz/pairs/my?sortBy=status&pageSize=1&pageNumber=1&sortDirection=asc',
+        )
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(res.body).toEqual({
+        pagesCount: 3,
+        page: 1,
+        pageSize: 1,
         totalCount: 3,
         items: expect.any(Array),
       });
@@ -1127,34 +1296,209 @@ ORDER BY qg."addedAt" ASC`,
       expect(res.body.items[0].firstPlayerProgress.answers).toHaveLength(0);
       expect(res.body.items[0].secondPlayerProgress.answers).toHaveLength(0);
     });
-    it('should get array of one game with sortBy-status, pageSize-2, pageNumber-2, sortDirection-asc: STATUS 200', async () => {
+    it('should find array with three finished game of current user: STATUS 200', async () => {
+      //add answers of first user
+      await addAnswersByUserHelper(
+        [
+          thirdGameAnswers[0].questions[0].correctAnswers[0],
+          thirdGameAnswers[0].questions[1].correctAnswers[0],
+          'null',
+          'null',
+          'null',
+        ],
+        tokens[0].accessToken,
+        server,
+      );
+
+      //add answers of third user
+      await addAnswersByUserHelper(
+        [
+          thirdGameAnswers[0].questions[0].correctAnswers[0],
+          thirdGameAnswers[0].questions[1].correctAnswers[0],
+          thirdGameAnswers[0].questions[2].correctAnswers[0],
+          'null',
+          '7777777',
+        ],
+        tokens[1].accessToken,
+        server,
+      );
+
+      //find all games for first user
       const res = await request(server)
-        .get(
-          '/pair-game-quiz/pairs/my?sortBy=status&pageSize=2&pageNumber=2&sortDirection=asc',
-        )
+        .get('/pair-game-quiz/pairs/my')
         .set('Authorization', `Bearer ${tokens[0].accessToken}`)
         .expect(HttpStatus.OK);
 
       expect(res.body).toEqual({
-        pagesCount: 2,
-        page: 2,
-        pageSize: 2,
+        pagesCount: 1,
+        page: 1,
+        pageSize: 10,
         totalCount: 3,
         items: expect.any(Array),
       });
 
-      expect(res.body.items).toHaveLength(1);
-      expect(res.body.items[0].id).toBe(firstGame.body.id);
+      //should be 3 games: three are finished
+      expect(res.body.items).toHaveLength(3);
+
+      //first in array should be third game: status finished, have 5 questions, 5 answers by both users
+      expect(res.body.items[0].id).toBe(thirdGame.body.id);
       expect(res.body.items[0].questions).toHaveLength(5);
       expect(res.body.items[0].status).toBe('Finished');
       expect(res.body.items[0].firstPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[0].firstPlayerProgress.score).toBe(3);
       expect(res.body.items[0].secondPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[0].secondPlayerProgress.score).toBe(3);
+
+      //second in array should be second game: status finished, have 5 questions, 5 answers by both users
+      expect(res.body.items[1].id).toBe(secondGame.body.id);
+      expect(res.body.items[1].questions).toHaveLength(5);
+      expect(res.body.items[1].status).toBe('Finished');
+      expect(res.body.items[1].firstPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[1].firstPlayerProgress.score).toBe(6);
+      expect(res.body.items[1].secondPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[1].secondPlayerProgress.score).toBe(2);
+
+      //second in array should be first game: status finished, have 5 questions, 5 answers by both users
+      expect(res.body.items[2].id).toBe(firstGame.body.id);
+      expect(res.body.items[2].questions).toHaveLength(5);
+      expect(res.body.items[2].status).toBe('Finished');
+      expect(res.body.items[2].firstPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[2].firstPlayerProgress.score).toBe(4);
+      expect(res.body.items[2].secondPlayerProgress.answers).toHaveLength(5);
+      expect(res.body.items[2].secondPlayerProgress.score).toBe(5);
+    });
+    it('should get statistic with three games to first user: STATUS 200', async () => {
+      //statistic for first user
+      const firstUserStatistic = await request(server)
+        .get('/pair-game-quiz/users/my-statistic')
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(firstUserStatistic.body).toEqual({
+        sumScore: 13,
+        avgScores: 4.33,
+        gamesCount: 3,
+        winsCount: 1,
+        lossesCount: 1,
+        drawsCount: 1,
+      });
+    });
+    it('should get statistic with three games to second user: STATUS 200', async () => {
+      //statistic for second user
+      const secondUserStatistic = await request(server)
+        .get('/pair-game-quiz/users/my-statistic')
+        .set('Authorization', `Bearer ${tokens[1].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(secondUserStatistic.body).toEqual({
+        sumScore: 8,
+        avgScores: 4,
+        gamesCount: 2,
+        winsCount: 1,
+        lossesCount: 0,
+        drawsCount: 1,
+      });
+    });
+    it('should connect and finished fourth game', async () => {
+      //connect third user and first user to game
+      await connectUserToGameHelper(tokens[2].accessToken, server);
+      fourthGame = await connectUserToGameHelper(tokens[0].accessToken, server);
+      fourthGameAnswers = await dataSource.query(
+        `
+      select g."id" as "gameId", array(
+        select row_to_json(row) from(
+            select qq."questionId" as "id", qq."body", qq."correctAnswers" from (
+                select * from "question_of_game" qg
+                left join "question" q
+                on q."id" = qg."questionId"
+                order by qg."addedAt"  asc) qq
+            where qq."gameId" = g."id")
+        as row)
+      as questions
+      from "game" g
+      where g."id" = $1`,
+        [fourthGame.body.id],
+      );
+
+      //add answers of third user
+      await addAnswersByUserHelper(
+        [
+          fourthGameAnswers[0].questions[0].correctAnswers[0],
+          fourthGameAnswers[0].questions[1].correctAnswers[0],
+          fourthGameAnswers[0].questions[2].correctAnswers[0],
+          fourthGameAnswers[0].questions[3].correctAnswers[0],
+          'null',
+        ],
+        tokens[2].accessToken,
+        server,
+      );
+
+      //add answers of first user
+      await addAnswersByUserHelper(
+        [
+          fourthGameAnswers[0].questions[0].correctAnswers[0],
+          fourthGameAnswers[0].questions[1].correctAnswers[0],
+          fourthGameAnswers[0].questions[2].correctAnswers[0],
+          fourthGameAnswers[0].questions[3].correctAnswers[0],
+          'null',
+        ],
+        tokens[0].accessToken,
+        server,
+      );
+      //find all games for first user
+      const res = await request(server)
+        .get('/pair-game-quiz/pairs/my')
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(res.body).toEqual({
+        pagesCount: 1,
+        page: 1,
+        pageSize: 10,
+        totalCount: 4,
+        items: expect.any(Array),
+      });
+      //first game should be:
+      expect(res.body.items).toHaveLength(4);
+      expect(res.body.items[0].id).toBe(fourthGame.body.id);
+    });
+    it('should get statistic with four games to first user: STATUS 200', async () => {
+      //statistic for first user
+      const res = await request(server)
+        .get('/pair-game-quiz/users/my-statistic')
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(res.body).toEqual({
+        sumScore: 17,
+        avgScores: 4.25,
+        gamesCount: 4,
+        winsCount: 1,
+        lossesCount: 2,
+        drawsCount: 1,
+      });
+    });
+    it('should get statistic with four games to third user: STATUS 200', async () => {
+      //statistic for first user
+      const res = await request(server)
+        .get('/pair-game-quiz/users/my-statistic')
+        .set('Authorization', `Bearer ${tokens[2].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(res.body).toEqual({
+        sumScore: 7,
+        avgScores: 3.5,
+        gamesCount: 2,
+        winsCount: 1,
+        lossesCount: 1,
+        drawsCount: 0,
+      });
     });
   });
 
-  afterAll(async () => {
-    await request(server).delete('/testing/all-data').expect(204);
-  });
+  // afterAll(async () => {
+  //   await request(server).delete('/testing/all-data').expect(204);
+  // });
 
   afterAll(async () => {
     await app.close();

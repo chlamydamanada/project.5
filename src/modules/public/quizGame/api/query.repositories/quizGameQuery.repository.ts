@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Game } from '../../domain/game.entity';
-import { Not, Repository } from 'typeorm';
+import { DataSource, Not, Repository } from 'typeorm';
 import { GameViewModel } from '../../types/gameViewModel';
 import { GameStatusModel } from '../../types/gameStatusType';
 import { Answer } from '../../domain/answer.entity';
 import { AnswerViewModel } from '../../types/answerViewModel';
-import { AnswerStatusType } from '../../types/answerStatusType';
 import { GamesQueryType } from '../../types/gamesQueryType';
+import { CurrentStatisticViewModel } from '../../types/currentStatisticViewModel';
+import { StatisticDtoType } from '../../types/statisticDtoType';
 
 @Injectable()
 export class QuizGamePublicQueryRepository {
@@ -16,6 +17,7 @@ export class QuizGamePublicQueryRepository {
     private readonly quizGameRepository: Repository<Game>,
     @InjectRepository(Answer)
     private readonly answerRepository: Repository<Answer>,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   async findGameById(gameId: string): Promise<GameViewModel | null> {
@@ -311,5 +313,233 @@ export class QuizGamePublicQueryRepository {
                 body: q.question.body,
               })),
     };
+  }
+
+  async findUserGames(userId: string, queryDto: GamesQueryType) {
+    const games = await this.dataSource.query(
+      `
+    SELECT g."id", g."status", g."pairCreatedDate", g."startGameDate", g."finishGameDate", array( 
+        select row_to_json(row) from (
+            select qq."questionId" as "id", qq."body" from (
+                select * from "question_of_game" qg
+                left join "question" q
+                on q."id" = qg."questionId"
+                order by qg."addedAt"  asc) qq
+            where qq."gameId" = g."id")
+        as row)
+    as questions, --array of questions
+
+(select row_to_json(row) as "firstPlayerProgress" from (
+    select  pp."score", (
+        select row_to_json(row) as "player" from (
+            select u."id", u."login" from "user" u where u."id" = pp."userId") 
+        as row), --json user info
+        (select array(
+            select row_to_json(row) from(
+                select a."questionId", a."answerStatus", a."addedAt" 
+                from "answer" a 
+                where a."playerId" = pp."id"
+                order by a."addedAt" asc)
+            as row)
+        as "answers") --array of users answers
+    from public."player_progress" pp
+    where pp."id" = g."firstPlayerProgressId")
+ as row), --json first player progress
+ 
+(select row_to_json(row) as "secondPlayerProgress" from (
+    select  pp."score", (
+        select row_to_json(row) as "player" from (
+            select u."id", u."login" from "user" u where u."id" = pp."userId") 
+        as row), --json user info
+        (select array(
+            select row_to_json(row) from(
+                select a."questionId", a."answerStatus", a."addedAt" 
+                from "answer" a 
+                where a."playerId" = pp."id"
+                order by a."addedAt" asc)
+            as row)
+        as "answers") --array of users answers
+    from public."player_progress" pp
+    where pp."id" = g."secondPlayerProgressId")
+ as row) --json second player progress
+
+from "game" g
+left join "player_progress" fpp
+on g."firstPlayerProgressId" = fpp."id"
+left join "player_progress" spp
+on g."secondPlayerProgressId" = spp."id"
+where spp."userId" = $1 or fpp."userId" = $1
+order by  "${queryDto.sortBy}" ${queryDto.sortDirection}, "pairCreatedDate" desc
+limit $2 offset $3`,
+      [
+        userId,
+        queryDto.pageSize,
+        (queryDto.pageNumber - 1) * queryDto.pageSize,
+      ],
+    );
+    const count = await this.dataSource.query(
+      `
+    select count(*) as "totalCount" from "game" g
+    left join "player_progress" fpp
+    on g."firstPlayerProgressId" = fpp."id"
+    left join "player_progress" spp
+    on g."secondPlayerProgressId" = spp."id"
+    where spp."userId" = $1 or fpp."userId" = $1`,
+      [userId],
+    );
+
+    return {
+      pagesCount: Math.ceil(count[0].totalCount / queryDto.pageSize),
+      page: queryDto.pageNumber,
+      pageSize: queryDto.pageSize,
+      totalCount: +count[0].totalCount,
+      items: games,
+    };
+  }
+
+  async getUserStatistic(userId: string): Promise<CurrentStatisticViewModel> {
+    const currentStatistic: StatisticDtoType[] = await this.dataSource.query(
+      `
+    SELECT  (select sum(pp."score") as "sumScore" 
+             from "player_progress" pp
+             where pp."userId" = $1), -- sumScore of current user
+
+            (select count(*) as "gamesCount" from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where spp."userId" = $1 
+            or fpp."userId" = $1), --gamesScore of current user
+
+            (select count(*)  from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where fpp."userId" = $1 
+            and fpp."score" > spp."score") --winsCount like first player
+            +
+            (select count(*)  from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where spp."userId" = $1 
+            and spp."score" > fpp."score") as "winsCount",  --winsCount like second player
+
+            (select count(*)  from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where fpp."userId" = $1 
+            and fpp."score" < spp."score") --lossesCount like first player
+            +
+            (select count(*)  from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where spp."userId" = $1    
+            and spp."score" < fpp."score") as "lossesCount", --lossesCount like second player
+
+            (select count(*)  from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where fpp."userId" = $1 
+            and fpp."score" = spp."score") --drawsCount like first player
+            +
+            (select count(*)  from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where spp."userId" = $1 
+            and spp."score" = fpp."score") as "drawsCount" --drawsCount like second player
+`,
+      [userId],
+    );
+    return new CurrentStatisticViewModel(currentStatistic[0]);
+  }
+
+  async getUsersTop(queryDto) {
+    const topOfUsers = await this.dataSource.query(`
+    select (select row_to_json(row) as "player" from 
+                (select uu."id", uu."login"
+                from "user" uu
+                where uu."id" = u."id"
+                ) 
+            as row), -- player info
+
+            (select sum(pp."score") as "sumScore" 
+            from "player_progress" pp
+            where pp."userId" = u."id"),-- sumScore of current user
+
+            (select count(*) as "gamesCount" from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where spp."userId" = u."id" 
+            or fpp."userId" = u."id"), --gamesScore of current user
+
+            (select count(*)  from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where fpp."userId" = u."id" 
+            and fpp."score" > spp."score") --winsCount like first player
+            +
+            (select count(*)  from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where spp."userId" = u."id" 
+            and spp."score" > fpp."score") as "winsCount",  --winsCount like second player
+
+            (select count(*)  from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where fpp."userId" = u."id" 
+            and fpp."score" < spp."score") --lossesCount like first player
+            +
+            (select count(*)  from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where spp."userId" = u."id" 
+            and spp."score" < fpp."score") as "lossesCount", --lossesCount like second player
+
+            (select count(*)  from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where fpp."userId" = u."id" 
+            and fpp."score" = spp."score") --drawsCount like first player
+            +
+            (select count(*)  from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where spp."userId" = u."id" 
+            and spp."score" = fpp."score") as "drawsCount" --drawsCount like second player
+from "user" u
+where (select count(*) from "game" g
+        left join "player_progress" fpp
+        on g."firstPlayerProgressId" = fpp."id"
+        left join "player_progress" spp
+        on g."secondPlayerProgressId" = spp."id"
+        where spp."userId" = u."id" 
+        or fpp."userId" = u."id") > 0`);
   }
 }

@@ -28,6 +28,7 @@ import { GetGameByIdSwaggerDecorator } from '../../../../swagger/decorators/publ
 import { QueryGamesDto } from './pipes/queryGames.dto';
 import { GamesQueryType } from '../types/gamesQueryType';
 import { GamesViewModel } from '../types/gamesViewModel';
+import { CurrentStatisticViewModel } from '../types/currentStatisticViewModel';
 
 @ApiTags('PairGameQuiz')
 @Controller('pair-game-quiz')
@@ -37,6 +38,21 @@ export class QuizGamePublicController {
     private readonly quizGameQueryRepository: QuizGamePublicQueryRepository,
     private commandBus: CommandBus,
   ) {}
+
+  @Get('users/my-statistic')
+  async getCurrentStatistic(
+    @CurrentUserId() userId: string,
+  ): Promise<CurrentStatisticViewModel> {
+    const currentStatistic =
+      await this.quizGameQueryRepository.getUserStatistic(userId);
+    return currentStatistic;
+  }
+
+  @Get('users/top')
+  async getTopUsers(@Query() queryDto: QueryGamesDto) {
+    const topUsers = await this.quizGameQueryRepository.getUsersTop(queryDto);
+    return topUsers;
+  }
 
   @Post('pairs/connection')
   @ConnectionToGameSwaggerDecorator()
@@ -70,7 +86,7 @@ export class QuizGamePublicController {
     @Query() queryDto: QueryGamesDto,
     @CurrentUserId() userId: string,
   ): Promise<GamesViewModel> {
-    const games = await this.quizGameQueryRepository.findAllGamesByUserId(
+    const games = await this.quizGameQueryRepository.findUserGames(
       userId,
       queryDto as GamesQueryType,
     );

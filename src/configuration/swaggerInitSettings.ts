@@ -1,6 +1,5 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { PostPublicController } from '../modules/public/posts/api/postPublic.controller';
 import { PublicModule } from '../modules/public/public.module';
 import { BloggerModule } from '../modules/bloggers/blogger.module';
 import { SuperAdminModule } from '../modules/superAdmin/superAdmin.module';

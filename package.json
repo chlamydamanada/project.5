@@ -5,7 +5,7 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
-  "scripts": {
+   "scripts": {
     "build": "nest build",
     "format": "prettier --write \\\\\\\"src/**/*.ts\\\\\\\" \\\\\\\"test/**/*.ts\\\\\\\"",
     "start": "nest start",
@@ -18,7 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config test/e2e.test/jest-e2e.json --runInBand --detectOpenHandles --forceExit",
-    "typeorm": "ts-node ./node_modules/typeorm/cli.js -d src/postgres/typeOrmConfig.ts",
+    "typeorm": "ts-node ./node_modules/typeorm/cli.js -d src/configuration/typeOrmConfigSettings.ts",
     "db:create": "yarn typeorm migration:generate src/postgres/migrations/migration",
     "db:migrate": "yarn typeorm migration:run",
     "db:drop": "yarn typeorm schema:drop"

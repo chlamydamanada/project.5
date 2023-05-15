@@ -1,6 +1,4 @@
 import { INestApplication } from '@nestjs/common';
-import { getApp } from '../../testsConnection';
-import { DataSource } from 'typeorm';
 import request from 'supertest';
 import { MailBoxImap } from './imap.service';
 import { isUUID } from 'class-validator';

@@ -28,15 +28,17 @@ export class CreateAnswerOfCurrentUserUseCase
     if (!activeGame)
       throw new ForbiddenException('You haven`t active games for now');
 
-    // first step of game: get current user, check answer, create and save it, change score of player
+    // get current user
     const currentPlayer = this.getCurrentPlayer(activeGame, command.userId);
 
+    // check if user has answered all questions
     if (currentPlayer.answers.length === activeGame.questions?.length) {
       // if user has answered all questions
       throw new ForbiddenException(
         'You already answered all the questions and finished game',
       );
     }
+    //create and save new answer of user and change score of player
     const newAnswerId = await this.addAnswerToPlayer(
       activeGame,
       currentPlayer,
@@ -53,7 +55,7 @@ export class CreateAnswerOfCurrentUserUseCase
       activeGame.status = GameStatusModel.finished;
       activeGame.finishGameDate = new Date();
     }
-    //save current user
+    //save users changes
     //await this.quizGameRepository.savePlayer(currentPlayer);
 
     //save game changes
@@ -107,6 +109,7 @@ export class CreateAnswerOfCurrentUserUseCase
 
     return newAnswer.id;
   }
+
   private isAnswerCorrect(answer: string, question: Question): boolean {
     if (question.correctAnswers.find((a) => a === answer)) return true;
     return false;
@@ -129,7 +132,7 @@ export class CreateAnswerOfCurrentUserUseCase
       (a, b) => Number(b.addedAt) - Number(a.addedAt),
     );
 
-    //add one bonus point to first player(have one correct answer)
+    //check add one bonus point to first player or not(have one correct answer)
     if (answersOfFirstPlayer[0].addedAt < answersOfSecondPlayer[0].addedAt) {
       this.doesCorrectAnswerExist(answersOfFirstPlayer)
         ? (game.firstPlayerProgress.score += 1)
@@ -137,7 +140,7 @@ export class CreateAnswerOfCurrentUserUseCase
       return;
     }
 
-    //add one bonus point to second player(have one correct answer)
+    //check add one bonus point to second player or not(have one correct answer)
     if (
       answersOfSecondPlayer[0].addedAt < answersOfFirstPlayer[0].addedAt &&
       game.secondPlayerProgress

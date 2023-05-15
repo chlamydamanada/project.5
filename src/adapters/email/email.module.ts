@@ -15,8 +15,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           //host: 'smtp.example.com',
           //secure: false,
           auth: {
-            user: config.get('MY_EMAIL'), //  is email from will be sent letter
-            pass: config.get('PASS'), //  password in gmail security
+            user: config.get('MAIL_USER'), //  is email from will be sent letter
+            pass: config.get('MAIL_PASSWORD'), //  password in gmail security
           },
         },
         defaults: {
