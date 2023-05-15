@@ -30,7 +30,7 @@ export class CurrentStatisticViewModel {
       statisticDto.sumScore / statisticDto.gamesCount ===
       Math.floor(statisticDto.sumScore / statisticDto.gamesCount)
         ? Math.floor(statisticDto.sumScore / statisticDto.gamesCount)
-        : Math.trunc((statisticDto.sumScore / statisticDto.gamesCount) * 100) /
+        : Math.round((statisticDto.sumScore / statisticDto.gamesCount) * 100) /
           100;
   }
 }
