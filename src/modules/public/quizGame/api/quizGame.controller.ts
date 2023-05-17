@@ -29,17 +29,24 @@ import { QueryGamesDto } from './pipes/queryGames.dto';
 import { GamesQueryType } from '../types/gamesQueryType';
 import { GamesViewModel } from '../types/gamesViewModel';
 import { CurrentStatisticViewModel } from '../types/currentStatisticViewModel';
+import { QueryGamesTopUsersDto } from './pipes/queryGamesTopUsers.dto';
 
 @ApiTags('PairGameQuiz')
 @Controller('pair-game-quiz')
-@UseGuards(AccessTokenGuard)
 export class QuizGamePublicController {
   constructor(
     private readonly quizGameQueryRepository: QuizGamePublicQueryRepository,
     private commandBus: CommandBus,
   ) {}
 
+  @Get('users/top')
+  async getTopUsers(@Query() queryDto: QueryGamesTopUsersDto) {
+    const topUsers = await this.quizGameQueryRepository.getUsersTop(queryDto);
+    return topUsers;
+  }
+
   @Get('users/my-statistic')
+  @UseGuards(AccessTokenGuard)
   async getCurrentStatistic(
     @CurrentUserId() userId: string,
   ): Promise<CurrentStatisticViewModel> {
@@ -48,13 +55,8 @@ export class QuizGamePublicController {
     return currentStatistic;
   }
 
-  @Get('users/top')
-  async getTopUsers(@Query() queryDto: QueryGamesDto) {
-    const topUsers = await this.quizGameQueryRepository.getUsersTop(queryDto);
-    return topUsers;
-  }
-
   @Post('pairs/connection')
+  @UseGuards(AccessTokenGuard)
   @ConnectionToGameSwaggerDecorator()
   @HttpCode(200)
   async connectionToGame(
@@ -69,6 +71,7 @@ export class QuizGamePublicController {
   }
 
   @Get('pairs/my-current')
+  @UseGuards(AccessTokenGuard)
   @GetCurrentGameSwaggerDecorator()
   async getCurrentGameByUserId(
     @CurrentUserId() userId: string,
@@ -82,6 +85,7 @@ export class QuizGamePublicController {
   }
 
   @Get('pairs/my')
+  @UseGuards(AccessTokenGuard)
   async getAllGamesByUserId(
     @Query() queryDto: QueryGamesDto,
     @CurrentUserId() userId: string,
@@ -94,6 +98,7 @@ export class QuizGamePublicController {
   }
 
   @Post('pairs/my-current/answers')
+  @UseGuards(AccessTokenGuard)
   @CreateAnswerOfCurrentUserSwaggerDecorator()
   @HttpCode(200)
   async createAnswerOfCurrentUser(
@@ -112,6 +117,7 @@ export class QuizGamePublicController {
   }
 
   @Get('pairs/:id')
+  @UseGuards(AccessTokenGuard)
   @GetGameByIdSwaggerDecorator()
   async getGameById(
     @CurrentUserId() userId: string,

@@ -13,13 +13,13 @@ export class ConnectionToGameCommand {
 }
 @CommandHandler(ConnectionToGameCommand)
 export class ConnectionToGameUseCase
-  implements ICommandHandler<ConnectionToGameCommand>
+  implements ICommandHandler<ConnectionToGameCommand, string>
 {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly quizGameRepository: QuizGamePublicRepository,
   ) {}
-  async execute(command: ConnectionToGameCommand): Promise<string> {
+  async execute(command: ConnectionToGameCommand) {
     const user = await this.usersRepository.findUserById(command.userId);
     if (!user) throw new NotFoundException('The user with this id not found');
 

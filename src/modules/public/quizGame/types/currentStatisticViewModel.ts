@@ -27,10 +27,8 @@ export class CurrentStatisticViewModel {
     this.lossesCount = Number(statisticDto.lossesCount);
     this.drawsCount = Number(statisticDto.drawsCount);
     this.avgScores =
-      statisticDto.sumScore / statisticDto.gamesCount ===
-      Math.floor(statisticDto.sumScore / statisticDto.gamesCount)
-        ? Math.floor(statisticDto.sumScore / statisticDto.gamesCount)
-        : Math.round((statisticDto.sumScore / statisticDto.gamesCount) * 100) /
-          100;
+      Number(statisticDto.avgScores) === Math.floor(+statisticDto.avgScores)
+        ? Math.floor(+statisticDto.avgScores)
+        : Math.round(+statisticDto.avgScores * 100) / 100;
   }
 }

@@ -870,7 +870,7 @@ ORDER BY qg."addedAt" ASC`,
     });
   });
 
-  describe('GET ALL GAMES AND STATISTIC OF CURRENT USER', () => {
+  describe('GET ALL GAMES | STATISTIC OF CURRENT USER | TOP PLAYERS', () => {
     let tokens;
     let firstGame;
     let firstGameAnswers;
@@ -893,10 +893,10 @@ ORDER BY qg."addedAt" ASC`,
       }
 
       //create 4 users by sa
-      await createSeveralUsers(4, server);
+      await createSeveralUsers(6, server);
 
       //login 4 users
-      tokens = await loginSeveralUsers(4, server);
+      tokens = await loginSeveralUsers(6, server);
     });
     it('shouldn`t find all games of current user without authorization: STATUS 401', async () => {
       await request(server)
@@ -1479,7 +1479,7 @@ ORDER BY qg."addedAt" ASC`,
       });
     });
     it('should get statistic with four games to third user: STATUS 200', async () => {
-      //statistic for first user
+      //statistic for third user
       const res = await request(server)
         .get('/pair-game-quiz/users/my-statistic')
         .set('Authorization', `Bearer ${tokens[2].accessToken}`)
@@ -1493,6 +1493,147 @@ ORDER BY qg."addedAt" ASC`,
         lossesCount: 1,
         drawsCount: 0,
       });
+    });
+    it('should get top statistic players with default sort and paging: STATUS 200', async () => {
+      const res = await request(server)
+        .get('/pair-game-quiz/users/top')
+        .expect(HttpStatus.OK);
+
+      expect(res.body).toEqual({
+        pagesCount: 1,
+        page: 1,
+        pageSize: 10,
+        totalCount: 3,
+        items: expect.any(Array),
+      });
+      //3 users have part in game => 3 statistics
+      expect(res.body.items).toHaveLength(3);
+      //first in array should be first player(Bobby)
+      expect(res.body.items[0]).toEqual({
+        player: {
+          id: expect.any(String),
+          login: UsersConstants.valid_user_1.login,
+        },
+        sumScore: 17,
+        avgScores: 4.25,
+        gamesCount: 4,
+        winsCount: 1,
+        lossesCount: 2,
+        drawsCount: 1,
+      });
+      //second should be second player(Emily)
+      expect(res.body.items[1]).toEqual({
+        player: {
+          id: expect.any(String),
+          login: UsersConstants.valid_user_2.login,
+        },
+        sumScore: 8,
+        avgScores: 4,
+        gamesCount: 2,
+        winsCount: 1,
+        lossesCount: 0,
+        drawsCount: 1,
+      });
+      //last should be third player(Liam)
+      expect(res.body.items[2]).toEqual({
+        player: {
+          id: expect.any(String),
+          login: UsersConstants.valid_user_3.login,
+        },
+        sumScore: 7,
+        avgScores: 3.5,
+        gamesCount: 2,
+        winsCount: 1,
+        lossesCount: 1,
+        drawsCount: 0,
+      });
+    });
+    it('should get top statistic players with default sort, pageNumber=2, pageSize=1: STATUS 200', async () => {
+      const res = await request(server)
+        .get('/pair-game-quiz/users/top?pageNumber=2&pageSize=1')
+        .expect(HttpStatus.OK);
+
+      expect(res.body).toEqual({
+        pagesCount: 3,
+        page: 2,
+        pageSize: 1,
+        totalCount: 3,
+        items: expect.any(Array),
+      });
+      //page number = 1 => 1 object in array
+      expect(res.body.items).toHaveLength(1);
+
+      //in second page should be second player(Emily)
+      expect(res.body.items[0]).toEqual({
+        player: {
+          id: expect.any(String),
+          login: UsersConstants.valid_user_2.login,
+        },
+        sumScore: 8,
+        avgScores: 4,
+        gamesCount: 2,
+        winsCount: 1,
+        lossesCount: 0,
+        drawsCount: 1,
+      });
+    });
+    it('should get top statistic players with default paging, sort = ["avgScores asc"]: STATUS 200', async () => {
+      const result = await request(server)
+        .get('/pair-game-quiz/users/top?sort=avgScores asc')
+        .expect(HttpStatus.OK);
+
+      expect(result.body).toEqual({
+        pagesCount: 1,
+        page: 1,
+        pageSize: 10,
+        totalCount: 3,
+        items: expect.any(Array),
+      });
+
+      //3 users have part in game => 3 statistics
+      expect(result.body.items).toHaveLength(3);
+      //first in array should be third player(Liam)
+      expect(result.body.items[0].player.login).toBe(
+        UsersConstants.valid_user_3.login,
+      );
+      //second should be second player(Emily)
+      expect(result.body.items[1].player.login).toBe(
+        UsersConstants.valid_user_2.login,
+      );
+      //last should be first player(Bobby)
+      expect(result.body.items[2].player.login).toBe(
+        UsersConstants.valid_user_1.login,
+      );
+    });
+    it('should get top statistic players with default paging, sort = ["gamesCount asc","avgScores desc"]: STATUS 200', async () => {
+      const result = await request(server)
+        .get(
+          '/pair-game-quiz/users/top?sort=gamesCount asc&sort=avgScores desc',
+        )
+        .expect(HttpStatus.OK);
+
+      expect(result.body).toEqual({
+        pagesCount: 1,
+        page: 1,
+        pageSize: 10,
+        totalCount: 3,
+        items: expect.any(Array),
+      });
+
+      //3 users have part in game => 3 statistics
+      expect(result.body.items).toHaveLength(3);
+      //first in array should be second player(Emily)
+      expect(result.body.items[0].player.login).toBe(
+        UsersConstants.valid_user_2.login,
+      );
+      //second should be third player(Liam)
+      expect(result.body.items[1].player.login).toBe(
+        UsersConstants.valid_user_3.login,
+      );
+      //last should be first player(Bobby)
+      expect(result.body.items[2].player.login).toBe(
+        UsersConstants.valid_user_1.login,
+      );
     });
   });
 

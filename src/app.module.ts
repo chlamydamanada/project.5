@@ -9,10 +9,12 @@ import { SuperAdminModule } from './modules/superAdmin/superAdmin.module';
 import { BloggerModule } from './modules/bloggers/blogger.module';
 import { PublicModule } from './modules/public/public.module';
 import { ConfigType } from './configuration/configuration';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     configModule,
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [configModule],
       inject: [ConfigService],

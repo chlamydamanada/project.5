@@ -9,6 +9,12 @@ import { AnswerViewModel } from '../../types/answerViewModel';
 import { GamesQueryType } from '../../types/gamesQueryType';
 import { CurrentStatisticViewModel } from '../../types/currentStatisticViewModel';
 import { StatisticDtoType } from '../../types/statisticDtoType';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { addSeconds } from 'date-fns';
+import { QueryGamesTopUsersDto } from '../pipes/queryGamesTopUsers.dto';
+import { QuizStatisticQuery } from '../../types/statisticQueryEnum';
+import { TopStatisticDtoType } from '../../types/topStatisticDtoType';
+import { TopStatisticViewModel } from '../../types/topStatisticViewModel';
 
 @Injectable()
 export class QuizGamePublicQueryRepository {
@@ -19,6 +25,41 @@ export class QuizGamePublicQueryRepository {
     private readonly answerRepository: Repository<Answer>,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
+
+  @Cron(CronExpression.EVERY_SECOND)
+  private async cronTest() {
+    const games = await this.quizGameRepository.find({
+      relations: {
+        firstPlayerProgress: {
+          user: true,
+          answers: true,
+        },
+        secondPlayerProgress: {
+          user: true,
+          answers: true,
+        },
+      },
+      where: {
+        status: GameStatusModel.active,
+      },
+    });
+    const gamesToFinish = games.map((g: Game) => {
+      if (
+        g.firstPlayerProgress.answers.length === 5 &&
+        g.firstPlayerProgress.answers[4].addedAt < addSeconds(new Date(), -10)
+      ) {
+        g.status = GameStatusModel.finished;
+      }
+      if (
+        g.secondPlayerProgress!.answers.length === 5 &&
+        g.secondPlayerProgress!.answers[4].addedAt < addSeconds(new Date(), -10)
+      ) {
+        g.status = GameStatusModel.finished;
+      }
+      return g;
+    });
+    await this.quizGameRepository.save(gamesToFinish);
+  }
 
   async findGameById(gameId: string): Promise<GameViewModel | null> {
     const game = await this.quizGameRepository.findOne({
@@ -401,8 +442,20 @@ limit $2 offset $3`,
     const currentStatistic: StatisticDtoType[] = await this.dataSource.query(
       `
     SELECT  (select sum(pp."score") as "sumScore" 
-             from "player_progress" pp
-             where pp."userId" = $1), -- sumScore of current user
+            from "player_progress" pp
+            where pp."userId" = $1), -- sumScore of current user
+             
+            round((select sum(pp."score") 
+            from "player_progress" pp
+            where pp."userId" = $1)*1.0
+            /
+            (select count(*) from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where spp."userId" = $1 
+            or fpp."userId" = $1)*1.0, 2) as "avgScores", -- avgScore of current user
 
             (select count(*) as "gamesCount" from "game" g
             left join "player_progress" fpp
@@ -462,11 +515,16 @@ limit $2 offset $3`,
 `,
       [userId],
     );
+
     return new CurrentStatisticViewModel(currentStatistic[0]);
   }
 
-  async getUsersTop(queryDto) {
-    const topOfUsers = await this.dataSource.query(`
+  async getUsersTop(queryDto: QueryGamesTopUsersDto) {
+    //make filter string by array of string
+    const filter = this.createSortingFilter(queryDto.sort);
+    //get all statistics of all players by filter
+    const topOfUsers: TopStatisticDtoType[] = await this.dataSource.query(
+      `
     select (select row_to_json(row) as "player" from 
                 (select uu."id", uu."login"
                 from "user" uu
@@ -477,6 +535,18 @@ limit $2 offset $3`,
             (select sum(pp."score") as "sumScore" 
             from "player_progress" pp
             where pp."userId" = u."id"),-- sumScore of current user
+            
+            round((select sum(pp."score") 
+            from "player_progress" pp
+            where pp."userId" = u."id")*1.0
+            /
+            (select count(*) from "game" g
+            left join "player_progress" fpp
+            on g."firstPlayerProgressId" = fpp."id"
+            left join "player_progress" spp
+            on g."secondPlayerProgressId" = spp."id"
+            where spp."userId" = u."id" 
+            or fpp."userId" = u."id")*1.0, 2) as "avgScores", -- avgScore of current user
 
             (select count(*) as "gamesCount" from "game" g
             left join "player_progress" fpp
@@ -484,7 +554,7 @@ limit $2 offset $3`,
             left join "player_progress" spp
             on g."secondPlayerProgressId" = spp."id"
             where spp."userId" = u."id" 
-            or fpp."userId" = u."id"), --gamesScore of current user
+            or fpp."userId" = u."id"), --gamesCount of current user
 
             (select count(*)  from "game" g
             left join "player_progress" fpp
@@ -540,6 +610,52 @@ where (select count(*) from "game" g
         left join "player_progress" spp
         on g."secondPlayerProgressId" = spp."id"
         where spp."userId" = u."id" 
+        or fpp."userId" = u."id") > 0
+        order by ${filter}
+        limit $1 offset $2`,
+      [queryDto.pageSize, (queryDto.pageNumber - 1) * queryDto.pageSize],
+    );
+
+    //count of all statistics of all players
+    const count = await this.dataSource.query(`
+select count(*) as "totalCount" 
+from "user" u 
+where (select count(*) from "game" g
+        left join "player_progress" fpp
+        on g."firstPlayerProgressId" = fpp."id"
+        left join "player_progress" spp
+        on g."secondPlayerProgressId" = spp."id"
+        where spp."userId" = u."id" 
         or fpp."userId" = u."id") > 0`);
+
+    return {
+      pagesCount: Math.ceil(count[0].totalCount / queryDto.pageSize),
+      page: queryDto.pageNumber,
+      pageSize: queryDto.pageSize,
+      totalCount: +count[0].totalCount,
+      items: topOfUsers.map((e) => new TopStatisticViewModel(e)),
+    };
+  }
+  private createSortingFilter(values: QuizStatisticQuery[]): string {
+    const result = values.reduce((accumulator, currentValue) => {
+      const field = currentValue.split(' ')[0];
+      const sortBy = currentValue.split(' ')[1];
+
+      //add first string without ',' in start
+      if (!accumulator) {
+        return `"${field}" ${sortBy}`;
+      }
+      //all other string should be separated by ', '
+      return `${accumulator}, "${field}" ${sortBy}`;
+    }, '');
+
+    return result;
+  }
+
+  orderColumns(sortColumns: QuizStatisticQuery[]) {
+    return sortColumns.map((sortParam) => {
+      const [columnName, sortOrder] = sortParam.split(' ');
+      return `"${columnName}" ${sortOrder}`;
+    });
   }
 }

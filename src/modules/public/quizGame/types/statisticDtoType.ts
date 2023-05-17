@@ -1,7 +1,8 @@
 export type StatisticDtoType = {
-  sumScore: number;
-  gamesCount: number;
-  winsCount: number;
-  lossesCount: number;
-  drawsCount: number;
+  sumScore: string;
+  gamesCount: string;
+  winsCount: string;
+  lossesCount: string;
+  drawsCount: string;
+  avgScores: string;
 };
