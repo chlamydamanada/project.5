@@ -26,40 +26,40 @@ export class QuizGamePublicQueryRepository {
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
-  @Cron(CronExpression.EVERY_SECOND)
-  private async cronTest() {
-    const games = await this.quizGameRepository.find({
-      relations: {
-        firstPlayerProgress: {
-          user: true,
-          answers: true,
-        },
-        secondPlayerProgress: {
-          user: true,
-          answers: true,
-        },
-      },
-      where: {
-        status: GameStatusModel.active,
-      },
-    });
-    const gamesToFinish = games.map((g: Game) => {
-      if (
-        g.firstPlayerProgress.answers.length === 5 &&
-        g.firstPlayerProgress.answers[4].addedAt < addSeconds(new Date(), -10)
-      ) {
-        g.status = GameStatusModel.finished;
-      }
-      if (
-        g.secondPlayerProgress!.answers.length === 5 &&
-        g.secondPlayerProgress!.answers[4].addedAt < addSeconds(new Date(), -10)
-      ) {
-        g.status = GameStatusModel.finished;
-      }
-      return g;
-    });
-    await this.quizGameRepository.save(gamesToFinish);
-  }
+  // @Cron(CronExpression.EVERY_SECOND)
+  // private async cronTest() {
+  //   const games = await this.quizGameRepository.find({
+  //     relations: {
+  //       firstPlayerProgress: {
+  //         user: true,
+  //         answers: true,
+  //       },
+  //       secondPlayerProgress: {
+  //         user: true,
+  //         answers: true,
+  //       },
+  //     },
+  //     where: {
+  //       status: GameStatusModel.active,
+  //     },
+  //   });
+  //   const gamesToFinish = games.map((g: Game) => {
+  //     if (
+  //       g.firstPlayerProgress.answers.length === 5 &&
+  //       g.firstPlayerProgress.answers[4].addedAt < addSeconds(new Date(), -10)
+  //     ) {
+  //       g.status = GameStatusModel.finished;
+  //     }
+  //     if (
+  //       g.secondPlayerProgress!.answers.length === 5 &&
+  //       g.secondPlayerProgress!.answers[4].addedAt < addSeconds(new Date(), -10)
+  //     ) {
+  //       g.status = GameStatusModel.finished;
+  //     }
+  //     return g;
+  //   });
+  //   await this.quizGameRepository.save(gamesToFinish);
+  // }
 
   async findGameById(gameId: string): Promise<GameViewModel | null> {
     const game = await this.quizGameRepository.findOne({
