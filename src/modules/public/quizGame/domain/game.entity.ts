@@ -41,8 +41,8 @@ export class Game {
   questions: QuestionOfGame[] | null;
 
   @OneToOne(() => PlayerProgress, (p) => p.game, {
-    cascade: true,
-    onUpdate: 'CASCADE',
+    //cascade: true,
+    //onUpdate: 'CASCADE',
   })
   @JoinColumn()
   firstPlayerProgress: PlayerProgress;
@@ -52,8 +52,8 @@ export class Game {
 
   @OneToOne(() => PlayerProgress, (p) => p.game, {
     nullable: true,
-    cascade: true,
-    onUpdate: 'CASCADE',
+    //cascade: true,
+    //onUpdate: 'CASCADE',
   })
   @JoinColumn()
   secondPlayerProgress: PlayerProgress | null;

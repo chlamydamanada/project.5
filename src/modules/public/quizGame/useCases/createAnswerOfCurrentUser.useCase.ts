@@ -56,6 +56,11 @@ export class CreateAnswerOfCurrentUserUseCase
       activeGame.finishGameDate = new Date();
     }
     //save users changes
+    await Promise.all([
+      this.quizGameRepository.savePlayer(activeGame.firstPlayerProgress),
+      this.quizGameRepository.savePlayer(activeGame.secondPlayerProgress!),
+    ]);
+
     //await this.quizGameRepository.savePlayer(currentPlayer);
 
     //save game changes
