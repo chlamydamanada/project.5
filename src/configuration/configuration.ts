@@ -19,5 +19,4 @@ export const getConfigurationEnv = () => ({
   dbSettings: process.env.LOCAL_DB ? localTypeOrmConfig : typeOrmConfig,
 });
 
-//console.log(process.env.ACCESS_TOKEN_SECRET);
 export type ConfigType = ReturnType<typeof getConfigurationEnv>;

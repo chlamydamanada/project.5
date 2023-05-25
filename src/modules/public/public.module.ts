@@ -62,6 +62,7 @@ import { QuizGamePublicRepository } from './quizGame/repositories/quizGame.repos
 import { QuizGamePublicQueryRepository } from './quizGame/api/query.repositories/quizGameQuery.repository';
 import { ConnectionToGameUseCase } from './quizGame/useCases/connectionToGame.useCase';
 import { CreateAnswerOfCurrentUserUseCase } from './quizGame/useCases/createAnswerOfCurrentUser.useCase';
+import { FinishGamesInFewSecondsUseCase } from './quizGame/useCases/finishGamesInFewSeconds.useCase';
 
 const useCases = [
   ChangePasswordUseCase,
@@ -81,6 +82,7 @@ const useCases = [
   GenerateCommentLikeStatusUseCase,
   ConnectionToGameUseCase,
   CreateAnswerOfCurrentUserUseCase,
+  FinishGamesInFewSecondsUseCase,
 ];
 
 const repositories = [

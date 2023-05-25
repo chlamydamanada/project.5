@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Game } from '../domain/game.entity';
 import { GameStatusModel } from '../types/gameStatusType';
 import { PlayerProgress } from '../domain/player.entity';
@@ -21,6 +21,7 @@ export class QuizGamePublicRepository {
     private readonly questionsOfGameRepository: Repository<QuestionOfGame>,
     @InjectRepository(Answer)
     private readonly answerRepository: Repository<Answer>,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   async savePlayer(playerDto: PlayerProgress): Promise<string> {
@@ -94,5 +95,74 @@ export class QuizGamePublicRepository {
       .orderBy('RANDOM ()')
       .take(count)
       .getRawMany();
+  }
+
+  async getGamesToBeFinished(): Promise<Game[]> {
+    console.log('start Repo');
+    const games = await this.dataSource.query(`
+select g.* from "game" g
+where 
+    (
+        (select count (*) from "question_of_game" qg
+        where qg."gameId" = g."id") -- count of questions
+        =
+        (select count (*) from (
+            select * from "player_progress" pp
+            left join "answer" a
+            on a."playerId" = pp."id"
+            where pp."id" = g."firstPlayerProgressId") as "answers") --count of all answers of first player
+        and
+        (select count (*) from "question_of_game" qg
+        where qg."gameId" = g."id") -- count of questions
+        >
+        (select count (*) from (
+            select * from "player_progress" pp
+            left join "answer" a
+            on a."playerId" = pp."id"
+            where pp."id" = g."secondPlayerProgressId") as "answers") --count of all answers of second player
+        and
+        
+        (select a."addedAt" + interval '10 second' as "after"
+        from "answer" a
+        where (
+            select max(aa."addedAt") from "answer" aa
+            where aa."playerId" = a."playerId" -- last date of answer
+            ) = a."addedAt" 
+            and a."playerId" = g."firstPlayerProgressId") 
+        <
+        (select  current_timestamp as "dateNow")
+    ) 
+    or
+    (
+        (select count (*) from "question_of_game" qg
+        where qg."gameId" = g."id") -- count of questions
+        =
+        (select count (*) from (
+            select * from "player_progress" pp
+            left join "answer" a
+            on a."playerId" = pp."id"
+            where pp."id" = g."secondPlayerProgressId") as "answers") --count of all answers of second player
+        and
+        (select count (*) from "question_of_game" qg
+        where qg."gameId" = g."id") -- count of questions
+        >
+        (select count (*) from (
+            select * from "player_progress" pp
+            left join "answer" a
+            on a."playerId" = pp."id"
+            where pp."id" = g."firstPlayerProgressId") as "answers") --count of all answers of first player
+        and
+        (select a."addedAt" + interval '10 second' as "after"
+        from "answer" a
+        where (
+            select max(aa."addedAt") from "answer" aa
+            where aa."playerId" = a."playerId") = a."addedAt" 
+            and a."playerId" = g."secondPlayerProgressId")
+        <
+        (select  current_timestamp as "dateNow")
+    )
+    `);
+    console.log('REPO:', games);
+    return games;
   }
 }

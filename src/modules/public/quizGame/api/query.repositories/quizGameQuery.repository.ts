@@ -441,7 +441,7 @@ limit $2 offset $3`,
   async getUserStatistic(userId: string): Promise<CurrentStatisticViewModel> {
     const currentStatistic: StatisticDtoType[] = await this.dataSource.query(
       `
-    SELECT  (select sum(pp."score") as "sumScore" 
+    select  (select sum(pp."score") as "sumScore" 
             from "player_progress" pp
             where pp."userId" = $1), -- sumScore of current user
              
@@ -650,12 +650,5 @@ where (select count(*) from "game" g
     }, '');
 
     return result;
-  }
-
-  orderColumns(sortColumns: QuizStatisticQuery[]) {
-    return sortColumns.map((sortParam) => {
-      const [columnName, sortOrder] = sortParam.split(' ');
-      return `"${columnName}" ${sortOrder}`;
-    });
   }
 }

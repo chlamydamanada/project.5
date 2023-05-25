@@ -61,8 +61,6 @@ export class CreateAnswerOfCurrentUserUseCase
       this.quizGameRepository.savePlayer(activeGame.secondPlayerProgress!),
     ]);
 
-    //await this.quizGameRepository.savePlayer(currentPlayer);
-
     //save game changes
     await this.quizGameRepository.saveGame(activeGame);
 

@@ -33,9 +33,7 @@ export class PlayerProgress {
   score: number;
 
   @OneToMany(() => Answer, (a) => a.player, {
-    //cascade: true,
     nullable: true,
-    //onUpdate: 'CASCADE',
   })
   answers: Answer[];
 }

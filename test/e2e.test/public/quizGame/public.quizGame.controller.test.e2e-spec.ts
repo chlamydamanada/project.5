@@ -8,7 +8,6 @@ import { publishOrUnpublishQuestion } from '../../helpers/questions/publishQuest
 import { QuestionsConstants } from '../../testsConstants/questionsConstants';
 import { GameStatusModel } from '../../../../src/modules/public/quizGame/types/gameStatusType';
 import { UsersConstants } from '../../testsConstants/usersConstants';
-import { delay } from '../../../delayFunction';
 import { DataSource } from 'typeorm';
 import { connectUserToGameHelper } from '../../helpers/quizGame/connectionToGame.helper';
 import { addAnswersByUserHelper } from '../../helpers/quizGame/addAnswersByUser.helper';
@@ -334,8 +333,6 @@ describe('Testing QUIZ GAME', () => {
         .expect(HttpStatus.FORBIDDEN);
     });
     it('should add fifth answer by second user: STATUS 200', async () => {
-      await delay(500);
-
       //add incorrect answer by second user the third question
       const secondRes = await request(server)
         .post('/pair-game-quiz/pairs/my-current/answers')
@@ -399,27 +396,25 @@ describe('Testing QUIZ GAME', () => {
         [secondGame.body.id],
       );
 
-      //first user answer to questions(all answers are incorrect): no bonus!
+      //first user answer to 4 questions(all answers are incorrect): no bonus!
       await addAnswersByUserHelper(
-        ['null', 'null', 'no', 'lol', 'nothing'],
+        ['null', 'null', 'no', 'lol'],
         tokens[0].accessToken,
         server,
       );
 
-      await delay(500);
-
-      //second user answer to questions(only first answer is correct): no bonus
+      //second user answer to 4 questions(only first answer is correct): no bonus
       await addAnswersByUserHelper(
-        [
-          secondActiveGameQuestions[0].correctAnswers[0],
-          'null',
-          'no',
-          'lol',
-          'nothing',
-        ],
+        [secondActiveGameQuestions[0].correctAnswers[0], 'null', 'no', 'lol'],
         tokens[1].accessToken,
         server,
       );
+
+      //first user answer to last question(all answers are incorrect): no bonus!
+      await addAnswersByUserHelper(['nothing'], tokens[0].accessToken, server);
+
+      //second user answer to last question(only first answer is correct): no bonus
+      await addAnswersByUserHelper(['nothing'], tokens[1].accessToken, server);
     });
     it('should get game with firstUser.score = 0(no bonus), secondUser.score = 1', async () => {
       const firstPlayerGame = await dataSource.query(
@@ -577,17 +572,23 @@ describe('Testing QUIZ GAME', () => {
     it('should find game by id (status: Finished): STATUS 200', async () => {
       //add answers of first user
       await addAnswersByUserHelper(
-        ['ten', 'twelve', 'six', 'two', 'nothing'],
+        ['ten', 'twelve', 'six', 'two'],
         tokens[0].accessToken,
         server,
       );
 
       //add answers of second user
       await addAnswersByUserHelper(
-        ['two', 'nothing', 'ten', 'six', 'twelve'],
+        ['two', 'nothing', 'ten', 'six'],
         tokens[1].accessToken,
         server,
       );
+
+      //add last answer of first user
+      await addAnswersByUserHelper(['nothing'], tokens[0].accessToken, server);
+
+      //add last answer of second user
+      await addAnswersByUserHelper(['nothing'], tokens[1].accessToken, server);
 
       // find game by id
       const res = await request(server)
@@ -968,7 +969,6 @@ ORDER BY qg."addedAt" ASC`,
           firstGameAnswers[0].questions[1].correctAnswers[0],
           firstGameAnswers[0].questions[2].correctAnswers[0],
           'null',
-          'null',
         ],
         tokens[0].accessToken,
         server,
@@ -981,8 +981,17 @@ ORDER BY qg."addedAt" ASC`,
           firstGameAnswers[0].questions[1].correctAnswers[0],
           firstGameAnswers[0].questions[2].correctAnswers[0],
           firstGameAnswers[0].questions[3].correctAnswers[0],
-          firstGameAnswers[0].questions[4].correctAnswers[0],
         ],
+        tokens[1].accessToken,
+        server,
+      );
+
+      //add last answer of first user
+      await addAnswersByUserHelper(['null'], tokens[0].accessToken, server);
+
+      //add last answer of second user
+      await addAnswersByUserHelper(
+        [firstGameAnswers[0].questions[4].correctAnswers[0]],
         tokens[1].accessToken,
         server,
       );
@@ -1105,12 +1114,10 @@ ORDER BY qg."addedAt" ASC`,
           secondGameAnswers[0].questions[1].correctAnswers[0],
           secondGameAnswers[0].questions[2].correctAnswers[0],
           secondGameAnswers[0].questions[3].correctAnswers[0],
-          secondGameAnswers[0].questions[4].correctAnswers[0],
         ],
         tokens[0].accessToken,
         server,
       );
-      await delay(500);
       //add answers of third user
       await addAnswersByUserHelper(
         [
@@ -1118,11 +1125,18 @@ ORDER BY qg."addedAt" ASC`,
           secondGameAnswers[0].questions[1].correctAnswers[0],
           'null',
           'null',
-          '7777777',
         ],
         tokens[2].accessToken,
         server,
       );
+      //add last answer of first user
+      await addAnswersByUserHelper(
+        [secondGameAnswers[0].questions[4].correctAnswers[0]],
+        tokens[0].accessToken,
+        server,
+      );
+      //add last answer of third user
+      await addAnswersByUserHelper(['7777777'], tokens[2].accessToken, server);
 
       //find all games for first user
       const res = await request(server)
@@ -1304,24 +1318,25 @@ ORDER BY qg."addedAt" ASC`,
           thirdGameAnswers[0].questions[1].correctAnswers[0],
           'null',
           'null',
-          'null',
         ],
         tokens[0].accessToken,
         server,
       );
-
-      //add answers of third user
+      //add answers of second user
       await addAnswersByUserHelper(
         [
           thirdGameAnswers[0].questions[0].correctAnswers[0],
           thirdGameAnswers[0].questions[1].correctAnswers[0],
           thirdGameAnswers[0].questions[2].correctAnswers[0],
           'null',
-          '7777777',
         ],
         tokens[1].accessToken,
         server,
       );
+      //add last answer of first user
+      await addAnswersByUserHelper(['null'], tokens[0].accessToken, server);
+      //add answers of second user
+      await addAnswersByUserHelper(['7777777'], tokens[1].accessToken, server);
 
       //find all games for first user
       const res = await request(server)
@@ -1419,7 +1434,6 @@ ORDER BY qg."addedAt" ASC`,
       where g."id" = $1`,
         [fourthGame.body.id],
       );
-
       //add answers of third user
       await addAnswersByUserHelper(
         [
@@ -1427,12 +1441,10 @@ ORDER BY qg."addedAt" ASC`,
           fourthGameAnswers[0].questions[1].correctAnswers[0],
           fourthGameAnswers[0].questions[2].correctAnswers[0],
           fourthGameAnswers[0].questions[3].correctAnswers[0],
-          'null',
         ],
         tokens[2].accessToken,
         server,
       );
-
       //add answers of first user
       await addAnswersByUserHelper(
         [
@@ -1440,11 +1452,15 @@ ORDER BY qg."addedAt" ASC`,
           fourthGameAnswers[0].questions[1].correctAnswers[0],
           fourthGameAnswers[0].questions[2].correctAnswers[0],
           fourthGameAnswers[0].questions[3].correctAnswers[0],
-          'null',
         ],
         tokens[0].accessToken,
         server,
       );
+      //add last answer of third user
+      await addAnswersByUserHelper(['null'], tokens[2].accessToken, server);
+      //add last answer of first user
+      //await addAnswersByUserHelper(['null'], tokens[0].accessToken, server);
+
       //find all games for first user
       const res = await request(server)
         .get('/pair-game-quiz/pairs/my')
@@ -1636,6 +1652,133 @@ ORDER BY qg."addedAt" ASC`,
       );
     });
   });
+
+  // describe('DELETE ALL DATA 5', () => {
+  //   it('should delete all data', async () => {
+  //     await request(server).delete('/testing/all-data').expect(204);
+  //   });
+  // });
+  //
+  // describe('FINISH THE GAME IN 10 SEC', () => {
+  //   let tokens;
+  //   let game;
+  //   beforeAll(async () => {
+  //     //create 10 questions by sa
+  //     const questions = await createSeveralQuestions(5, server);
+  //
+  //     //publish 5 questions by sa
+  //     for (let i = 0; i < 5; i++) {
+  //       await publishOrUnpublishQuestion(
+  //         server,
+  //         questions[i].id,
+  //         QuestionsConstants.publish,
+  //       );
+  //     }
+  //
+  //     //create 2 users by sa
+  //     await createSeveralUsers(2, server);
+  //
+  //     //login 2 users
+  //     tokens = await loginSeveralUsers(2, server);
+  //   });
+  //   it('should connect to game 2 users: STATUS 200', async () => {
+  //     //connect first user and second user to game
+  //     await connectUserToGameHelper(tokens[0].accessToken, server);
+  //     game = await connectUserToGameHelper(tokens[1].accessToken, server);
+  //
+  //     // find game for current user
+  //     const res = await request(server)
+  //       .get('/pair-game-quiz/pairs/my-current')
+  //       .set('Authorization', `Bearer ${tokens[1].accessToken}`)
+  //       .expect(HttpStatus.OK);
+  //
+  //     expect(res.body).toEqual({
+  //       id: expect.any(String),
+  //       status: GameStatusModel.active,
+  //       pairCreatedDate: expect.any(String),
+  //       startGameDate: expect.any(String),
+  //       finishGameDate: null,
+  //       questions: expect.any(Array),
+  //       firstPlayerProgress: {
+  //         score: 0,
+  //         answers: expect.any(Array),
+  //         player: {
+  //           id: expect.any(String),
+  //           login: UsersConstants.valid_user_1.login,
+  //         },
+  //       },
+  //       secondPlayerProgress: {
+  //         score: 0,
+  //         answers: expect.any(Array),
+  //         player: {
+  //           id: expect.any(String),
+  //           login: UsersConstants.valid_user_2.login,
+  //         },
+  //       },
+  //     });
+  //   });
+  //   it('should add 5 answers by first user and 4 answers by second user: STATUS 200', async () => {
+  //     //add 1 answer of first user
+  //     await addAnswersByUserHelper(['null'], tokens[0].accessToken, server);
+  //     //add 1 answer of second user
+  //     await addAnswersByUserHelper(['null'], tokens[1].accessToken, server);
+  //     //add 2 answer of first user
+  //     await addAnswersByUserHelper(['0'], tokens[0].accessToken, server);
+  //     //add 2 answer of second user
+  //     await addAnswersByUserHelper(['0'], tokens[1].accessToken, server);
+  //     //add 3 answer of first user
+  //     await addAnswersByUserHelper(['007'], tokens[0].accessToken, server);
+  //     //add 3 answer of second user
+  //     await addAnswersByUserHelper(['007'], tokens[1].accessToken, server);
+  //     //add 4 answer of first user
+  //     await addAnswersByUserHelper(['nothing'], tokens[0].accessToken, server);
+  //     //add 4 answer of second user
+  //     await addAnswersByUserHelper(['anything'], tokens[1].accessToken, server);
+  //     //add 5 answer of first user
+  //     await addAnswersByUserHelper(['zero'], tokens[0].accessToken, server);
+  //     //wait 10 sec
+  //     await delay(10000);
+  //   });
+  //   it('should finish the game after 10 sec: STATUS 200', async () => {
+  //     // after 10 sec game finished and second user can add answer
+  //     await request(server)
+  //       .post('/pair-game-quiz/pairs/my-current/answers')
+  //       .set('Authorization', `Bearer ${tokens[1].accessToken}`)
+  //       .send({ answer: 'answer' })
+  //       .expect(HttpStatus.OK);
+  //
+  //     // find game for current user
+  //     const res = await request(server)
+  //       .get(`/pair-game-quiz/pairs/${game.body.id}`)
+  //       .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+  //       .expect(HttpStatus.FORBIDDEN);
+  //
+  //     expect(res.body).toEqual({
+  //       id: game.body.id,
+  //       status: GameStatusModel.finished,
+  //       pairCreatedDate: expect.any(String),
+  //       startGameDate: expect.any(String),
+  //       finishGameDate: expect.any(String),
+  //       questions: expect.any(Array),
+  //       firstPlayerProgress: {
+  //         score: 0,
+  //         answers: expect.any(Array),
+  //         player: {
+  //           id: expect.any(String),
+  //           login: UsersConstants.valid_user_1.login,
+  //         },
+  //       },
+  //       secondPlayerProgress: {
+  //         score: 0,
+  //         answers: expect.any(Array),
+  //         player: {
+  //           id: expect.any(String),
+  //           login: UsersConstants.valid_user_2.login,
+  //         },
+  //       },
+  //     });
+  //   });
+  // });
 
   // afterAll(async () => {
   //   await request(server).delete('/testing/all-data').expect(204);

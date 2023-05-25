@@ -13,6 +13,9 @@ export class QuestionOfGame {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  // @Column()
+  // orderNumber: number;
+
   @Column({ type: 'uuid' })
   gameId: string;
 
