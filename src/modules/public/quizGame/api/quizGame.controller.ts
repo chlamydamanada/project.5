@@ -30,11 +30,6 @@ import { GamesQueryType } from '../types/gamesQueryType';
 import { GamesViewModel } from '../types/gamesViewModel';
 import { CurrentStatisticViewModel } from '../types/currentStatisticViewModel';
 import { QueryGamesTopUsersDto } from './pipes/queryGamesTopUsers.dto';
-import {
-  FinishGamesInFewSecondsCommand,
-  FinishGamesInFewSecondsUseCase,
-} from '../useCases/finishGamesInFewSeconds.useCase';
-import { Cron, CronExpression } from '@nestjs/schedule';
 
 @ApiTags('PairGameQuiz')
 @Controller('pair-game-quiz')
@@ -43,10 +38,6 @@ export class QuizGamePublicController {
     private readonly quizGameQueryRepository: QuizGamePublicQueryRepository,
     private commandBus: CommandBus,
   ) {}
-  @Cron(CronExpression.EVERY_SECOND)
-  async finishGamesInFewSeconds() {
-    await this.commandBus.execute(new FinishGamesInFewSecondsCommand());
-  }
 
   @Get('users/top')
   async getTopUsers(@Query() queryDto: QueryGamesTopUsersDto) {

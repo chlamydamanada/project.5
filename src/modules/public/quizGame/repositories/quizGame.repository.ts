@@ -98,11 +98,11 @@ export class QuizGamePublicRepository {
   }
 
   async getGamesToBeFinished(): Promise<Game[]> {
-    console.log('start Repo');
     const games = await this.dataSource.query(`
 select g.* from "game" g
 where 
     (
+        (
         (select count (*) from "question_of_game" qg
         where qg."gameId" = g."id") -- count of questions
         =
@@ -160,7 +160,9 @@ where
             and a."playerId" = g."secondPlayerProgressId")
         <
         (select  current_timestamp as "dateNow")
-    )
+        )
+    ) 
+    and g."status" = 'Active'
     `);
     console.log('REPO:', games);
     return games;
