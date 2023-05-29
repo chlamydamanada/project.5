@@ -21,11 +21,10 @@ export class FinishGamesInFewSecondsUseCase
     const gamesToBeFinished = await this.quizGameRepository.getAllActiveGames();
 
     //change status of game to finished and save
-
     gamesToBeFinished.map(async (g) => {
       if (
         g.firstPlayerProgress.answers.length === g.questions?.length &&
-        g.firstPlayerProgress.answers[0].addedAt < addSeconds(new Date(), -5)
+        g.firstPlayerProgress.answers[0].addedAt < addSeconds(new Date(), -10)
       ) {
         await this.addBonusPoint(g.firstPlayerProgress);
         await this.finishedGame(g);
@@ -33,9 +32,9 @@ export class FinishGamesInFewSecondsUseCase
       }
       if (
         g.secondPlayerProgress?.answers.length === g.questions?.length &&
-        g.secondPlayerProgress!.answers[0].addedAt < addSeconds(new Date(), -5)
+        g.secondPlayerProgress!.answers[0].addedAt < addSeconds(new Date(), -10)
       ) {
-        await this.addBonusPoint(g.firstPlayerProgress);
+        await this.addBonusPoint(g.secondPlayerProgress!);
         await this.finishedGame(g);
         return;
       }
@@ -44,7 +43,6 @@ export class FinishGamesInFewSecondsUseCase
     return;
   }
   private async addBonusPoint(player: PlayerProgress) {
-    console.log('USECASE:', player, player.answers);
     player.answers.find((e) => e.answerStatus === AnswerStatusType.Correct)
       ? (player.score += 1)
       : (player.score += 0);
