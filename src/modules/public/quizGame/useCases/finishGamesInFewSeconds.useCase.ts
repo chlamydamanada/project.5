@@ -25,7 +25,7 @@ export class FinishGamesInFewSecondsUseCase
     gamesToBeFinished.map(async (g) => {
       if (
         g.firstPlayerProgress.answers.length === g.questions?.length &&
-        g.firstPlayerProgress.answers[0].addedAt < addSeconds(new Date(), -10)
+        g.firstPlayerProgress.answers[0].addedAt < addSeconds(new Date(), -5)
       ) {
         await this.addBonusPoint(g.firstPlayerProgress);
         await this.finishedGame(g);
@@ -33,7 +33,7 @@ export class FinishGamesInFewSecondsUseCase
       }
       if (
         g.secondPlayerProgress?.answers.length === g.questions?.length &&
-        g.secondPlayerProgress!.answers[0].addedAt < addSeconds(new Date(), -10)
+        g.secondPlayerProgress!.answers[0].addedAt < addSeconds(new Date(), -5)
       ) {
         await this.addBonusPoint(g.firstPlayerProgress);
         await this.finishedGame(g);
