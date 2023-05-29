@@ -1771,8 +1771,8 @@ ORDER BY qg."addedAt" ASC`,
         },
       });
     });
-    it('should wait 11 seconds', async () => {
-      await delay(11000);
+    it('should wait 10 seconds', async () => {
+      await delay(10000);
     }, 12000);
     it('should finish the game after 10 sec: STATUS 200', async () => {
       // after 10 sec game finished and second user can add answer
@@ -1891,8 +1891,8 @@ ORDER BY qg."addedAt" ASC`,
         server,
       );
     });
-    it('should wait 11 seconds ', async () => {
-      await delay(11000);
+    it('should wait 10 seconds ', async () => {
+      await delay(10000);
     }, 12000);
     it('should finish the game after 10 sec with bonus point for first user: STATUS 200', async () => {
       // after 10 sec game finished and second user can add answer

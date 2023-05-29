@@ -21,28 +21,26 @@ export class FinishGamesInFewSecondsUseCase
     const gamesToBeFinished = await this.quizGameRepository.getAllActiveGames();
 
     //change status of game to finished and save
-    if (gamesToBeFinished.length > 0) {
-      gamesToBeFinished.map(async (g) => {
-        if (
-          g.firstPlayerProgress.answers.length === g.questions?.length &&
-          g.firstPlayerProgress.answers[0].addedAt < addSeconds(new Date(), -8)
-        ) {
-          await this.addBonusPoint(g.firstPlayerProgress);
-          await this.finishedGame(g);
-          return;
-        }
-        if (
-          g.secondPlayerProgress?.answers.length === g.questions?.length &&
-          g.secondPlayerProgress!.answers[0].addedAt <
-            addSeconds(new Date(), -8)
-        ) {
-          await this.addBonusPoint(g.firstPlayerProgress);
-          await this.finishedGame(g);
-          return;
-        }
+
+    gamesToBeFinished.map(async (g) => {
+      if (
+        g.firstPlayerProgress.answers.length === g.questions?.length &&
+        g.firstPlayerProgress.answers[0].addedAt < addSeconds(new Date(), -10)
+      ) {
+        await this.addBonusPoint(g.firstPlayerProgress);
+        await this.finishedGame(g);
         return;
-      });
-    }
+      }
+      if (
+        g.secondPlayerProgress?.answers.length === g.questions?.length &&
+        g.secondPlayerProgress!.answers[0].addedAt < addSeconds(new Date(), -10)
+      ) {
+        await this.addBonusPoint(g.firstPlayerProgress);
+        await this.finishedGame(g);
+        return;
+      }
+      return;
+    });
     return;
   }
   private async addBonusPoint(player: PlayerProgress) {
