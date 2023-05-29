@@ -60,4 +60,6 @@ export class Game {
 
   @Column({ type: 'uuid', nullable: true, default: null })
   secondPlayerProgressId: string; //playerId
+
+  addBonusPoint() {}
 }

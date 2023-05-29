@@ -99,7 +99,38 @@ export class QuizGamePublicRepository {
 
   async getGamesToBeFinished(): Promise<Game[]> {
     const games = await this.dataSource.query(`
-select g.* from "game" g
+select g.*, 
+       array(select row_to_json(row) 
+            from (select qg."id", qg."questionId"
+                  from "question_of_game" qg
+                  where qg."gameId" = g."id")
+            as row)
+       as questions, --array of questions id
+
+       (select row_to_json(row) as "firstPlayerProgress" 
+        from (select  pp.*, 
+                      array(select row_to_json(row) 
+                            from(select a."id", a."answerStatus"
+                                 from "answer" a 
+                                 where a."playerId" = pp."id")
+                            as row)
+                      as "answers" --array of users answers
+               from "player_progress" pp
+               where pp."id" = g."firstPlayerProgressId")
+        as row), --json first player progress
+ 
+        (select row_to_json(row) as "secondPlayerProgress" 
+        from (select  pp.*, 
+                      array(select row_to_json(row) 
+                            from (select a."id", a."answerStatus"
+                                  from "answer" a 
+                                  where a."playerId" = pp."id")
+                            as row)
+                      as "answers" --array of users answers
+               from public."player_progress" pp
+               where pp."id" = g."secondPlayerProgressId")
+        as row) --json second player progress 
+from "game" g
 where 
     (
         (

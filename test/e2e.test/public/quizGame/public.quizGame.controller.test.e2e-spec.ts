@@ -1662,7 +1662,8 @@ ORDER BY qg."addedAt" ASC`,
 
   describe('FINISH THE GAME IN 10 SEC', () => {
     let tokens;
-    let game;
+    let firstGame;
+    let secondGame;
     beforeAll(async () => {
       //create 10 questions by sa
       const questions = await createSeveralQuestions(5, server);
@@ -1685,7 +1686,7 @@ ORDER BY qg."addedAt" ASC`,
     it('should connect to game 2 users: STATUS 200', async () => {
       //connect first user and second user to game
       await connectUserToGameHelper(tokens[0].accessToken, server);
-      game = await connectUserToGameHelper(tokens[1].accessToken, server);
+      firstGame = await connectUserToGameHelper(tokens[1].accessToken, server);
 
       // find game for current user
       const res = await request(server)
@@ -1694,7 +1695,7 @@ ORDER BY qg."addedAt" ASC`,
         .expect(HttpStatus.OK);
 
       expect(res.body).toEqual({
-        id: game.body.id,
+        id: firstGame.body.id,
         status: GameStatusModel.active,
         pairCreatedDate: expect.any(String),
         startGameDate: expect.any(String),
@@ -1746,7 +1747,7 @@ ORDER BY qg."addedAt" ASC`,
         .expect(HttpStatus.OK);
 
       expect(res.body).toEqual({
-        id: game.body.id,
+        id: firstGame.body.id,
         status: GameStatusModel.active,
         pairCreatedDate: expect.any(String),
         startGameDate: expect.any(String),
@@ -1770,12 +1771,9 @@ ORDER BY qg."addedAt" ASC`,
         },
       });
     });
-    it('should wait 5 seconds', async () => {
+    it('should wait 11 seconds', async () => {
       await delay(11000);
     }, 12000);
-    // it('should wait 5 more seconds', async () => {
-    //   await delay(5500);
-    //  }, 6000);
     it('should finish the game after 10 sec: STATUS 200', async () => {
       // after 10 sec game finished and second user can add answer
       await request(server)
@@ -1792,12 +1790,12 @@ ORDER BY qg."addedAt" ASC`,
 
       // find game for current user
       const res = await request(server)
-        .get(`/pair-game-quiz/pairs/${game.body.id}`)
+        .get(`/pair-game-quiz/pairs/${firstGame.body.id}`)
         .set('Authorization', `Bearer ${tokens[0].accessToken}`)
         .expect(HttpStatus.OK);
 
       expect(res.body).toEqual({
-        id: game.body.id,
+        id: firstGame.body.id,
         status: GameStatusModel.finished,
         pairCreatedDate: expect.any(String),
         startGameDate: expect.any(String),
@@ -1813,6 +1811,126 @@ ORDER BY qg."addedAt" ASC`,
         },
         secondPlayerProgress: {
           score: 0,
+          answers: expect.any(Array),
+          player: {
+            id: expect.any(String),
+            login: UsersConstants.valid_user_2.login,
+          },
+        },
+      });
+    });
+    it('should connect to game 2 users, add 5 correct answers by first user and 3 correct answers by second user: STATUS 200', async () => {
+      //connect first user and second user to game
+      await connectUserToGameHelper(tokens[0].accessToken, server);
+      secondGame = await connectUserToGameHelper(tokens[1].accessToken, server);
+
+      // find correct answers
+      const answers = await dataSource.query(
+        `
+      select g."id" as "gameId", array(
+        select row_to_json(row) from(
+            select qq."questionId" as "id", qq."body", qq."correctAnswers" from (
+                select * from "question_of_game" qg
+                left join "question" q
+                on q."id" = qg."questionId"
+                order by qg."addedAt"  asc) qq
+            where qq."gameId" = g."id")
+        as row)
+      as questions
+      from "game" g
+      where g."id" = $1`,
+        [secondGame.body.id],
+      );
+
+      //add 1 answer of first user
+      await addAnswersByUserHelper(
+        [answers[0].questions[0].correctAnswers[0]],
+        tokens[0].accessToken,
+        server,
+      );
+      //add 1 answer of second user
+      await addAnswersByUserHelper(
+        [answers[0].questions[0].correctAnswers[0]],
+        tokens[1].accessToken,
+        server,
+      );
+      //add 2 answer of first user
+      await addAnswersByUserHelper(
+        [answers[0].questions[1].correctAnswers[0]],
+        tokens[0].accessToken,
+        server,
+      );
+      //add 2 answer of second user
+      await addAnswersByUserHelper(
+        [answers[0].questions[1].correctAnswers[0]],
+        tokens[1].accessToken,
+        server,
+      );
+      //add 3 answer of first user
+      await addAnswersByUserHelper(
+        [answers[0].questions[2].correctAnswers[0]],
+        tokens[0].accessToken,
+        server,
+      );
+      //add 3 answer of second user
+      await addAnswersByUserHelper(
+        [answers[0].questions[2].correctAnswers[0]],
+        tokens[1].accessToken,
+        server,
+      );
+      //add 4 answer of first user
+      await addAnswersByUserHelper(
+        [answers[0].questions[3].correctAnswers[0]],
+        tokens[0].accessToken,
+        server,
+      );
+      //add 5 answer of first user
+      await addAnswersByUserHelper(
+        [answers[0].questions[4].correctAnswers[0]],
+        tokens[0].accessToken,
+        server,
+      );
+    });
+    it('should wait 11 seconds ', async () => {
+      await delay(11000);
+    }, 12000);
+    it('should finish the game after 10 sec with bonus point for first user: STATUS 200', async () => {
+      // after 10 sec game finished and second user can add answer
+      await request(server)
+        .post('/pair-game-quiz/pairs/my-current/answers')
+        .set('Authorization', `Bearer ${tokens[1].accessToken}`)
+        .send({ answer: 'answer' })
+        .expect(HttpStatus.FORBIDDEN);
+
+      // find game for current user
+      await request(server)
+        .get('/pair-game-quiz/pairs/my-current')
+        .set('Authorization', `Bearer ${tokens[1].accessToken}`)
+        .expect(HttpStatus.NOT_FOUND);
+
+      // find game for current user
+      const res = await request(server)
+        .get(`/pair-game-quiz/pairs/${secondGame.body.id}`)
+        .set('Authorization', `Bearer ${tokens[0].accessToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(res.body).toEqual({
+        id: secondGame.body.id,
+        status: GameStatusModel.finished,
+        pairCreatedDate: expect.any(String),
+        startGameDate: expect.any(String),
+        finishGameDate: expect.any(String),
+        questions: expect.any(Array),
+        firstPlayerProgress: {
+          score: 6,
+          answers: expect.any(Array),
+          player: {
+            id: expect.any(String),
+            login: UsersConstants.valid_user_1.login,
+          },
+        },
+        secondPlayerProgress: {
+          score: 3,
           answers: expect.any(Array),
           player: {
             id: expect.any(String),
