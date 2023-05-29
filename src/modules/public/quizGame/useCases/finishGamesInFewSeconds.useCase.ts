@@ -4,6 +4,8 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PlayerProgress } from '../domain/player.entity';
 import { AnswerStatusType } from '../types/answerStatusType';
+import { addSeconds } from 'date-fns';
+import { Game } from '../domain/game.entity';
 
 export class FinishGamesInFewSecondsCommand {}
 
@@ -16,33 +18,47 @@ export class FinishGamesInFewSecondsUseCase
   @Cron(CronExpression.EVERY_SECOND)
   async execute(): Promise<void> {
     //find games, which should be finished
-    const gamesToBeFinished =
-      await this.quizGameRepository.getGamesToBeFinished();
+    const gamesToBeFinished = await this.quizGameRepository.getAllActiveGames();
 
     //change status of game to finished and save
     if (gamesToBeFinished.length > 0) {
       gamesToBeFinished.map(async (g) => {
-        if (g.firstPlayerProgress.answers.length === g.questions?.length) {
+        if (
+          g.firstPlayerProgress.answers.length === g.questions?.length &&
+          g.firstPlayerProgress.answers[0].addedAt < addSeconds(new Date(), -10)
+        ) {
           await this.addBonusPoint(g.firstPlayerProgress);
+          await this.finishedGame(g);
+          return;
         }
-        if (g.secondPlayerProgress?.answers.length === g.questions?.length) {
+        if (
+          g.secondPlayerProgress?.answers.length === g.questions?.length &&
+          g.secondPlayerProgress!.answers[0].addedAt <
+            addSeconds(new Date(), -10)
+        ) {
           await this.addBonusPoint(g.firstPlayerProgress);
+          await this.finishedGame(g);
+          return;
         }
-        g.status = GameStatusModel.finished;
-        g.finishGameDate = new Date();
-        await this.quizGameRepository.saveGame(g);
         return;
       });
     }
     return;
   }
   private async addBonusPoint(player: PlayerProgress) {
-    console.log(player);
+    console.log('USECASE:', player, player.answers);
     player.answers.find((e) => e.answerStatus === AnswerStatusType.Correct)
       ? (player.score += 1)
       : (player.score += 0);
 
     await this.quizGameRepository.savePlayer(player);
+    return;
+  }
+
+  private async finishedGame(game: Game) {
+    game.status = GameStatusModel.finished;
+    game.finishGameDate = new Date();
+    await this.quizGameRepository.saveGame(game);
     return;
   }
 }

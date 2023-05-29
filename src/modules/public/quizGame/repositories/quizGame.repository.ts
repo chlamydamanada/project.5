@@ -198,4 +198,36 @@ where
     console.log('REPO:', games);
     return games;
   }
+
+  async getAllActiveGames(): Promise<Game[]> {
+    const games = await this.quizGameRepository.find({
+      relations: {
+        firstPlayerProgress: {
+          answers: true,
+        },
+        secondPlayerProgress: {
+          answers: true,
+        },
+        questions: true,
+      },
+      where: {
+        status: GameStatusModel.active,
+      },
+      order: {
+        firstPlayerProgress: {
+          answers: {
+            addedAt: 'ASC',
+          },
+        },
+        secondPlayerProgress: {
+          answers: {
+            addedAt: 'ASC',
+          },
+        },
+      },
+    });
+
+    console.log('REPO:', games);
+    return games;
+  }
 }
