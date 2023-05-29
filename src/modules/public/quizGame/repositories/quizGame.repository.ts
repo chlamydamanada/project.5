@@ -189,7 +189,7 @@ where
             select max(aa."addedAt") from "answer" aa
             where aa."playerId" = a."playerId") = a."addedAt" 
             and a."playerId" = g."secondPlayerProgressId")
-        <
+        <=
         (select  current_timestamp as "dateNow")
         )
     ) 
