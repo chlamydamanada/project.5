@@ -183,7 +183,7 @@ where
             on a."playerId" = pp."id"
             where pp."id" = g."firstPlayerProgressId") as "answers") --count of all answers of first player
         and
-        (select a."addedAt" + interval '10 second' as "after"
+        (select a."addedAt" + interval '9 second' as "after"
         from "answer" a
         where (
             select max(aa."addedAt") from "answer" aa
